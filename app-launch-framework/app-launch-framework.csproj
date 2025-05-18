@@ -8,4 +8,22 @@
         <AssemblyName>$(AssemblyName.Replace(' ', '_'))</AssemblyName>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="BlazorTemplater" Version="1.5.1" />
+      <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.5" />
+      <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.5" />
+      <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.3.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.5" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.5">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+      <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.5" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.5">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+      <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
+    </ItemGroup>
+
 </Project>
