@@ -1,0 +1,22 @@
+﻿@page "/Account/Logout"
+@layout AppLaunch.Themes.Layout.AppLaunchSignIn
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Identity
+@using AppLaunch.Services.Data
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject ILogger<Login> Logger
+@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Log Out</PageTitle>
+
+@code {
+   
+    protected override async Task OnInitializedAsync()
+    {
+        await SignInManager.SignOutAsync();
+        NavigationManager.NavigateTo("/admin/",true);
+    }
+}

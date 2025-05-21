@@ -1,0 +1,1 @@
+This is the plugins folder that will be used to dynamicaly load AppLaunch plugins during startup.

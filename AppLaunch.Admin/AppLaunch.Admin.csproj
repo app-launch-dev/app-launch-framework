@@ -1,0 +1,68 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>AppLaunch.Admin</PackageId>
+        <Version>1.0.1</Version>
+        <Authors>Applaunch Development Group</Authors>
+        <Description>AppLaunch Admin contains the core admin pages for use in AppLaunch projects.</Description>
+        <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>
+        <IsPackable>true</IsPackable>
+        <PackageLicenseFile>license.md</PackageLicenseFile>
+        <PackageReadmeFile>readme.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="license.md" Pack="true" PackagePath="license.md" />
+        <None Include="readme.md" Pack="true" PackagePath="readme.md" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="license.md">
+            <Pack>true</Pack>
+            <PackagePath>license.md</PackagePath>
+        </None>
+        <None Update="readme.md">
+            <Pack>true</Pack>
+            <PackagePath>readme.md</PackagePath>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <UpToDateCheckInput Remove="Areas\MyFeature\Pages\Page1.cshtml" />
+      <UpToDateCheckInput Remove="Settings\Themes\AddEditComponent.razor" />
+      <UpToDateCheckInput Remove="Settings\Themes\AddEditRepeaterSnippet.razor" />
+      <UpToDateCheckInput Remove="Settings\Themes\AddEditSnippet.razor" />
+      <UpToDateCheckInput Remove="Settings\Themes\AddEditTheme.razor" />
+      <UpToDateCheckInput Remove="Settings\Themes\Index.razor" />
+      <UpToDateCheckInput Remove="Settings\PageTemplates\AddEditPageTemplate.razor" />
+      <UpToDateCheckInput Remove="Settings\PageTemplates\PageTemplates.razor" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AppLaunch.Models\AppLaunch.Models.csproj" />
+      <ProjectReference Include="..\AppLaunch.Services\AppLaunch.Services.csproj" />
+      <ProjectReference Include="..\AppLaunch.Themes\AppLaunch.Themes.csproj" />
+    </ItemGroup>
+
+
+
+    <ItemGroup>
+      <AdditionalFiles Include="Admin\Profile\Index.razor" />
+      <AdditionalFiles Include="Admin\Settings\Index.razor" />
+    </ItemGroup>
+    
+
+
+</Project>
