@@ -1,13 +1,197 @@
 ﻿@page "/"
+@inject ApplicationDbContext _context
+@inject  IHostingService _HostingService
+@using System.Data.Common
+@using AppLaunch.Services.Data
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using MudBlazor
 @attribute [AllowAnonymous]
 
-<div class="center-image">
-    <img src="_content/AppLaunch.Themes/images/applaunch_dev_light.png" alt="AppLaunch.dev Logo" />
-</div>
+
+@*<div class="d-flex justify-center">
+    <MudImage ObjectFit="ObjectFit.None" ObjectPosition="ObjectPosition.Center" Width="400" Src="_content/AppLaunch.Themes/images/applaunch_dev_light.png" Alt="Applaunch Framework"  Elevation="25" Class="rounded-lg"/>
+</div>*@
+
+@using System.ComponentModel.DataAnnotations
+@using System.Text.Json
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Data.SqlClient
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <p>@message</p>
+}
+
+
+<EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator/>
+    <MudGrid>
+        <MudItem xs="12" sm="7">
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField Label="Connection String" HelperText="Paste your connection string"
+                                  @bind-Value="model.ConnectionString" For="@(() => model.ConnectionString)"/>
+                   
+                </MudCardContent>
+                <MudCardActions>
+                    
+                    @if (success)
+                    {
+                        <MudButton ButtonType="ButtonType.Button" OnClick="UpdateConnectionString" Variant="Variant.Filled" Color="Color.Primary"
+                                   Class="ml-auto">Apply and Restart
+                        </MudButton> 
+                    }
+                    else
+                    {
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                                   Class="ml-auto">Test Connection
+                        </MudButton>
+                    }
+
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="5">
+            <MudPaper Class="pa-4 mud-height-full">
+                <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                @if (success)
+                {
+                    <MudText Color="Color.Success">Success</MudText>
+                }
+                else
+                {
+                    <MudText Color="@Color.Error">
+                        <ValidationSummary/>
+                    </MudText>
+                }
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12">
+            <MudText Typo="Typo.body2" Align="Align.Center">
+                Create your administrative account.
+            </MudText>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
 
 @code {
+    string message = "";
+
     protected override async Task OnInitializedAsync()
     {
+        await LoadSettings();
     }
+
+    public async Task LoadSettings()
+    {
+        try
+        {
+            var settings = _context.Sites.ToList();
+            // Process settings...
+        }
+        catch (DbUpdateException dbEx)
+        {
+            Console.WriteLine("Database error occurred: " + dbEx.Message);
+            message = dbEx.Message;
+        }
+        catch (Exception ex) when (ex is InvalidOperationException || ex is DbException)
+        {
+            Console.WriteLine("Connection error! Redirecting to setup.");
+            message = "Connection error! Redirecting to setup.";
+        }
+    }
+
+
+    RegisterAccountForm model = new RegisterAccountForm();
+    bool success;
+
+    public class RegisterAccountForm
+    {
+        [Required]
+        public string ConnectionString { get; set; }
+
+       
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        message = "";
+        var connResult = await TestDatabaseConnection(model.ConnectionString);
+        if (connResult.HasError)
+        {
+            message = connResult.ErrorMessage;
+        }
+        else
+        {
+            success = true;
+        }
+        StateHasChanged();
+    }
+
+    public async Task<(bool HasError, string ErrorMessage, bool IsSuccessful)> TestDatabaseConnection(string connectionString)
+    {
+        if (string.IsNullOrWhiteSpace(connectionString))
+            return (true, "Connection string cannot be empty!", false);
+
+        try
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                await connection.OpenAsync();
+                return (false, "", true);
+            }
+        }
+        catch (SqlException ex)
+        {
+            return (true, $"Connection failed: {ex.Message}", false);
+        }
+    }
+    
+    public async Task UpdateConnectionString()
+    {
+        message = "";
+        try
+        {
+            string AppSettingsPath = "appsettings.json";
+            string json = File.ReadAllText(AppSettingsPath);
+            var config = JsonSerializer.Deserialize<JsonDocument>(json);
+
+            using var stream = new FileStream(AppSettingsPath, FileMode.Create);
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+
+            writer.WriteStartObject();
+            foreach (var property in config.RootElement.EnumerateObject())
+            {
+                if (property.Name == "ConnectionStrings")
+                {
+                    writer.WritePropertyName("ConnectionStrings");
+                    writer.WriteStartObject();
+                    writer.WriteString("DefaultConnection", model.ConnectionString);
+                    writer.WriteEndObject();
+                }
+                else
+                {
+                    property.WriteTo(writer);
+                }
+            }
+            writer.WriteEndObject();
+
+            RestartApplication();
+        }
+        catch (Exception ex)
+        {
+            message=$"Failed to update connection string: {ex.Message}";
+        }
+    }
+
+    public void RestartApplication()
+    {
+        _HostingService.RestartApplication();
+
+    }
+
+
+
 }

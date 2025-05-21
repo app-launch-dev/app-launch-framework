@@ -62,6 +62,7 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, AppLaunch.Component
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<ICacheService, CacheService>();
+builder.Services.AddSingleton<IHostingService, HostingService>();
 // builder.Services.AddScoped<IFormHandlerService, FormHandlerService>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 // builder.Services.AddScoped<ICoreXThemeService, CoreXThemeService>();

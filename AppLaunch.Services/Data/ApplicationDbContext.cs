@@ -15,7 +15,7 @@ namespace AppLaunch.Services.Data
    protected override void OnModelCreating(ModelBuilder modelBuilder)
    {
 
-       try
+       /*try
        {
            base.OnModelCreating(modelBuilder);
        }
@@ -23,7 +23,7 @@ namespace AppLaunch.Services.Data
        {
            Console.WriteLine(ex);
            
-       }
+       }*/
        
      
        
