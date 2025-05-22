@@ -12,6 +12,8 @@ using IdentityRevalidatingAuthenticationStateProvider = AppLaunch.Components.Acc
 using IdentityUserAccessor = AppLaunch.Components.Account.IdentityUserAccessor;
 using MudBlazor.Services;
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("applaunch.json", optional: true, reloadOnChange: true);
+
 //List<Assembly> additionalAssemblies= new();
 
 // Add services to the container.

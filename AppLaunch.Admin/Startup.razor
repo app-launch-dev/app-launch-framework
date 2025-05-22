@@ -1,6 +1,7 @@
 ﻿@page "/"
-@inject ApplicationDbContext _context
-@inject  IHostingService _HostingService
+@inject ApplicationDbContext Context
+@inject  IHostingService HostingService
+@inject NavigationManager NavigationManager
 @using System.Data.Common
 @using AppLaunch.Services.Data
 @using Microsoft.AspNetCore.Authorization
@@ -14,6 +15,7 @@
 </div>*@
 
 @using System.ComponentModel.DataAnnotations
+@using System.Text
 @using System.Text.Json
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.Data.SqlClient
@@ -81,6 +83,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await CreateAppLaunchJsonFile();
         await LoadSettings();
     }
 
@@ -88,7 +91,7 @@
     {
         try
         {
-            var settings = _context.Sites.ToList();
+            var settings = Context.Sites.ToList();
             // Process settings...
         }
         catch (DbUpdateException dbEx)
@@ -154,7 +157,7 @@
         message = "";
         try
         {
-            string AppSettingsPath = "appsettings.json";
+            string AppSettingsPath = "applaunch.json";
             string json = File.ReadAllText(AppSettingsPath);
             var config = JsonSerializer.Deserialize<JsonDocument>(json);
 
@@ -178,7 +181,8 @@
             }
             writer.WriteEndObject();
 
-            RestartApplication();
+            //RestartApplication();
+            NavigationManager.NavigateTo("/admin/oobe",true);
         }
         catch (Exception ex)
         {
@@ -186,9 +190,29 @@
         }
     }
 
+    public async Task CreateAppLaunchJsonFile()
+    {
+        string configFilePath = "applaunch.json";
+        if (!File.Exists(configFilePath))
+        {
+            var defaultConfig = new
+            {
+                ConnectionStrings = new
+                {
+                    DefaultConnection = ""
+                }
+            };
+            string defaultJson = System.Text.Json.JsonSerializer.Serialize(defaultConfig, new System.Text.Json.JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+            File.WriteAllText(configFilePath, defaultJson, Encoding.UTF8);
+        }
+    }
+
     public void RestartApplication()
     {
-        _HostingService.RestartApplication();
+        HostingService.RestartApplication();
 
     }
 
