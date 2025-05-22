@@ -483,5 +483,3 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
-#AppLaunch Custom ignore
-applaunch.json
