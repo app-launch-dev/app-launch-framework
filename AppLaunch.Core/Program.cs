@@ -1,5 +1,5 @@
 using System.Reflection;
-using AppLaunch.Components;
+using AppLaunch.Core.Components;
 using AppLaunch.Services.Data;
 using AppLaunch.Services;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
-using IdentityRedirectManager = AppLaunch.Components.Account.IdentityRedirectManager;
-using IdentityRevalidatingAuthenticationStateProvider = AppLaunch.Components.Account.IdentityRevalidatingAuthenticationStateProvider;
-using IdentityUserAccessor = AppLaunch.Components.Account.IdentityUserAccessor;
+//using IdentityRedirectManager = AppLaunch.Core.Components.Account.IdentityRedirectManager;
+//using IdentityRevalidatingAuthenticationStateProvider = AppLaunch.Core.Components.Account.IdentityRevalidatingAuthenticationStateProvider;
+//using IdentityUserAccessor = AppLaunch.Core.Components.Account.IdentityUserAccessor;
 using MudBlazor.Services;
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("applaunch.json", optional: true, reloadOnChange: true);
@@ -25,9 +25,9 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();
 
 builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddScoped<IdentityUserAccessor>();
-builder.Services.AddScoped<IdentityRedirectManager>();
-builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+//builder.Services.AddScoped<IdentityUserAccessor>();
+//builder.Services.AddScoped<IdentityRedirectManager>();
+//builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
 builder.Services.AddAuthentication(options =>
     {
@@ -60,7 +60,7 @@ builder.WebHost.ConfigureKestrel(options =>
 
 // Register HttpClient
 builder.Services.AddHttpClient();
-builder.Services.AddSingleton<IEmailSender<ApplicationUser>, AppLaunch.Components.Account.IdentityNoOpEmailSender>();
+//builder.Services.AddSingleton<IEmailSender<ApplicationUser>, AppLaunch.Core.Components.Account.IdentityNoOpEmailSender>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<ICacheService, CacheService>();
@@ -136,7 +136,7 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.UseAuthorization();
 // Add additional endpoints required by the Identity /Account Razor components.
-app.MapAdditionalIdentityEndpoints();
+//app.MapAdditionalIdentityEndpoints();
 
 foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
 {
