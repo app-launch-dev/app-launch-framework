@@ -2,6 +2,8 @@
 @inject ApplicationDbContext Context
 @inject  IHostingService HostingService
 @inject NavigationManager NavigationManager
+@inject IConfiguration Configuration
+
 @using System.Data.Common
 @using AppLaunch.Services.Data
 @using Microsoft.AspNetCore.Authorization
@@ -19,6 +21,7 @@
 @using System.Text.Json
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.Data.SqlClient
+@using Microsoft.Extensions.Configuration
 
 @if (!string.IsNullOrEmpty(message))
 {
@@ -89,21 +92,37 @@
 
     public async Task LoadSettings()
     {
-        try
+        
+        var connectionString = Configuration.GetConnectionString("DefaultConnection");
+        var connResult = await TestDatabaseConnection(connectionString);
+        if (connResult.HasError)
         {
-            var settings = Context.Sites.ToList();
-            // Process settings...
+            message = connResult.ErrorMessage;
         }
-        catch (DbUpdateException dbEx)
+        else
         {
-            Console.WriteLine("Database error occurred: " + dbEx.Message);
-            message = dbEx.Message;
+            success = true;
+            NavigationManager.NavigateTo("/admin/oobe",true);
+
         }
-        catch (Exception ex) when (ex is InvalidOperationException || ex is DbException)
-        {
-            Console.WriteLine("Connection error! Redirecting to setup.");
-            message = "Connection error! Redirecting to setup.";
-        }
+        StateHasChanged();
+        
+        
+        // try
+        // {
+        //     var settings = Context.Sites.ToList();
+        //     // Process settings...
+        // }
+        // catch (DbUpdateException dbEx)
+        // {
+        //     Console.WriteLine("Database error occurred: " + dbEx.Message);
+        //     message = dbEx.Message;
+        // }
+        // catch (Exception ex) when (ex is InvalidOperationException || ex is DbException)
+        // {
+        //     Console.WriteLine("Connection error! Redirecting to setup.");
+        //     message = "Connection error! Redirecting to setup.";
+        // }
     }
 
 
