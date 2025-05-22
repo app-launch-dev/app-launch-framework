@@ -7,15 +7,13 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
-//using IdentityRedirectManager = AppLaunch.Core.Components.Account.IdentityRedirectManager;
-//using IdentityRevalidatingAuthenticationStateProvider = AppLaunch.Core.Components.Account.IdentityRevalidatingAuthenticationStateProvider;
-//using IdentityUserAccessor = AppLaunch.Core.Components.Account.IdentityUserAccessor;
+ using MyIdentityRedirectManager = AppLaunch.Admin.Account.IdentityRedirectManager;
+ using MyIdentityRevalidatingAuthenticationStateProvider = AppLaunch.Admin.Account.IdentityRevalidatingAuthenticationStateProvider;
+ using MyIdentityUserAccessor = AppLaunch.Admin.Account.IdentityUserAccessor;
 using MudBlazor.Services;
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("applaunch.json", optional: true, reloadOnChange: true);
-
 //List<Assembly> additionalAssemblies= new();
-
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -25,9 +23,9 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();
 
 builder.Services.AddCascadingAuthenticationState();
-//builder.Services.AddScoped<IdentityUserAccessor>();
-//builder.Services.AddScoped<IdentityRedirectManager>();
-//builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+builder.Services.AddScoped<MyIdentityUserAccessor>();
+builder.Services.AddScoped<MyIdentityRedirectManager>();
+builder.Services.AddScoped<AuthenticationStateProvider, MyIdentityRevalidatingAuthenticationStateProvider>();
 
 builder.Services.AddAuthentication(options =>
     {
@@ -44,8 +42,6 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
-
-
 
 //Max form size
 builder.Services.Configure<FormOptions>(options =>
@@ -136,7 +132,7 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.UseAuthorization();
 // Add additional endpoints required by the Identity /Account Razor components.
-//app.MapAdditionalIdentityEndpoints();
+app.MapAdditionalIdentityEndpoints();
 
 foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
 {

@@ -14,18 +14,15 @@ namespace AppLaunch.Services.Data
     
    protected override void OnModelCreating(ModelBuilder modelBuilder)
    {
-
-       /*try
+       try
        {
            base.OnModelCreating(modelBuilder);
        }
        catch (Exception ex)
        {
            Console.WriteLine(ex);
-           
-       }*/
+       }
        
-     
        
        //Default Theme
        // modelBuilder.Entity<Theme>().HasData(

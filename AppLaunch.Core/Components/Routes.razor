@@ -1,6 +1,11 @@
-﻿<Router AppAssembly="typeof(Program).Assembly" 
-        AdditionalAssemblies="new[] { typeof(AppLaunch.Admin.Startup).Assembly }">
+﻿<Router 
+    AppAssembly="@typeof(Program).Assembly" 
+    AdditionalAssemblies="new[] { 
+        typeof(AppLaunch.Admin.Account.Pages.Login).Assembly, 
+        typeof(AppLaunch.Themes.Layout.AppLaunchDefault).Assembly 
+    }">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(AppLaunch.Themes.Layout.AppLaunchDefault)"/>
+        <RouteView RouteData="routeData" 
+                   DefaultLayout="typeof(AppLaunch.Themes.Layout.AppLaunchDefault)" />
     </Found>
 </Router>
