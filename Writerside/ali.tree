@@ -4,7 +4,12 @@
 
 <instance-profile id="ali"
                  name="AppLaunchInternal"
-                 start-page="starter-topic.md">
+                 start-page="applaunch.md">
 
-    <toc-element topic="starter-topic.md"/>
+    <toc-element topic="applaunch.md"/>
+    <toc-element topic="Layout.md"/>
+    <toc-element topic="Routing.md"/>
+    <toc-element topic="Identity.md">
+        <toc-element topic="Scaffolding.md"/>
+    </toc-element>
 </instance-profile>
