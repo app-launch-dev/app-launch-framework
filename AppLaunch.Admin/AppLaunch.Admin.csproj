@@ -40,29 +40,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <UpToDateCheckInput Remove="Areas\MyFeature\Pages\Page1.cshtml" />
-      <UpToDateCheckInput Remove="Settings\Themes\AddEditComponent.razor" />
-      <UpToDateCheckInput Remove="Settings\Themes\AddEditRepeaterSnippet.razor" />
-      <UpToDateCheckInput Remove="Settings\Themes\AddEditSnippet.razor" />
-      <UpToDateCheckInput Remove="Settings\Themes\AddEditTheme.razor" />
-      <UpToDateCheckInput Remove="Settings\Themes\Index.razor" />
-      <UpToDateCheckInput Remove="Settings\PageTemplates\AddEditPageTemplate.razor" />
-      <UpToDateCheckInput Remove="Settings\PageTemplates\PageTemplates.razor" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\AppLaunch.Models\AppLaunch.Models.csproj" />
       <ProjectReference Include="..\AppLaunch.Services\AppLaunch.Services.csproj" />
       <ProjectReference Include="..\AppLaunch.Themes\AppLaunch.Themes.csproj" />
     </ItemGroup>
 
-
-
-    <ItemGroup>
-      <AdditionalFiles Include="Admin\Profile\Index.razor" />
-      <AdditionalFiles Include="Admin\Settings\Index.razor" />
-    </ItemGroup>
-    
-
+<!--    <ItemGroup>
+        <Content Include="**\*.razor" />
+    </ItemGroup>-->
 
 </Project>
