@@ -4,6 +4,8 @@
 @inject  IHostingService HostingService
 @inject NavigationManager NavigationManager
 @inject IConfiguration Configuration
+@inject IJSRuntime JSRuntime
+
 
 @using System.Data.Common
 @using AppLaunch.Services.Data
@@ -202,13 +204,19 @@
             writer.WriteEndObject();
 
             //RestartApplication();
+            
             NavigationManager.NavigateTo("/admin/oobe",true);
+            //await JSRuntime.InvokeVoidAsync("eval", "window.location.href = '/admin/oobe/';");
+
+
         }
         catch (Exception ex)
         {
             message=$"Failed to update connection string: {ex.Message}";
         }
     }
+
+
 
     public async Task CreateAppLaunchJsonFile()
     {

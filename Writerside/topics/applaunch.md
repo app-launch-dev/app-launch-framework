@@ -1,79 +1,82 @@
 # Migrations
+Migrations in AppLaunch are generated in the AppLaunch.Services project and are based on the Identity Entity Framework libraries. CLI migration commands
+should be executed from the app-launch-framework folder and not in a specific project folder.
 
-<!--Writerside adds this topic when you create a new documentation project.
-You can use it as a sandbox to play with Writerside features, and remove it from the TOC when you don't need it anymore.-->
+<tip> Note: By default, migrations are automatically applied during startup.</tip>
 
-## Add new topics
-You can create empty topics, or choose a template for different types of content that contains some boilerplate structure to help you get started:
+## Prerequisites
+1. AppLaunch.Services web app project that references AppLaunch.Core
+2. AppLaunch.Core Razor Class library
+3. Ensure the dotnet-ef Tool is installed
+```
+dotnet tool install --global dotnet-ef
 
-![Create new topic options](new_topic_options.png){ width=290 }{border-effect=line}
+```
+4. Install Nuget packages inside the AppLaunch.Services project:
+```
+dotnet add package Microsoft.EntityFrameworkCore
+dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore
+dotnet add package Microsoft.EntityFrameworkCore.Design
+dotnet add package Microsoft.EntityFrameworkCore.SqlServer
+dotnet add package Microsoft.EntityFrameworkCore.Tools
+```
 
-## Write content
-%product% supports two types of markup: Markdown and XML.
-When you create a new help article, you can choose between two topic types, but this doesn't mean you have to stick to a single format.
-You can author content in Markdown and extend it with semantic attributes or inject entire XML elements.
+## AppLaunch Migrations
+1. Create an ApplicationDbContext in the AppLaunch.Services project Data folder.
+```c#
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
-## Inject XML
-For example, this is how you inject a procedure:
+namespace AppLaunch.Services.Data
+{
 
-<procedure title="Inject a procedure" id="inject-a-procedure">
-    <step>
-        <p>Start typing and select a procedure type from the completion suggestions:</p>
-        <img src="completion_procedure.png" alt="completion suggestions for procedure" border-effect="line"/>
-    </step>
-    <step>
-        <p>Press <shortcut>Tab</shortcut> or <shortcut>Enter</shortcut> to insert the markup.</p>
-    </step>
-</procedure>
+  public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+      : IdentityDbContext<ApplicationUser>(options)
+  {
+  
+    public virtual DbSet<Site> Sites { get; set; }
+    public virtual DbSet<SiteHost> SiteHosts { get; set; }
+    
+   protected override void OnModelCreating(ModelBuilder modelBuilder)
+   {
+       try
+       {
+           base.OnModelCreating(modelBuilder);
+           modelBuilder.HasDefaultSchema("applaunch");
+       }
+       catch (Exception ex)
+       {
+           Console.WriteLine(ex);
+       }
+   }
+  }
+}
 
-## Add interactive elements
+```
+2.From the app-launch folder, run the following command:
+```
+dotnet ef migrations add InitialMigration --project AppLaunch.Services --startup-project AppLaunch.Core
+```
 
-### Tabs
-To add switchable content, you can make use of tabs (inject them by starting to type `tab` on a new line):
+3. To manually run the migration, you must specify the context, project and startup project.
+```
+dotnet ef database update --context ApplicationDbContext --project AppLaunch.Services --startup-project AppLaunch.Core
+```
 
-<tabs>
-    <tab title="Markdown">
-        <code-block lang="plain text">![Alt Text](new_topic_options.png){ width=450 }</code-block>
-    </tab>
-    <tab title="Semantic markup">
-        <code-block lang="xml">
-            <![CDATA[<img src="new_topic_options.png" alt="Alt text" width="450px"/>]]></code-block>
-    </tab>
-</tabs>
+4. Enable automatic migrations with the following section in program.cs. 
+<tip>Add the try catch to prevent failure on first startup when a connection string is not present.</tip>
+```c#
+// Apply migrations at startup
+try
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate();
+}
+catch (Exception ex)
+{
+   Console.WriteLine($"Skipping migrations: {ex.Message}");
+}
+```
 
-### Collapsible blocks
-Apart from injecting entire XML elements, you can use attributes to configure the behavior of certain elements.
-For example, you can collapse a chapter that contains non-essential information:
-
-#### Supplementary info {collapsible="true"}
-Content under a collapsible header will be collapsed by default,
-but you can modify the behavior by adding the following attribute:
-`default-state="expanded"`
-
-### Convert selection to XML
-If you need to extend an element with more functions, you can convert selected content from Markdown to semantic markup.
-For example, if you want to merge cells in a table, it's much easier to convert it to XML than do this in Markdown.
-Position the caret anywhere in the table and press <shortcut>Alt+Enter</shortcut>:
-
-<img src="convert_table_to_xml.png" alt="Convert table to XML" width="706" border-effect="line"/>
-
-## Feedback and support
-Please report any issues, usability improvements, or feature requests to our
-<a href="https://youtrack.jetbrains.com/newIssue?project=WRS">YouTrack project</a>
-(you will need to register).
-
-You are welcome to join our
-<a href="https://jb.gg/WRS_Slack">public Slack workspace</a>.
-Before you do, please read our [Code of conduct](https://www.jetbrains.com/help/writerside/writerside-code-of-conduct.html).
-We assume that you’ve read and acknowledged it before joining.
-
-You can also always email us at [writerside@jetbrains.com](mailto:writerside@jetbrains.com).
-
-<seealso>
-    <category ref="wrs">
-        <a href="https://www.jetbrains.com/help/writerside/markup-reference.html">Markup reference</a>
-        <a href="https://www.jetbrains.com/help/writerside/manage-table-of-contents.html">Reorder topics in the TOC</a>
-        <a href="https://www.jetbrains.com/help/writerside/local-build.html">Build and publish</a>
-        <a href="https://www.jetbrains.com/help/writerside/configure-search.html">Configure Search</a>
-    </category>
-</seealso>
+## Plugin Migrations

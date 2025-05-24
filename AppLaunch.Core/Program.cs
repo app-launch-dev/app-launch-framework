@@ -36,7 +36,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddDbContext<ApplicationDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"], 
-        b => b.MigrationsAssembly("AppLaunch")));
+        b => b.MigrationsAssembly("AppLaunch.Services")));
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -99,11 +99,17 @@ void ProcessAssembly(Assembly assembly)
 }
 
 // // Apply migrations at startup
-// using (var scope = app.Services.CreateScope())
+// try
 // {
+//     using var scope = app.Services.CreateScope();
 //     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 //     dbContext.Database.Migrate();
 // }
+// catch (Exception ex)
+// {
+//    Console.WriteLine($"Skipping migrations: {ex.Message}");
+// }
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
