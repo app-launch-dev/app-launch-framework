@@ -1,8 +1,12 @@
-﻿<Router 
-    AppAssembly="@typeof(Program).Assembly"
-    AdditionalAssemblies="new[] { typeof(AppLaunch.Admin._Imports).Assembly, typeof(AppLaunch.Admin.Account.Pages.Login).Assembly, typeof(AppLaunch.Core.Components._Imports).Assembly,typeof(AppLaunch.Themes._Imports).Assembly }">
+﻿<Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(AppLaunch.Admin._Imports).Assembly}">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" 
-                   DefaultLayout="typeof(AppLaunchDefault)" />
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(AppLaunch.Themes.Layout.AppLaunchDefault)">
+            <NotAuthorized>
+                <RedirectToLogin />
+            </NotAuthorized>
+        </AuthorizeRouteView>
+        @* <FocusOnNavigate RouteData="routeData" Selector="h1" /> *@
     </Found>
 </Router>
+
+@* AdditionalAssemblies="new[] { typeof(AppLaunch.Admin._Imports).Assembly, typeof(AppLaunch.Admin.Account.Pages.Login).Assembly, typeof(AppLaunch.Core.Components._Imports).Assembly,typeof(AppLaunch.Themes._Imports).Assembly }"> *@
