@@ -1,19 +1,10 @@
 ﻿@inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components.Sections
 <HeadContent>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <base href="/" />
-    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
-    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
-    @* <link rel="stylesheet" href="@Assets["app.css"]" /> *@
-    @* <link rel="stylesheet" href="@Assets["MBTestApp.styles.css"]" /> *@
-    <ImportMap />
-    @* <HeadOutlet /> *@
 
-    @* <SectionOutlet SectionName="HeadContentFromPage" /> *@
 </HeadContent>
-<MudThemeProvider Theme="@MyCustomTheme" @bind-IsDarkMode="_isDarkMode" />
+@* Theme="@MyCustomTheme" @bind-IsDarkMode="_isDarkMode" *@
+<MudThemeProvider />
 
 <MudPopoverProvider />
 <MudDialogProvider />
@@ -21,15 +12,14 @@
 
 <MudLayout>
     <AppLaunchLayoutHeader />   
-<MudMainContent>
-    <MudContainer MaxWidth="MaxWidth.Large">
-        @Body
-    </MudContainer>
-</MudMainContent>
+    <MudMainContent>
+        @Body    
+    </MudMainContent>
 </MudLayout>
 
+
 @* <script src="_framework/blazor.web.js"></script> *@
-<script src="_content/MudBlazor/MudBlazor.min.js"></script>
+
 
 @code {
     private bool _isDarkMode=false;

@@ -1,4 +1,4 @@
-@rendermode InteractiveServer
+@using MudBlazor.StaticInput
 <MudAppBar>
     <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
     My Application
@@ -6,6 +6,8 @@
 <MudDrawer @bind-Open="@_drawerOpen">
     <MyNavMenu/>
 </MudDrawer>
+<MudStaticNavDrawerToggle Icon="@Icons.Material.Filled.Menu" 
+                          Color="Color.Inherit" />
 
 @code {
     bool _drawerOpen = true;
