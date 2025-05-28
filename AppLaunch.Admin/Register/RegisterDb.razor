@@ -1,10 +1,9 @@
 ﻿@rendermode InteractiveServer
-@page "/"
+@page "/register/configuredb"
 @inject ApplicationDbContext Context
-@inject  IHostingService HostingService
 @inject NavigationManager NavigationManager
 @inject IConfiguration Configuration
-@inject IJSRuntime JSRuntime
+@inject IRegistrationService RegistrationService
 
 
 @using System.Data.Common
@@ -89,7 +88,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await CreateAppLaunchJsonFile();
+        await RegistrationService.CreateAppLaunchJsonFile();
         await LoadSettings();
     }
 
@@ -97,7 +96,7 @@
     {
         
         var connectionString = Configuration.GetConnectionString("DefaultConnection");
-        var connResult = await TestDatabaseConnection(connectionString);
+        var connResult = await RegistrationService.TestDatabaseConnection(connectionString);
         if (connResult.HasError)
         {
             message = connResult.ErrorMessage;
@@ -109,23 +108,6 @@
 
         }
         StateHasChanged();
-        
-        
-        // try
-        // {
-        //     var settings = Context.Sites.ToList();
-        //     // Process settings...
-        // }
-        // catch (DbUpdateException dbEx)
-        // {
-        //     Console.WriteLine("Database error occurred: " + dbEx.Message);
-        //     message = dbEx.Message;
-        // }
-        // catch (Exception ex) when (ex is InvalidOperationException || ex is DbException)
-        // {
-        //     Console.WriteLine("Connection error! Redirecting to setup.");
-        //     message = "Connection error! Redirecting to setup.";
-        // }
     }
 
 
@@ -143,7 +125,7 @@
     private async Task OnValidSubmit(EditContext context)
     {
         message = "";
-        var connResult = await TestDatabaseConnection(model.ConnectionString);
+        var connResult = await RegistrationService.TestDatabaseConnection(model.ConnectionString);
         if (connResult.HasError)
         {
             message = connResult.ErrorMessage;
@@ -155,24 +137,7 @@
         StateHasChanged();
     }
 
-    public async Task<(bool HasError, string ErrorMessage, bool IsSuccessful)> TestDatabaseConnection(string connectionString)
-    {
-        if (string.IsNullOrWhiteSpace(connectionString))
-            return (true, "Connection string cannot be empty!", false);
-
-        try
-        {
-            using (var connection = new SqlConnection(connectionString))
-            {
-                await connection.OpenAsync();
-                return (false, "", true);
-            }
-        }
-        catch (SqlException ex)
-        {
-            return (true, $"Connection failed: {ex.Message}", false);
-        }
-    }
+   
     
     public async Task UpdateConnectionString()
     {
@@ -218,32 +183,8 @@
 
 
 
-    public async Task CreateAppLaunchJsonFile()
-    {
-        string configFilePath = "applaunch.json";
-        if (!File.Exists(configFilePath))
-        {
-            var defaultConfig = new
-            {
-                ConnectionStrings = new
-                {
-                    DefaultConnection = ""
-                }
-            };
-            string defaultJson = System.Text.Json.JsonSerializer.Serialize(defaultConfig, new System.Text.Json.JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
-            File.WriteAllText(configFilePath, defaultJson, Encoding.UTF8);
-        }
-    }
+    
 
-    public void RestartApplication()
-    {
-        HostingService.RestartApplication();
-
-    }
-
-
+ 
 
 }

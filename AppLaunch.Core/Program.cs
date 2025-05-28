@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
- using MyIdentityRedirectManager = AppLaunch.Admin.Account.IdentityRedirectManager;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity;
+using MyIdentityRedirectManager = AppLaunch.Admin.Account.IdentityRedirectManager;
  using MyIdentityRevalidatingAuthenticationStateProvider = AppLaunch.Admin.Account.IdentityRevalidatingAuthenticationStateProvider;
  using MyIdentityUserAccessor = AppLaunch.Admin.Account.IdentityUserAccessor;
 using MudBlazor.Services;
@@ -26,6 +27,8 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<MyIdentityUserAccessor>();
 builder.Services.AddScoped<MyIdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, MyIdentityRevalidatingAuthenticationStateProvider>();
+
+builder.Services.AddSingleton<IEmailSender<ApplicationUser>, AppLaunch.Admin.Account.IdentityNoOpEmailSender>();
 
 builder.Services.AddAuthentication(options =>
     {
@@ -60,7 +63,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<ICacheService, CacheService>();
-builder.Services.AddSingleton<IHostingService, HostingService>();
+builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 // builder.Services.AddScoped<IFormHandlerService, FormHandlerService>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 // builder.Services.AddScoped<ICoreXThemeService, CoreXThemeService>();
@@ -133,7 +136,7 @@ app.UseAntiforgery();
 app.MapControllers();
 app.MapRazorPages();
 app.MapRazorComponents<App>()
-    .AddAdditionalAssemblies(typeof(AppLaunch.Admin.Startup).Assembly)
+    .AddAdditionalAssemblies(typeof(AppLaunch.Admin._Imports).Assembly)
     //.AddAdditionalAssemblies(additionalAssemblies.ToArray())
     .AddInteractiveServerRenderMode();
 app.UseAuthorization();
