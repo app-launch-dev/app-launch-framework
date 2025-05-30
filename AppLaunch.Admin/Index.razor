@@ -30,24 +30,42 @@
     [Parameter] public string? PageSegment12 { get; set; }
   protected override async Task OnInitializedAsync()
   {
-      await InitialzeRoutes();
+      await InitializeRoutes();
   }
 
-  private async Task InitialzeRoutes()
+  private async Task InitializeRoutes()
   {
-    // check for database configuration
-    var isDbConfigured = await RegistrationService.IsDatabaseConfigured();
-    if (!isDbConfigured) NavigationManager.NavigateTo("/register/configuredb",true);
+      try
+      {
+          // check for database configuration
+          var isDbConfigured = await RegistrationService.IsDatabaseConfigured();
+
+          if (isDbConfigured)
+          {
+              var bob = 1;
+          }
+          else
+          {
+              var bob = 2;
+              NavigationManager.NavigateTo("/register/configuredb",true);
+          }
+        
     
-    //check for registration completion
-    var isRegistrationComplete = await RegistrationService.IRegistrationComplete();
-    if (!isRegistrationComplete) NavigationManager.NavigateTo("/register/",true);
+          //check for registration completion
+          var isRegistrationComplete = await RegistrationService.IRegistrationComplete();
+          if (!isRegistrationComplete) NavigationManager.NavigateTo("/register/",true);
 
-    //check for cms plugin
-    var isCmsPluginInstalled = await RegistrationService.IsCMSPluginInstalled();
-    if (!isCmsPluginInstalled) NavigationManager.NavigateTo("/admin/",true);
+          //check for cms plugin
+          var isCmsPluginInstalled = await RegistrationService.IsCMSPluginInstalled();
+          if (!isCmsPluginInstalled) NavigationManager.NavigateTo("/admin/",true);
 
-    //todo: implement CMS Interface here to load dynamic pages
+          //todo: implement CMS Interface here to load dynamic pages
+      }
+      catch (Exception ex ) when (ex is not NavigationException)
+      {
+          Console.WriteLine(ex);
+      }
+   
   }
 
 }

@@ -1,0 +1,220 @@
+﻿@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@page "/register/configuredb"
+@inject ApplicationDbContext Context
+@inject NavigationManager NavigationManager
+@inject IConfiguration Configuration
+@inject IRegistrationService RegistrationService
+
+
+@using System.Data.Common
+@using AppLaunch.Services.Data
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using MudBlazor
+@attribute [AllowAnonymous]
+
+
+@*<div class="d-flex justify-center">
+    <MudImage ObjectFit="ObjectFit.None" ObjectPosition="ObjectPosition.Center" Width="400" Src="_content/AppLaunch.Themes/images/applaunch_dev_light.png" Alt="Applaunch Framework"  Elevation="25" Class="rounded-lg"/>
+</div>*@
+
+@using System.ComponentModel.DataAnnotations
+@using System.Text
+@using System.Text.Json
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Data.SqlClient
+@using Microsoft.Extensions.Configuration
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <p>@message</p>
+}
+
+@if (isDatabaseConfigured != null)
+{
+    if (!isDatabaseConfigured)
+    {
+        <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator/>
+            <MudGrid>
+                <MudItem xs="12" sm="7">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudTextField Label="Connection String" HelperText="Paste your connection string"
+                                          @bind-Value="model.ConnectionString" For="@(() => model.ConnectionString)"/>
+
+                        </MudCardContent>
+                        <MudCardActions>
+
+                            @if (success)
+                            {
+                                <MudButton ButtonType="ButtonType.Button" OnClick="UpdateConnectionString"
+                                           Variant="Variant.Filled" Color="Color.Primary"
+                                           Class="ml-auto">Apply and Restart
+                                </MudButton>
+                            }
+                            else
+                            {
+                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                                           Class="ml-auto">Test Connection
+                                </MudButton>
+                            }
+
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12" sm="5">
+                    <MudPaper Class="pa-4 mud-height-full">
+                        <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                        @if (success)
+                        {
+                            <MudText Color="Color.Success">Success</MudText>
+                        }
+                        else
+                        {
+                            <MudText Color="@Color.Error">
+                                <ValidationSummary/>
+                            </MudText>
+                        }
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.body2" Align="Align.Center">
+                        Create your administrative account.
+                    </MudText>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+
+    }
+
+    if (isDatabaseConfigured)
+    {
+        <MudGrid>
+            <MudItem xs="12" sm="7">
+                <MudCard>
+                    <MudCardContent>
+                        <p>Your database has already been configured.</p>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    }
+    
+    
+}
+
+
+
+@code {
+    string message = "";
+    bool isDatabaseConfigured;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            isDatabaseConfigured = await RegistrationService.IsDatabaseConfigured();
+            if (!isDatabaseConfigured) await RegistrationService.CreateAppLaunchJsonFile();
+            await LoadSettings();
+        }
+        catch (Exception ex) when (ex is not NavigationException)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task LoadSettings()
+    {
+        try
+        {
+            var connectionString = Configuration.GetConnectionString("DefaultConnection");
+            var connResult = await RegistrationService.TestDatabaseConnection(connectionString);
+            if (connResult.HasError)
+            {
+                message = connResult.ErrorMessage;
+            }
+            else
+            {
+                success = true;
+                //NavigationManager.NavigateTo("/", true);
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception ex) when (ex is not NavigationException)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+
+    RegisterAccountForm model = new RegisterAccountForm();
+    bool success;
+
+    public class RegisterAccountForm
+    {
+        [Required] public string ConnectionString { get; set; }
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        message = "";
+        var connResult = await RegistrationService.TestDatabaseConnection(model.ConnectionString);
+        if (connResult.HasError)
+        {
+            message = connResult.ErrorMessage;
+        }
+        else
+        {
+            success = true;
+        }
+
+        StateHasChanged();
+    }
+
+
+    public async Task UpdateConnectionString()
+    {
+        message = "";
+        try
+        {
+            string AppSettingsPath = "applaunch.json";
+            string json = File.ReadAllText(AppSettingsPath);
+            var config = JsonSerializer.Deserialize<JsonDocument>(json);
+
+            using var stream = new FileStream(AppSettingsPath, FileMode.Create);
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+
+            writer.WriteStartObject();
+            foreach (var property in config.RootElement.EnumerateObject())
+            {
+                if (property.Name == "ConnectionStrings")
+                {
+                    writer.WritePropertyName("ConnectionStrings");
+                    writer.WriteStartObject();
+                    writer.WriteString("DefaultConnection", model.ConnectionString);
+                    writer.WriteEndObject();
+                }
+                else
+                {
+                    property.WriteTo(writer);
+                }
+            }
+
+            writer.WriteEndObject();
+
+            //RestartApplication();
+            //System.Threading.Thread.Sleep(3000); // Sleeps for 3 seconds
+            
+            NavigationManager.NavigateTo("/", true);
+            //await JSRuntime.InvokeVoidAsync("eval", "window.location.href = '/admin/oobe/';");
+        }
+        catch (Exception ex) when (ex is not NavigationException)
+        {
+            message = $"Failed to update connection string: {ex.Message}";
+        }
+    }
+
+
+}

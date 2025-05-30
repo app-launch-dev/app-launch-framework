@@ -60,23 +60,61 @@ public class RegistrationService(ApplicationDbContext dbContext, IConfiguration 
         }
     }
 
+    // public async Task<bool> IsDatabaseConfigured()
+    // {
+    //     try
+    //     {
+    //         string configFilePath = "applaunch.json";
+    //         if (!File.Exists(configFilePath)) return false;
+    //
+    //         var connection = dbContext.Database.GetDbConnection();
+    //         connection.ConnectionString = configuration.GetConnectionString("DefaultConnection");
+    //         return !string.IsNullOrEmpty(connection.ConnectionString);
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         return false;
+    //     }
+    // }
+    
     public async Task<bool> IsDatabaseConfigured()
     {
-        try
-        {
-            string configFilePath = "applaunch.json";
-            if (!File.Exists(configFilePath)) return false;
+        var timeout = TimeSpan.FromSeconds(3);
+        var retryDelay = TimeSpan.FromMilliseconds(100);
+        var startTime = DateTime.UtcNow;
 
-            var connection = dbContext.Database.GetDbConnection();
-            connection.ConnectionString = configuration.GetConnectionString("DefaultConnection");
-            ;
-            return !string.IsNullOrEmpty(connection.ConnectionString);
-        }
-        catch (Exception ex)
+        while (DateTime.UtcNow - startTime < timeout)
         {
-            return false;
+            try
+            {
+                // Check 1: File existence
+                if (!File.Exists("applaunch.json"))
+                {
+                    await Task.Delay(retryDelay);
+                    continue;
+                }
+
+                // Check 2: Connection string validity
+                var connection = dbContext.Database.GetDbConnection();
+                connection.ConnectionString = configuration.GetConnectionString("DefaultConnection");
+            
+                if (string.IsNullOrEmpty(connection.ConnectionString))
+                {
+                    await Task.Delay(retryDelay);
+                    continue;
+                }
+
+                return true; // Both checks passed
+            }
+            catch
+            {
+                await Task.Delay(retryDelay);
+            }
         }
+
+        return false; // Timeout after 3 seconds
     }
+
 
     public async Task<bool> IRegistrationComplete()
     {
