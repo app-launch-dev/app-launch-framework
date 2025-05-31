@@ -1,147 +1,140 @@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @page "/register/createaccount/"
-
+@using Microsoft.AspNetCore.Identity;
 @using System.ComponentModel.DataAnnotations
-@using System.Text
-@using System.Text.Encodings.Web
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.WebUtilities
+@using System.Text.RegularExpressions
 @using AppLaunch.Services.Data
-
-
 @inject UserManager<ApplicationUser> UserManager
-@inject IUserStore<ApplicationUser> UserStore
-@inject SignInManager<ApplicationUser> SignInManager
-@inject IEmailSender<ApplicationUser> EmailSender
-@inject ILogger<CreateAccount> Logger
-@inject NavigationManager NavigationManager
-@inject Account.IdentityRedirectManager RedirectManager
+@inject RoleManager<IdentityRole> RoleManager
+
+
 
 <PageTitle>Register</PageTitle>
 
-<h1>Register</h1>
+<EditForm Model="@model" OnValidSubmit="AddAdminUser">
+    <DataAnnotationsValidator/>
+    <MudGrid>
+        <MudItem xs="12" sm="7">
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField Label="Email" Class="mt-3"
+                                  @bind-Value="model.Email" For="@(() => model.Email)"/>
+                    <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                                  @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password"/>
+                    <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3"
+                                  @bind-Value="model.Password2" For="@(() => model.Password2)" InputType="InputType.Password"/>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Register</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="5">
+            <MudPaper Class="pa-4 mud-height-full">
+                <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                @if (success)
+                {
+                    <MudText Color="Color.Success">Success</MudText>
+                }
+                else
+                {
+                    <MudText Color="@Color.Error">
+                        <ValidationSummary />
+                    </MudText>
+                }
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12">
+            <MudText Typo="Typo.body2" Align="Align.Center">
+                Fill out the form correctly to see the success message.
+            </MudText>
+        </MudItem>
+    </MudGrid>
+</EditForm>
 
-<div class="row">
-    <div class="col-lg-6">
-        <StatusMessage Message="@Message"/>
-        <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
-            <DataAnnotationsValidator/>
-            <h2>Create a new account.</h2>
-            <hr/>
-            <ValidationSummary class="text-danger" role="alert"/>
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com"/>
-                <label for="Input.Email">Email</label>
-                <ValidationMessage For="() => Input.Email" class="text-danger"/>
-            </div>
-            <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password"/>
-                <label for="Input.Password">Password</label>
-                <ValidationMessage For="() => Input.Password" class="text-danger"/>
-            </div>
-            <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.ConfirmPassword" id="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password"/>
-                <label for="Input.ConfirmPassword">Confirm Password</label>
-                <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger"/>
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </EditForm>
-    </div>
-    <div class="col-lg-4 col-lg-offset-2">
-        <section>
-            <h3>Use another service to register.</h3>
-            <hr/>
-            <ExternalLoginPicker/>
-        </section>
-    </div>
-</div>
 
 @code {
-    private IEnumerable<IdentityError>? identityErrors;
+    RegisterAccountForm model = new RegisterAccountForm();
+    bool success;
 
-    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
-
-    [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
-
-    private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
-
-    public async Task RegisterUser(EditContext editContext)
-    {
-        var user = CreateUser();
-
-        await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-        var emailStore = GetEmailStore();
-        await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-        var result = await UserManager.CreateAsync(user, Input.Password);
-
-        if (!result.Succeeded)
-        {
-            identityErrors = result.Errors;
-            return;
-        }
-
-        Logger.LogInformation("User created a new account with password.");
-
-        var userId = await UserManager.GetUserIdAsync(user);
-        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
-            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
-            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
-
-        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
-
-        if (UserManager.Options.SignIn.RequireConfirmedAccount)
-        {
-            RedirectManager.RedirectTo(
-                "Account/RegisterConfirmation",
-                new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
-        }
-
-        await SignInManager.SignInAsync(user, isPersistent: false);
-        RedirectManager.RedirectTo(ReturnUrl);
-    }
-
-    private ApplicationUser CreateUser()
-    {
-        try
-        {
-            return Activator.CreateInstance<ApplicationUser>();
-        }
-        catch
-        {
-            throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
-                                                $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor.");
-        }
-    }
-
-    private IUserEmailStore<ApplicationUser> GetEmailStore()
-    {
-        if (!UserManager.SupportsUserEmail)
-        {
-            throw new NotSupportedException("The default UI requires a user store with email support.");
-        }
-
-        return (IUserEmailStore<ApplicationUser>)UserStore;
-    }
-
-    private sealed class InputModel
+    
+    public class RegisterAccountForm
     {
         [Required]
         [EmailAddress]
-        [Display(Name = "Email")]
-        public string Email { get; set; } = "";
+        public string Email { get; set; }
 
         [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
-        [DataType(DataType.Password)]
-        [Display(Name = "Password")]
-        public string Password { get; set; } = "";
+        [StringLength(30, ErrorMessage = "Password must be at least 10 characters long and must contain a symbol (!, @, #, etc.)", MinimumLength = 10)]
+        [MustContainSymbol] 
+        public string Password { get; set; }
 
-        [DataType(DataType.Password)]
-        [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-        public string ConfirmPassword { get; set; } = "";
+        [Required]
+        [Compare(nameof(Password))]
+        public string Password2 { get; set; }
+
     }
+    
+    
+    public async Task AddAdminUser()
+    {
 
+        try
+        {
+            string roleName = "Admin";
+
+            // Ensure the role exists
+            if (!await RoleManager.RoleExistsAsync(roleName))
+            {
+                await RoleManager.CreateAsync(new IdentityRole(roleName));
+            }
+
+            // Check if user already exists
+            var user = await UserManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                user = new ApplicationUser() { UserName = model.Email, Email = model.Email, EmailConfirmed = true };
+            
+                var result = await UserManager.CreateAsync(user, model.Password);
+            
+                if (result.Succeeded)
+                {
+                    await UserManager.AddToRoleAsync(user, roleName);
+                    Console.WriteLine("Admin user created successfully.");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to create admin user: " + string.Join(", ", result.Errors));
+                }
+            }
+            else
+            {
+                Console.WriteLine("User already exists.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+       
+    }
+    
+    public class MustContainSymbolAttribute : ValidationAttribute
+    {
+        private static readonly string _symbols = @"[!@#$%^&*(),.?""':{}|<>]"; // Add more if needed
+
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            if (value is string password)
+            {
+                if (!Regex.IsMatch(password, _symbols))
+                {
+                    return new ValidationResult("Password must contain at least one special character (!, @, #, etc.).");
+                }
+            }
+
+            return ValidationResult.Success!;
+        }
+    }
+    
 }

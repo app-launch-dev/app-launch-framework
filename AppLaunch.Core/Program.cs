@@ -5,13 +5,16 @@ using AppLaunch.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity;
 using MyIdentityRedirectManager = AppLaunch.Admin.Account.IdentityRedirectManager;
- using MyIdentityRevalidatingAuthenticationStateProvider = AppLaunch.Admin.Account.IdentityRevalidatingAuthenticationStateProvider;
- using MyIdentityUserAccessor = AppLaunch.Admin.Account.IdentityUserAccessor;
+using MyIdentityRevalidatingAuthenticationStateProvider =
+    AppLaunch.Admin.Account.IdentityRevalidatingAuthenticationStateProvider;
+using MyIdentityUserAccessor = AppLaunch.Admin.Account.IdentityUserAccessor;
 using MudBlazor.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("applaunch.json", optional: true, reloadOnChange: true);
 //List<Assembly> additionalAssemblies= new();
@@ -38,10 +41,21 @@ builder.Services.AddAuthentication(options =>
     .AddIdentityCookies();
 
 builder.Services.AddDbContext<ApplicationDbContext>(opt =>
-    opt.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"], 
+    opt.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"],
         b => b.MigrationsAssembly("AppLaunch.Services")));
 
-builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddIdentityCore<ApplicationUser>(options =>
+        {
+            options.SignIn.RequireConfirmedAccount = true;
+            // Password Requirements
+            //options.Password.RequireDigit = true; // Must contain a digit (0-9)
+            //options.Password.RequireLowercase = true; // Must contain a lowercase letter (a-z)
+            //options.Password.RequireUppercase = true; // Must contain an uppercase letter (A-Z)
+            options.Password.RequireNonAlphanumeric = true; // Must contain a symbol (!, @, #, etc.)
+            options.Password.RequiredLength = 10; // Minimum password length
+            //options.Password.RequiredUniqueChars = 3; // Require at least 3 unique characters
+        }
+    )
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
@@ -71,6 +85,14 @@ builder.Services.AddScoped<ISettingsService, SettingsService>();
 // builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IAlertService, AlertService>();
 
+// Add RoleManager and UserManager 
+builder.Services
+    .AddScoped<IUserStore<ApplicationUser>, UserStore<ApplicationUser, IdentityRole, ApplicationDbContext>>();
+builder.Services.AddScoped<IRoleStore<IdentityRole>, RoleStore<IdentityRole, ApplicationDbContext>>();
+builder.Services.AddScoped<UserManager<ApplicationUser>>();
+builder.Services.AddScoped<RoleManager<IdentityRole>>();
+
+
 var app = builder.Build();
 
 static Assembly[] LoadPluginAssemblies()
@@ -80,7 +102,9 @@ static Assembly[] LoadPluginAssemblies()
         .Select(Assembly.LoadFrom)
         .ToArray();
 }
-var additionalAssemblies= LoadPluginAssemblies().ToList();
+
+var additionalAssemblies = LoadPluginAssemblies().ToList();
+
 void ProcessAssembly(Assembly assembly)
 {
     try
@@ -147,4 +171,5 @@ foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
 {
     ProcessAssembly(assembly);
 }
+
 app.Run();
