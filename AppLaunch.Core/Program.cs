@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Security.Claims;
 using AppLaunch.Core.Components;
 using AppLaunch.Services.Data;
 using AppLaunch.Services;
@@ -17,6 +18,7 @@ using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("applaunch.json", optional: true, reloadOnChange: true);
+//List<Assembly> additionalAssemblies= new();
 //List<Assembly> additionalAssemblies= new();
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -58,6 +60,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     )
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
+    .AddRoles<IdentityRole>() // Critical for role management
     .AddDefaultTokenProviders();
 
 //Max form size
@@ -91,6 +94,12 @@ builder.Services
 builder.Services.AddScoped<IRoleStore<IdentityRole>, RoleStore<IdentityRole, ApplicationDbContext>>();
 builder.Services.AddScoped<UserManager<ApplicationUser>>();
 builder.Services.AddScoped<RoleManager<IdentityRole>>();
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.ClaimsIdentity.RoleClaimType = ClaimTypes.Role;
+});
+
 
 
 var app = builder.Build();
