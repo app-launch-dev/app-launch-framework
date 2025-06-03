@@ -1,0 +1,40 @@
+﻿@using System.Net.Http.Json
+@using AppLaunch.Services.Data
+@using AppLaunch.Models
+@using MudBlazor
+@page "/admin/users"
+
+@inject IUserService UserService
+<MudTable Items="@AllUsers" Hover="true" Dense="true" SortLabel="Sort">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">All Users</MudText>
+    </ToolBarContent>
+    
+    <HeaderContent>
+        <MudTh>Email</MudTh>
+    </HeaderContent>
+
+    <RowTemplate>
+        <MudTd DataLabel="Email">@context.Email</MudTd>
+    </RowTemplate>
+
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
+
+
+
+@code {
+    private List<ApplicationUser> AllUsers = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetAllUsers();
+    }
+
+    private async Task GetAllUsers()
+    {
+        AllUsers = await UserService.GetAllUsersAsync();
+    }
+}

@@ -1,0 +1,62 @@
+﻿@using AppLaunch.Models.Settings
+@page "/admin/settings/"
+@inject ISettingsService SettingsService
+@inject IAlertService AlertService
+
+<MudForm>
+    <MudPaper Class="pa-4">
+        <MudText Typo="Typo.h6">General Settings</MudText>
+        @*<MudTextField T="string" Label="Application / Site Name" @bind-Value="SettingsData.SiteName" Required="true"/>*@
+        @* <MudFileUpload T="IBrowserFile" Accept="image/png, image/jpeg" FilesChanged="OnFileUpload"> *@
+        @*     <ActivatorContent> *@
+        @*         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload"> *@
+        @*             Upload Logo *@
+        @*         </MudButton> *@
+        @*     </ActivatorContent> *@
+        @* </MudFileUpload> *@
+
+    </MudPaper>
+
+    <MudPaper Class="pa-4 mt-4">
+        @*<MudText Typo="Typo.h6">Email Settings</MudText>
+        <MudTextField T="string" Label="Default From Email" @bind-Value="SettingsData.DefaultEmailFrom"
+                      Required="true"/>*@
+    </MudPaper>
+</MudForm>
+
+@code {
+    SettingsModel? SettingsData { get; set; }
+
+    private async Task GetSettings()
+    {
+        var response = await SettingsService.GetSettings();
+        if (response.IsSuccess) SettingsData = response.Data;
+    }
+    
+    private void OnFileUpload(IBrowserFile file)
+    {
+        // Handle the uploaded file (e.g., save it or process it)
+        Console.WriteLine($"Uploaded file: {file.Name}, Size: {file.Size} bytes");
+    }
+
+
+    private async Task SaveSettings()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(SettingsData.ContentKey)) throw new Exception("Content Key cannot be empty");
+
+            var saveResult = await SettingsService.SaveSettings(SettingsData);
+            if (!saveResult.IsSuccess) throw new Exception(saveResult.Message);
+
+            await GetSettings();
+
+            await AlertService.AddAlert("Settings Saved", IAlertService.AlertType.Success);
+        }
+        catch (Exception ex)
+        {
+            await AlertService.AddAlert(ex.Message, IAlertService.AlertType.Error);
+        }
+    }
+
+}
