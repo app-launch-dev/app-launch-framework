@@ -2,30 +2,50 @@
 @page "/admin/settings/"
 @inject ISettingsService SettingsService
 @inject IAlertService AlertService
-
-<MudForm>
+<EditForm Model="@SettingsData" OnValidSubmit="SaveSettings">
+    <DataAnnotationsValidator/>
+    <ValidationSummary />
     <MudPaper Class="pa-4">
         <MudText Typo="Typo.h6">General Settings</MudText>
-        @*<MudTextField T="string" Label="Application / Site Name" @bind-Value="SettingsData.SiteName" Required="true"/>*@
-        @* <MudFileUpload T="IBrowserFile" Accept="image/png, image/jpeg" FilesChanged="OnFileUpload"> *@
-        @*     <ActivatorContent> *@
-        @*         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload"> *@
-        @*             Upload Logo *@
-        @*         </MudButton> *@
-        @*     </ActivatorContent> *@
-        @* </MudFileUpload> *@
-
+      
+        <MudGrid>
+            <MudItem>
+                <MudCard>
+                    <MudCardContent>
+                        <MudTextField Label="Site Name" 
+                                      @bind-Value="SettingsData.SiteName" />
+                        <MudTextField Label="Content Key" Class="mt-3"
+                                      @bind-Value="SettingsData.ContentKey" />
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
     </MudPaper>
 
     <MudPaper Class="pa-4 mt-4">
-        @*<MudText Typo="Typo.h6">Email Settings</MudText>
-        <MudTextField T="string" Label="Default From Email" @bind-Value="SettingsData.DefaultEmailFrom"
-                      Required="true"/>*@
+        <MudText Typo="Typo.h6">Email Settings</MudText>
+      
+        <MudGrid>
+            <MudItem>
+                <MudCard>
+                    <MudCardContent>
+                        <MudTextField Label="Email From" 
+                                      @bind-Value="SettingsData.DefaultEmailFrom" />
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
     </MudPaper>
-</MudForm>
 
+
+</EditForm>
 @code {
-    SettingsModel? SettingsData { get; set; }
+    SettingsModel SettingsData { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetSettings();
+    }
 
     private async Task GetSettings()
     {
