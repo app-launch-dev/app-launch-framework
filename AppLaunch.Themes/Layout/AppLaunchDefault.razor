@@ -8,7 +8,10 @@
 <MudLayout>
     <MudAppBar Elevation="1">
         <MudStaticNavDrawerToggle DrawerId="nav-drawer" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" />
-        <MudText Typo="Typo.h5" Class="ml-3">AppLaunch</MudText>
+        <MudImage Src="_content/AppLaunch.Themes/images/applaunch-logo.png" 
+        Alt="AppLaunch Logo"
+        Class="appbar-logo ml-3"
+        Style="height:45px; width:auto; object-fit:contain; display:block;" />
         <MudSpacer />
         <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
         <MudIconButton
@@ -42,15 +45,25 @@
     {
         PaletteLight = new PaletteLight()
         {
-            Primary = "#FF0000",
-            Secondary = "#00FF00",
-            Background = "#FFFFFF"
+            Primary = "#4A90E2", // Soft blue
+            Secondary = "#607D8B", // Cool gray
+            AppbarBackground = "#404040", // Light gray
+            AppbarText = "#dadada", // Dark gray
+            Background = "#F5F5F5", // Neutral light
+            TextPrimary = "#212121", // Almost black
+            TextSecondary = "#757575", // Medium gray
+
         },
         PaletteDark = new PaletteDark()
         {
-            Primary = "#FFFFFF",
-            Secondary = "#c5b858",
-            Background = "#303030"
+            Primary = "#3B6FAE", // Deep blue
+            Secondary = "#37474F", // Dark gray
+            AppbarBackground = "#202020", // Dark gray
+            AppbarText = "#ECEFF1", // Light gray
+            Background = "#404040", // Dark base
+            TextPrimary = "#E0E0E0", // Light gray
+            TextSecondary = "#B0BEC5", // Muted gray
+
         }
     };
     
