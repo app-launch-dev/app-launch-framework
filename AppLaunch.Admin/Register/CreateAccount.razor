@@ -1,106 +1,128 @@
-@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @page "/register/createaccount/"
-@using Microsoft.AspNetCore.Identity;
 @using System.ComponentModel.DataAnnotations
-@using System.Text.RegularExpressions
+@using System.Text
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
 @using AppLaunch.Services.Data
+@using System.Text.RegularExpressions
+
 @inject UserManager<ApplicationUser> UserManager
-@inject RoleManager<IdentityRole> RoleManager
-
-
+@inject IUserStore<ApplicationUser> UserStore
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IEmailSender<ApplicationUser> EmailSender
+@inject ILogger<Register> Logger
+@inject IdentityRedirectManager RedirectManager
+@inject NavigationManager NavigationManager
+@inject IHttpContextAccessor HttpContext
 
 <PageTitle>Register</PageTitle>
 
-<EditForm Model="@model" OnValidSubmit="AddAdminUser">
-    <DataAnnotationsValidator/>
-    <MudGrid>
-        <MudItem xs="12" sm="7">
-            <MudCard>
-                <MudCardContent>
-                    <MudTextField Label="Email" Class="mt-3"
-                                  @bind-Value="model.Email" For="@(() => model.Email)"/>
-                    <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
-                                  @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password"/>
-                    <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3"
-                                  @bind-Value="model.Password2" For="@(() => model.Password2)" InputType="InputType.Password"/>
-                </MudCardContent>
-                <MudCardActions>
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Register</MudButton>
-                </MudCardActions>
-            </MudCard>
-        </MudItem>
-        <MudItem xs="12" sm="5">
-            <MudPaper Class="pa-4 mud-height-full">
-                <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
-                @if (success)
-                {
-                    <MudText Color="Color.Success">Success</MudText>
-                }
-                else
-                {
-                    <MudText Color="@Color.Error">
-                        <ValidationSummary />
-                    </MudText>
-                }
-            </MudPaper>
-        </MudItem>
-        <MudItem xs="12">
-            <MudText Typo="Typo.body2" Align="Align.Center">
-                Fill out the form correctly to see the success message.
-            </MudText>
-        </MudItem>
-    </MudGrid>
-</EditForm>
+<MudText Typo="Typo.h3" GutterBottom="true">Create Account</MudText>
+
+<MudGrid>
+    <MudItem md="6">
+        <StatusMessage Message="@Message" />
+        <EditForm Model="Input" method="post" OnValidSubmit="AddAdminUser" FormName="register">
+            <DataAnnotationsValidator />
+
+            <MudText Typo="Typo.body1" GutterBottom="true">Create a new account.</MudText>
+
+            <MudGrid>
+                <MudItem md="12">
+                    <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email"
+                                        Label="Email" Placeholder="name@example.com"
+                                        UserAttributes="@(new() { { "autocomplete", "username" }, { "aria-required", "true" } } )" />
+                </MudItem>
+                <MudItem md="12">
+                    <MudStaticTextField For="@(() => Input.Password)" @bind-Value="Input.Password"
+                                        Label="Password" InputType="InputType.Password" Placeholder="password"
+                                        UserAttributes="@(new() { { "autocomplete", "new-password" }, { "aria-required", "true" } } )" />
+                </MudItem>
+                <MudItem md="12">
+                    <MudStaticTextField For="@(() => Input.ConfirmPassword)" @bind-Value="Input.ConfirmPassword"
+                                        Label="Confirm Password" InputType="InputType.Password" Placeholder="confirm password"
+                                        UserAttributes="@(new() { { "autocomplete", "new-password" }, { "aria-required", "true" } } )" />
+                </MudItem>
+                <MudItem md="12">
+                    <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">Create Account</MudStaticButton>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </MudItem>
+   
+</MudGrid>
+
+
+@* <EditForm Model="@model" OnValidSubmit="AddAdminUser"> *@
+@*     <DataAnnotationsValidator/> *@
+@*     <MudGrid> *@
+@*         <MudItem xs="12" sm="7"> *@
+@*             <MudCard> *@
+@*                 <MudCardContent> *@
+@*                     <MudTextField Label="Email" Class="mt-3" *@
+@*                                   @bind-Value="model.Email" For="@(() => model.Email)"/> *@
+@*                     <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3" *@
+@*                                   @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password"/> *@
+@*                     <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3" *@
+@*                                   @bind-Value="model.Password2" For="@(() => model.Password2)" InputType="InputType.Password"/> *@
+@*                 </MudCardContent> *@
+@*                 <MudCardActions> *@
+@*                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Register</MudButton> *@
+@*                 </MudCardActions> *@
+@*             </MudCard> *@
+@*         </MudItem> *@
+@*         <MudItem xs="12" sm="5"> *@
+@*             <MudPaper Class="pa-4 mud-height-full"> *@
+@*                 <MudText Typo="Typo.subtitle2">Validation Summary</MudText> *@
+@*                 @if (success) *@
+@*                 { *@
+@*                     <MudText Color="Color.Success">Success</MudText> *@
+@*                 } *@
+@*                 else *@
+@*                 { *@
+@*                     <MudText Color="@Color.Error"> *@
+@*                         <ValidationSummary /> *@
+@*                     </MudText> *@
+@*                 } *@
+@*             </MudPaper> *@
+@*         </MudItem> *@
+@*         <MudItem xs="12"> *@
+@*             <MudText Typo="Typo.body2" Align="Align.Center"> *@
+@*                 Fill out the form correctly to see the success message. *@
+@*             </MudText> *@
+@*         </MudItem> *@
+@*     </MudGrid> *@
+@* </EditForm> *@
 
 
 @code {
-    RegisterAccountForm model = new RegisterAccountForm();
-    bool success;
-
+    private IEnumerable<IdentityError>? identityErrors;
     
-    public class RegisterAccountForm
-    {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
-
-        [Required]
-        [StringLength(30, ErrorMessage = "Password must be at least 10 characters long and must contain a symbol (!, @, #, etc.)", MinimumLength = 10)]
-        [MustContainSymbol] 
-        public string Password { get; set; }
-
-        [Required]
-        [Compare(nameof(Password))]
-        public string Password2 { get; set; }
-
-    }
+    [SupplyParameterFromForm]
+    private RegisterAccountForm Input { get; set; } = new();
     
-    
+    private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+
     public async Task AddAdminUser()
     {
-
         try
         {
             string roleName = "Admin";
 
-            // Ensure the role exists
-            if (!await RoleManager.RoleExistsAsync(roleName))
-            {
-                await RoleManager.CreateAsync(new IdentityRole(roleName));
-            }
-
             // Check if user already exists
-            var user = await UserManager.FindByEmailAsync(model.Email);
+            var user = await UserManager.FindByEmailAsync(Input.Email);
             if (user == null)
             {
-                user = new ApplicationUser() { UserName = model.Email, Email = model.Email, EmailConfirmed = true };
+                user = new ApplicationUser() { UserName = Input.Email, Email = Input.Email, EmailConfirmed = true };
             
-                var result = await UserManager.CreateAsync(user, model.Password);
+                var result = await UserManager.CreateAsync(user, Input.Password);
             
                 if (result.Succeeded)
                 {
                     await UserManager.AddToRoleAsync(user, roleName);
                     Console.WriteLine("Admin user created successfully.");
+                    await SignInUser();
                 }
                 else
                 {
@@ -118,10 +140,57 @@
         }
        
     }
+
+    private sealed class RegisterAccountForm
+    {
+        [Required]
+        [EmailAddress]
+        [Display(Name = "Email")]
+        public string Email { get; set; } = "";
+
+        [Required]
+        [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 10)]
+        [DataType(DataType.Password)]
+        [MustContainSymbol]
+        [Display(Name = "Password")]
+        public string Password { get; set; } = "";
+
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm password")]
+        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        public string ConfirmPassword { get; set; } = "";
+
+    }
+    
+    
+
+    private async Task SignInUser()
+    {
+        try
+        {
+            
+            var user = await UserManager.FindByEmailAsync(Input.Email);
+            if (user != null)
+            {
+                await SignInManager.SignInAsync(user, isPersistent: false);
+                //redirect to dashboard
+                //RedirectManager.RedirectTo("/admin/dashboard/");
+                //NavigationManager.NavigateTo("/admin/dashboard/",true);
+                HttpContext.HttpContext.Response.Redirect("/admin/dashboard/");
+            }
+            
+        }
+        catch (Exception ex ) 
+        {
+            Console.WriteLine(ex);
+        }
+       
+
+    }
     
     public class MustContainSymbolAttribute : ValidationAttribute
     {
-        private static readonly string _symbols = @"[!@#$%^&*(),.?""':{}|<>]"; // Add more if needed
+        private static readonly string _symbols = @"[!@#$%^&*(),.?""':{}|<>]";
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
@@ -129,12 +198,15 @@
             {
                 if (!Regex.IsMatch(password, _symbols))
                 {
-                    return new ValidationResult("Password must contain at least one special character (!, @, #, etc.).");
+                    return new ValidationResult(
+                        "Password must contain at least one special character (!, @, #, etc.).", 
+                        new[] { validationContext.MemberName } // Critical fix
+                    );
                 }
             }
-
             return ValidationResult.Success!;
         }
     }
+
     
 }

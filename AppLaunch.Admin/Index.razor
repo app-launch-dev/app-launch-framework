@@ -1,6 +1,10 @@
 @inject IRegistrationService RegistrationService
 @inject NavigationManager NavigationManager
-
+@inject ApplicationDbContext Context
+@inject IConfiguration Configuration
+@using Microsoft.EntityFrameworkCore
+@using AppLaunch.Services.Data
+@using Microsoft.Extensions.Configuration
 @page "/"
 @page "/{PageSegment1:regex(^[^_].*)}"
 @page "/{PageSegment1:regex(^[^_].*)}/{PageSegment2:regex(^[^_].*)}"
@@ -14,6 +18,7 @@
 @page "/{PageSegment1:regex(^[^_].*)}/{PageSegment2:regex(^[^_].*)}/{PageSegment3:regex(^[^_].*)}/{PageSegment4:regex(^[^_].*)}/{PageSegment5:regex(^[^_].*)}/{PageSegment6:regex(^[^_].*)}/{PageSegment7:regex(^[^_].*)}/{PageSegment8:regex(^[^_].*)}/{PageSegment9:regex(^[^_].*)}/{PageSegment10:regex(^[^_].*)}"
 @page "/{PageSegment1:regex(^[^_].*)}/{PageSegment2:regex(^[^_].*)}/{PageSegment3:regex(^[^_].*)}/{PageSegment4:regex(^[^_].*)}/{PageSegment5:regex(^[^_].*)}/{PageSegment6:regex(^[^_].*)}/{PageSegment7:regex(^[^_].*)}/{PageSegment8:regex(^[^_].*)}/{PageSegment9:regex(^[^_].*)}/{PageSegment10:regex(^[^_].*)}/{PageSegment11:regex(^[^_].*)}"
 @page "/{PageSegment1:regex(^[^_].*)}/{PageSegment2:regex(^[^_].*)}/{PageSegment3:regex(^[^_].*)}/{PageSegment4:regex(^[^_].*)}/{PageSegment5:regex(^[^_].*)}/{PageSegment6:regex(^[^_].*)}/{PageSegment7:regex(^[^_].*)}/{PageSegment8:regex(^[^_].*)}/{PageSegment9:regex(^[^_].*)}/{PageSegment10:regex(^[^_].*)}/{PageSegment11:regex(^[^_].*)}/{PageSegment12:regex(^[^_].*)}"
+
 
 @code {
     [Parameter] public string? PageSegment1 { get; set; }
@@ -42,11 +47,10 @@
 
           if (isDbConfigured)
           {
-              var bob = 1;
+              await RunMigrations();
           }
           else
           {
-              var bob = 2;
               NavigationManager.NavigateTo("/register/configuredb",true);
           }
         
@@ -65,7 +69,21 @@
       {
           Console.WriteLine(ex);
       }
-   
+  }
+  
+  private async Task RunMigrations()
+  {
+      try
+      {
+          var connection = Context.Database.GetDbConnection();
+          connection.ConnectionString = Configuration.GetConnectionString("DefaultConnection");;
+
+          await Context.Database.MigrateAsync();
+      }
+      catch (Exception e)
+      {
+          Console.WriteLine(e);
+      }
   }
 
 }
