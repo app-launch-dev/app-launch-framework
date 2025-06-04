@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity;
+using MudBlazor;
 using MyIdentityRedirectManager = AppLaunch.Admin.Account.IdentityRedirectManager;
 using MyIdentityRevalidatingAuthenticationStateProvider =
     AppLaunch.Admin.Account.IdentityRevalidatingAuthenticationStateProvider;
@@ -26,7 +27,15 @@ builder.Services.AddRazorComponents()
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddMudServices();
+builder.Services.AddMudServices(config =>
+{
+    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopCenter;
+    config.SnackbarConfiguration.PreventDuplicates = true;
+    config.SnackbarConfiguration.NewestOnTop = true;
+    config.SnackbarConfiguration.ShowCloseIcon = true;
+    config.SnackbarConfiguration.VisibleStateDuration = 5000;
+});
+
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<MyIdentityUserAccessor>();

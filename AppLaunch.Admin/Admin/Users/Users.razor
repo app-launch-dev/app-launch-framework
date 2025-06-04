@@ -1,28 +1,42 @@
-﻿@using System.Net.Http.Json
-@using AppLaunch.Services.Data
-@using AppLaunch.Models
-@using MudBlazor
+﻿@using AppLaunch.Services.Data
 @page "/admin/users"
 
 @inject IUserService UserService
-<MudTable Items="@AllUsers" Hover="true" Dense="true" SortLabel="Sort">
-    <ToolBarContent>
-        <MudText Typo="Typo.h6">All Users</MudText>
-    </ToolBarContent>
-    
-    <HeaderContent>
-        <MudTh>Email</MudTh>
-    </HeaderContent>
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
 
-    <RowTemplate>
-        <MudTd DataLabel="Email">@context.Email</MudTd>
-    </RowTemplate>
+<MudText Typo="Typo.h1" GutterBottom="true">Users</MudText>
 
-    <PagerContent>
-        <MudTablePager />
-    </PagerContent>
-</MudTable>
+<MudGrid>
+    <MudItem xs="12">
+        <MudPaper Class="d-flex justify-space-between align-items-right  p-3">
+            <MudButton @onclick="AddUser" Variant="Variant.Filled" Color="Color.Primary">Add User</MudButton>
+        </MudPaper>
+    </MudItem>
 
+    <MudItem xs="12">
+        <MudTable Items="@AllUsers" Hover="true" Dense="true" SortLabel="Sort">
+            <HeaderContent>
+                <MudTh>Email</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+
+            <RowTemplate>
+                <MudTd DataLabel="Email">@context.Email</MudTd>
+                <MudTd>
+                    <MudLink Href="@($"/admin/users/addedituser/{context.Id}")">Edit</MudLink>
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                   Color="Color.Error"
+                                   OnClick="() => DeleteUser(context.Id)" />
+                </MudTd>
+            </RowTemplate>
+
+            <PagerContent>
+                <MudTablePager/>
+            </PagerContent>
+        </MudTable>
+    </MudItem>
+</MudGrid>
 
 
 @code {
@@ -36,5 +50,27 @@
     private async Task GetAllUsers()
     {
         AllUsers = await UserService.GetAllUsersAsync();
+    }
+
+    private async Task AddUser()
+    {
+        NavigationManager.NavigateTo("/admin/users/addedituser");
+    }
+
+    private async Task DeleteUser(string UserId)
+    {
+        try
+        {
+            var currentUser = await UserService.GetCurrentUserAsync();
+            if (UserId==currentUser.Id)  throw new Exception($"Unable to delete user {currentUser.Email} because this is your account.");
+            var isSuccess = await UserService.DeleteUserAsync(UserId);
+            if (!isSuccess) throw new Exception("Unable to delete this user");
+            Snackbar.Add("User has been removed", Severity.Info);
+            await GetAllUsers();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
     }
 }
