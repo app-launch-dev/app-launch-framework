@@ -86,7 +86,8 @@ builder.Services.AddScoped<ISettingsService, SettingsService>();
 // builder.Services.AddScoped<ICoreXThemeService, CoreXThemeService>();
 // builder.Services.AddScoped<IPageService, PageService>();
 // builder.Services.AddScoped<IFileService, FileService>();
- builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IAlertService, AlertService>();
 
 // Add RoleManager and UserManager 

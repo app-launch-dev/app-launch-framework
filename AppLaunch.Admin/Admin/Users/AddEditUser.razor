@@ -1,11 +1,13 @@
-﻿@using AppLaunch.Models.Settings
-@page "/admin/settings/"
-@inject ISettingsService SettingsService
+@using AppLaunch.Models.Settings
+@page "/admin/users/addedituser"
+@page "/admin/users/addedituser/{UserId:guid}"
 @inject IAlertService AlertService
+@inject IUserService UserService
+@inject IRoleService RoleService
 
-<MudText Typo="Typo.h1" GutterBottom="true">Settings</MudText>
+<MudText Typo="Typo.h1" GutterBottom="true">Add / Edit User</MudText>
 
-<EditForm Model="@SettingsData" OnValidSubmit="SaveSettings">
+<EditForm Model="@SettingsData" OnValidSubmit="SaveUser">
     <DataAnnotationsValidator/>
     <ValidationSummary />
     <MudPaper Class="pa-4">
@@ -42,38 +44,20 @@
 
 </EditForm>
 @code {
+    [Parameter]
+    public Guid? UserId { get; set; }
     SettingsModel SettingsData { get; set; } = new();
-
     protected override async Task OnInitializedAsync()
     {
-        await GetSettings();
-    }
-
-    private async Task GetSettings()
-    {
-        var response = await SettingsService.GetSettings();
-        if (response.IsSuccess) SettingsData = response.Data;
-    }
-    
-    private void OnFileUpload(IBrowserFile file)
-    {
-        // Handle the uploaded file (e.g., save it or process it)
-        Console.WriteLine($"Uploaded file: {file.Name}, Size: {file.Size} bytes");
+    //        await GetAllusers();
     }
 
 
-    private async Task SaveSettings()
+    private async Task SaveUser()
     {
         try
         {
-            if (string.IsNullOrEmpty(SettingsData.ContentKey)) throw new Exception("Content Key cannot be empty");
-
-            var saveResult = await SettingsService.SaveSettings(SettingsData);
-            if (!saveResult.IsSuccess) throw new Exception(saveResult.Message);
-
-            await GetSettings();
-
-            await AlertService.AddAlert("Settings Saved", IAlertService.AlertType.Success);
+           
         }
         catch (Exception ex)
         {
