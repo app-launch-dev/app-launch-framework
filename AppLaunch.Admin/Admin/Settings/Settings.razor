@@ -3,7 +3,16 @@
 @inject ISettingsService SettingsService
 @inject IAlertService AlertService
 
-<MudText Typo="Typo.h1" GutterBottom="true">Settings</MudText>
+<MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudText Typo="Typo.h4" Color="Color.Primary">Settings</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Configure global settings for your organization
+            </MudText>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
 
 <EditForm Model="@SettingsData" OnValidSubmit="SaveSettings">
     <DataAnnotationsValidator/>

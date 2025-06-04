@@ -5,26 +5,39 @@
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 
-<MudText Typo="Typo.h1" GutterBottom="true">Users</MudText>
+<MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudText Typo="Typo.h4" Color="Color.Primary">Users</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Manage user accounts in your organization
+            </MudText>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
 
-<MudGrid>
-    <MudItem xs="12">
-        <MudPaper Class="d-flex justify-space-between align-items-right  p-3">
-            <MudButton @onclick="AddUser" Variant="Variant.Filled" Color="Color.Primary">Add User</MudButton>
-        </MudPaper>
-    </MudItem>
+<MudPaper Class="pa-2 mt-4">
+    <MudButton @onclick="AddUser" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" >Add User</MudButton>
 
+</MudPaper>
+
+
+<MudGrid Class="mt-2">
     <MudItem xs="12">
         <MudTable Items="@AllUsers" Hover="true" Dense="true" SortLabel="Sort">
             <HeaderContent>
                 <MudTh>Email</MudTh>
+                <MudTh>ID</MudTh>
                 <MudTh></MudTh>
             </HeaderContent>
 
             <RowTemplate>
                 <MudTd DataLabel="Email">@context.Email</MudTd>
+                <MudTd DataLabel="ID">@context.Id</MudTd>
                 <MudTd>
-                    <MudLink Href="@($"/admin/users/addedituser/{context.Id}")">Edit</MudLink>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                   Color="Color.Primary"
+                                   OnClick="() => EditUser(context.Id)" />
                     <MudIconButton Icon="@Icons.Material.Filled.Delete" 
                                    Color="Color.Error"
                                    OnClick="() => DeleteUser(context.Id)" />
@@ -55,6 +68,11 @@
     private async Task AddUser()
     {
         NavigationManager.NavigateTo("/admin/users/addedituser");
+    }
+
+    private async Task EditUser(string UserId)
+    {
+        NavigationManager.NavigateTo($"/admin/users/addedituser/{UserId}");
     }
 
     private async Task DeleteUser(string UserId)

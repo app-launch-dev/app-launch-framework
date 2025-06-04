@@ -13,14 +13,13 @@
         Class="appbar-logo ml-3"
         Style="height:45px; width:auto; object-fit:contain; display:block;" />
         <MudSpacer />
-        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+        
         <MudIconButton
             Icon="@(_isDarkMode ? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode)"
             Color="Color.Inherit"
             Edge="Edge.End"
             OnClick="ToggleDarkMode"
             aria-label="Toggle dark mode" />
-
     </MudAppBar>
     <MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
         <NavMenu />
@@ -28,6 +27,13 @@
     <MudMainContent Class="pt-16 pa-4">
         @Body
     </MudMainContent>
+    
+    <MudAppBar Bottom="true" Fixed="true" Elevation="1" Dense="true">
+        <!-- Footer content here -->
+        <MudText>© @DateTime.Now.Year AppLaunch</MudText>
+    </MudAppBar>
+
+
 </MudLayout>
 
 <div id="blazor-error-ui" data-nosnippet>
@@ -45,42 +51,60 @@
     {
         PaletteLight = new PaletteLight()
         {
-            Primary = "#FFA500", // Soft blue
-            Secondary = "#607D8B", // Cool gray
-            AppbarBackground = "#404040", // Light gray
+            Primary = "#0081c4", // Soft blue
+            Secondary = "#808080", // Cool gray
+            AppbarBackground = "#191a1a", // Light gray
             AppbarText = "#dadada", // Dark gray
             Background = "#F5F5F5", // Neutral light
             TextPrimary = "#202020", // Almost black
             TextSecondary = "#757575", // Medium gray
+            DrawerBackground = "#212222", // Light gray
+            DrawerText = "#FFFFFF", // Dark gray
+            Surface = "#FFFFFF"
 
         },
         PaletteDark = new PaletteDark()
         {
-            Primary = "#FFA500", // Deep blue
-            Secondary = "#37474F", // Dark gray
-            AppbarBackground = "#202020", // Dark gray
-            AppbarText = "#ECEFF1", // Light gray
-            Background = "#404040", // Dark base
-            TextPrimary = "#E0E0E0", // Light gray
-            TextSecondary = "#B0BEC5", // Muted gray
-
+            Primary = "#0081c4", // Soft blue
+            Secondary = "#808080", // Cool gray
+            AppbarBackground = "#191a1a", // Light gray
+            AppbarText = "#dadada", // Dark gray
+            Background = "#191a1a", // Neutral light
+            TextPrimary = "#FFFFFF", // Almost black
+            TextSecondary = "#757575", // Medium gray
+            DrawerBackground = "#212222", // Light gray
+            DrawerText = "#FFFFFF", // Dark gray
+            Surface = "#212222"
+        },
+        LayoutProperties = new LayoutProperties()
+        {
+            DefaultBorderRadius = "8px" // Adjust this value as needed
         },
         Typography = new Typography
         {
+            Default = new DefaultTypography()
+            {
+                FontFamily = new[] { "Poppins", "Helvetica", "Arial", "sans-serif" },
+                FontSize = "0.875rem"
+            },
             H1 = new H1Typography()
             {
-                FontSize = "2.5rem", // or any size you prefer
+                FontSize = "1.5rem", // or any size you prefer
                 FontWeight = "700"
             },
             H2 = new H1Typography()
             {
-            FontSize = "2.0rem", // or any size you prefer
+            FontSize = "1.0rem", // or any size you prefer
             FontWeight = "700"
         },
             H3 = new H1Typography()
             {
-                FontSize = "1.5rem", // or any size you prefer
+                FontSize = "0.5rem", // or any size you prefer
                 FontWeight = "700"
+            },
+            Body1 = new Body1Typography()
+            {
+                FontSize = "0.875rem"
             }
         }
     };

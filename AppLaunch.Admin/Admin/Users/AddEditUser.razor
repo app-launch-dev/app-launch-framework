@@ -8,7 +8,17 @@
 @inject ISnackbar Snackbar
 
 
-<MudText Typo="Typo.h1" GutterBottom="true">Add / Edit User</MudText>
+<MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudText Typo="Typo.h4" Color="Color.Primary">Users</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Manage user accounts in your organization
+            </MudText>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
 <EditForm Model="@MyUser" OnValidSubmit="SaveUser">
     <DataAnnotationsValidator/>
     <ValidationSummary />
@@ -23,15 +33,17 @@
                         <MudTextField Label="Phone" Class="mt-3"
                                       @bind-Value="MyUser.PhoneNumber" Variant="Variant.Outlined" />
                     </MudCardContent>
-                    <MudCardActions>
-                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Add User</MudButton>
-                    </MudCardActions>
                 </MudCard>
             </MudItem>
         </MudGrid>
     </MudPaper>
 
-  
+    
+    <MudPaper Class="pa-2 mt-4">
+        <MudButton ButtonType="ButtonType.Submit" StartIcon="@Icons.Material.Filled.Save" Variant="Variant.Filled" Color="Color.Primary">Save</MudButton>
+        <MudButton @onclick="Close" ButtonType="ButtonType.Button" StartIcon="@Icons.Material.Filled.Close" Variant="Variant.Filled" Color="Color.Secondary" >Close</MudButton>
+    </MudPaper>
+   
 
 </EditForm>
 @code {
@@ -77,6 +89,11 @@
         {
             Snackbar.Add("Error adding User", Severity.Error);
         }
+    }
+
+    private async Task Close()
+    {
+        NavigationManager.NavigateTo("/admin/users/");
     }
 
 }
