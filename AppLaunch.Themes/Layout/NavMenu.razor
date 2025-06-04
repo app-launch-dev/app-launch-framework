@@ -4,7 +4,12 @@
 
 <MudNavMenu>
     <div style="height: 20px;"></div> <!-- Adds vertical space -->
-    <MudNavLink Href="/admin/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+    <AuthorizeView>
+        <Authorized>
+            <MudNavLink Href="/admin/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+        </Authorized>
+    </AuthorizeView>
+   
     
     <AuthorizeView Roles="Admin">
         <Authorized>
@@ -20,13 +25,13 @@
                 <AntiforgeryToken/>
                 <input type="hidden" name="ReturnUrl" value="@currentUrl"/>
                 <button type="submit" class="mud-nav-link mud-ripple">
-                    <MudIcon Icon="@Icons.Material.Filled.ExitToApp" Class="mr-3"></MudIcon> Logout
+                    <MudIcon Icon="@Icons.Material.Filled.ExitToApp" Class="mr-3"></MudIcon> Sign Out
                 </button>
             </form>
         </Authorized>
         <NotAuthorized>
             @* <MudNavLink Href="Account/Register" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Register</MudNavLink> *@
-            <MudNavLink Href="Account/Login" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Password">Login</MudNavLink>
+            <MudNavLink Href="Account/Login" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Login">Sign In</MudNavLink>
         </NotAuthorized>
     </AuthorizeView>
 </MudNavMenu>

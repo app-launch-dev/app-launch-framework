@@ -13,13 +13,17 @@
         Class="appbar-logo ml-3"
         Style="height:45px; width:auto; object-fit:contain; display:block;" />
         <MudSpacer />
-        
-        <MudIconButton
-            Icon="@(_isDarkMode ? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode)"
-            Color="Color.Inherit"
-            Edge="Edge.End"
-            OnClick="ToggleDarkMode"
-            aria-label="Toggle dark mode" />
+        <AuthorizeView>
+            <Authorized>
+                <MudIconButton
+                    Icon="@(_isDarkMode ? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode)"
+                    Color="Color.Inherit"
+                    Edge="Edge.End"
+                    OnClick="ToggleDarkMode"
+                    aria-label="Toggle dark mode" />
+            </Authorized>
+        </AuthorizeView>
+       
     </MudAppBar>
     <MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
         <NavMenu />
