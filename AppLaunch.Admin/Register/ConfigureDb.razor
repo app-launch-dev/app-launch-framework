@@ -12,12 +12,6 @@
 @using Microsoft.EntityFrameworkCore
 @using MudBlazor
 @attribute [AllowAnonymous]
-
-
-@*<div class="d-flex justify-center">
-    <MudImage ObjectFit="ObjectFit.None" ObjectPosition="ObjectPosition.Center" Width="400" Src="_content/AppLaunch.Themes/images/applaunch_dev_light.png" Alt="Applaunch Framework"  Elevation="25" Class="rounded-lg"/>
-</div>*@
-
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Json
@@ -25,10 +19,17 @@
 @using Microsoft.Data.SqlClient
 @using Microsoft.Extensions.Configuration
 
-@if (!string.IsNullOrEmpty(message))
-{
-    <p>@message</p>
-}
+<MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudText Typo="Typo.h4" Color="Color.Primary">Welcome</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Let's get your database connection set up.
+            </MudText>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
 
 @if (isDatabaseConfigured != null)
 {
@@ -40,7 +41,7 @@
                 <MudItem xs="12" sm="7">
                     <MudCard>
                         <MudCardContent>
-                            <MudTextField Label="Connection String" HelperText="Paste your connection string"
+                            <MudTextField Label="Connection String" Variant="Variant.Outlined" HelperText="Paste your MSSQL connection string"
                                           @bind-Value="model.ConnectionString" For="@(() => model.ConnectionString)"/>
 
                         </MudCardContent>
@@ -65,7 +66,7 @@
                 </MudItem>
                 <MudItem xs="12" sm="5">
                     <MudPaper Class="pa-4 mud-height-full">
-                        <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                        <MudText Typo="Typo.subtitle2">Database Connection Results</MudText>
                         @if (success)
                         {
                             <MudText Color="Color.Success">Success</MudText>
@@ -74,14 +75,13 @@
                         {
                             <MudText Color="@Color.Error">
                                 <ValidationSummary/>
+                                @if (!string.IsNullOrEmpty(message))
+                                {
+                                    <p>@message</p>
+                                }
                             </MudText>
                         }
                     </MudPaper>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudText Typo="Typo.body2" Align="Align.Center">
-                        Create your administrative account.
-                    </MudText>
                 </MudItem>
             </MudGrid>
         </EditForm>

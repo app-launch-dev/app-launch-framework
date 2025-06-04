@@ -15,85 +15,61 @@
 @inject IdentityRedirectManager RedirectManager
 @inject NavigationManager NavigationManager
 @inject IHttpContextAccessor HttpContext
+@inject IRegistrationService RegistrationService
 
 <PageTitle>Register</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Create Account</MudText>
-
-<MudGrid>
-    <MudItem md="6">
-        <StatusMessage Message="@Message" />
-        <EditForm Model="Input" method="post" OnValidSubmit="AddAdminUser" FormName="register">
-            <DataAnnotationsValidator />
-
-            <MudText Typo="Typo.body1" GutterBottom="true">Create a new account.</MudText>
-
-            <MudGrid>
-                <MudItem md="12">
-                    <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email"
-                                        Label="Email" Placeholder="name@example.com"
-                                        UserAttributes="@(new() { { "autocomplete", "username" }, { "aria-required", "true" } } )" />
-                </MudItem>
-                <MudItem md="12">
-                    <MudStaticTextField For="@(() => Input.Password)" @bind-Value="Input.Password"
-                                        Label="Password" InputType="InputType.Password" Placeholder="password"
-                                        UserAttributes="@(new() { { "autocomplete", "new-password" }, { "aria-required", "true" } } )" />
-                </MudItem>
-                <MudItem md="12">
-                    <MudStaticTextField For="@(() => Input.ConfirmPassword)" @bind-Value="Input.ConfirmPassword"
-                                        Label="Confirm Password" InputType="InputType.Password" Placeholder="confirm password"
-                                        UserAttributes="@(new() { { "autocomplete", "new-password" }, { "aria-required", "true" } } )" />
-                </MudItem>
-                <MudItem md="12">
-                    <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">Create Account</MudStaticButton>
-                </MudItem>
-            </MudGrid>
-        </EditForm>
-    </MudItem>
-   
-</MudGrid>
+<MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudText Typo="Typo.h4" Color="Color.Primary">Welcome</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Now, let's create an administrator account to manage this installation.
+            </MudText>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
 
 
-@* <EditForm Model="@model" OnValidSubmit="AddAdminUser"> *@
-@*     <DataAnnotationsValidator/> *@
-@*     <MudGrid> *@
-@*         <MudItem xs="12" sm="7"> *@
-@*             <MudCard> *@
-@*                 <MudCardContent> *@
-@*                     <MudTextField Label="Email" Class="mt-3" *@
-@*                                   @bind-Value="model.Email" For="@(() => model.Email)"/> *@
-@*                     <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3" *@
-@*                                   @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password"/> *@
-@*                     <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3" *@
-@*                                   @bind-Value="model.Password2" For="@(() => model.Password2)" InputType="InputType.Password"/> *@
-@*                 </MudCardContent> *@
-@*                 <MudCardActions> *@
-@*                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Register</MudButton> *@
-@*                 </MudCardActions> *@
-@*             </MudCard> *@
-@*         </MudItem> *@
-@*         <MudItem xs="12" sm="5"> *@
-@*             <MudPaper Class="pa-4 mud-height-full"> *@
-@*                 <MudText Typo="Typo.subtitle2">Validation Summary</MudText> *@
-@*                 @if (success) *@
-@*                 { *@
-@*                     <MudText Color="Color.Success">Success</MudText> *@
-@*                 } *@
-@*                 else *@
-@*                 { *@
-@*                     <MudText Color="@Color.Error"> *@
-@*                         <ValidationSummary /> *@
-@*                     </MudText> *@
-@*                 } *@
-@*             </MudPaper> *@
-@*         </MudItem> *@
-@*         <MudItem xs="12"> *@
-@*             <MudText Typo="Typo.body2" Align="Align.Center"> *@
-@*                 Fill out the form correctly to see the success message. *@
-@*             </MudText> *@
-@*         </MudItem> *@
-@*     </MudGrid> *@
-@* </EditForm> *@
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h6">Administrator Account</MudText>
+    <MudGrid>
+        <MudItem xs="12">
+            <MudCard>
+                <MudCardContent>
+                    <StatusMessage Message="@Message" />
+                    <EditForm Model="Input" method="post" OnValidSubmit="AddAdminUser" FormName="register">
+                        <DataAnnotationsValidator />
+
+                        <MudGrid>
+                            <MudItem md="12">
+                                <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email" Variant="Variant.Outlined"
+                                                    Label="Email" Placeholder="name@example.com"
+                                                    UserAttributes="@(new() { { "autocomplete", "username" }, { "aria-required", "true" } } )" />
+                            </MudItem>
+                            <MudItem md="12">
+                                <MudStaticTextField For="@(() => Input.Password)" @bind-Value="Input.Password" Variant="Variant.Outlined"
+                                                    Label="Password" InputType="InputType.Password" Placeholder="password"
+                                                    UserAttributes="@(new() { { "autocomplete", "new-password" }, { "aria-required", "true" } } )" />
+                            </MudItem>
+                            <MudItem md="12">
+                                <MudStaticTextField For="@(() => Input.ConfirmPassword)" @bind-Value="Input.ConfirmPassword" Variant="Variant.Outlined"
+                                                    Label="Confirm Password" InputType="InputType.Password" Placeholder="confirm password"
+                                                    UserAttributes="@(new() { { "autocomplete", "new-password" }, { "aria-required", "true" } } )" />
+                            </MudItem>
+                            <MudItem md="12">
+                                <MudStaticButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Primary" FormAction="FormAction.Submit">Create Account</MudStaticButton>
+                            </MudItem>
+                        </MudGrid>
+                    </EditForm>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+
+
 
 
 @code {
@@ -104,6 +80,14 @@
     
     private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
 
+    protected override async Task OnInitializedAsync()
+    {
+        //check for account creation completion
+        var isRegistrationComplete = await RegistrationService.IRegistrationComplete();
+        if (isRegistrationComplete) NavigationManager.NavigateTo("/admin/",true);
+    }
+    
+    
     public async Task AddAdminUser()
     {
         try
