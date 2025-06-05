@@ -21,35 +21,53 @@
 
 <EditForm Model="@MyUser" OnValidSubmit="SaveUser">
     <DataAnnotationsValidator/>
-    <ValidationSummary />
+    <ValidationSummary/>
     <MudPaper Class="pa-4">
         <MudText Typo="Typo.h6">User Details</MudText>
         <MudGrid>
-            <MudItem xs="12">
-                <MudCard>
-                    <MudCardContent>
-                        <MudTextField Label="Email" 
-                                      @bind-Value="MyUser.Email" Variant="Variant.Outlined" />
-                        <MudTextField Label="Phone" Class="mt-3"
-                                      @bind-Value="MyUser.PhoneNumber" Variant="Variant.Outlined" />
-                    </MudCardContent>
-                </MudCard>
+
+            <MudItem xs="5">
+                <MudTextField Label="First Name" @bind-Value="MyUser.FirstName"
+                              Variant="Variant.Outlined"/>
             </MudItem>
+            <MudItem xs="2">
+                <MudTextField Label="Middle" @bind-Value="MyUser.MiddleName"
+                              Variant="Variant.Outlined"/>
+            </MudItem>
+            <MudItem xs="5">
+                <MudTextField Label="Last Name" @bind-Value="MyUser.LastName"
+                              Variant="Variant.Outlined"/>
+            </MudItem>
+
+            <MudItem xs="6">
+                <MudTextField Label="Email" @bind-Value="MyUser.Email" Variant="Variant.Outlined"/>
+            </MudItem>
+
+            <MudItem xs="6">
+                <MudTextField Label="Phone" @bind-Value="MyUser.PhoneNumber"
+                              Variant="Variant.Outlined"/>
+            </MudItem>
+            
         </MudGrid>
     </MudPaper>
 
-    
+
     <MudPaper Class="pa-2 mt-4">
-        <MudButton ButtonType="ButtonType.Submit" StartIcon="@Icons.Material.Filled.Save" Variant="Variant.Filled" Color="Color.Primary">Save</MudButton>
-        <MudButton @onclick="Close" ButtonType="ButtonType.Button" StartIcon="@Icons.Material.Filled.Close" Variant="Variant.Filled" Color="Color.Secondary" >Close</MudButton>
+        <MudButton ButtonType="ButtonType.Submit" StartIcon="@Icons.Material.Filled.Save" Variant="Variant.Filled"
+                   Color="Color.Primary">Save
+        </MudButton>
+        <MudButton @onclick="Close" ButtonType="ButtonType.Button" StartIcon="@Icons.Material.Filled.Close"
+                   Variant="Variant.Filled" Color="Color.Secondary">Close
+        </MudButton>
     </MudPaper>
-   
+
 
 </EditForm>
+
 @code {
-    [Parameter]
-    public Guid? UserId { get; set; }
+    [Parameter] public Guid? UserId { get; set; }
     ApplicationUser MyUser { get; set; } = new();
+
     protected override async Task OnInitializedAsync()
     {
         if (UserId != null)
@@ -74,20 +92,40 @@
     {
         try
         {
-            var newPassword = UserService.GeneratePassword();
-            var isSuccess = await UserService.AddUserAsync(MyUser.Email, newPassword);
-            if (!isSuccess) throw new Exception("Unable to add user");
-
-            var newUser = await UserService.GetUserByEmailAsync(MyUser.Email);
-            if (!isSuccess) throw new Exception($"Unable to access user {MyUser.Email}");
+            bool isSuccess = false;
             
+            if (UserId == null)
+            {
+                //new user
+                var newPassword = UserService.GeneratePassword();
+                MyUser.EmailConfirmed = true;
+                isSuccess = await UserService.AddUserAsync(MyUser, newPassword);
+                if (!isSuccess) throw new Exception("Unable to add user");
+                
+                var newUser = await UserService.GetUserByEmailAsync(MyUser.Email);
+                if (!isSuccess) throw new Exception($"Unable to access user {MyUser.Email}");
             
-            Snackbar.Add("User has been added", Severity.Success);
-            NavigationManager.NavigateTo($"/Admin/Users/AddEditUser/{newUser.Id}");
+                Snackbar.Add("User has been added", Severity.Success);
+                NavigationManager.NavigateTo($"/Admin/Users/AddEditUser/{newUser.Id}");
+            }
+            else
+            {
+                //existing user
+                var existingUser = await UserService.GetUserByIdAsync(UserId.ToString());
+                if (existingUser == null) throw new Exception("Unable to access user");
+                existingUser.FirstName = MyUser.FirstName;
+                existingUser.LastName = MyUser.LastName;
+                existingUser.MiddleName = MyUser.MiddleName;
+                existingUser.Email = MyUser.Email; //todo: verify email is unique
+                isSuccess=await UserService.UpdateUserAsync(existingUser);
+                if (!isSuccess) throw new Exception("Unable to edit user");
+                Snackbar.Add("User has been updated", Severity.Success);
+            }
+          
         }
         catch (Exception ex)
         {
-            Snackbar.Add("Error adding User", Severity.Error);
+            Snackbar.Add(ex.Message, Severity.Error);
         }
     }
 

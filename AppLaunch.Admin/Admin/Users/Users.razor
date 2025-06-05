@@ -26,14 +26,17 @@
     <MudItem xs="12">
         <MudTable Items="@AllUsers" Hover="true" Dense="true" SortLabel="Sort">
             <HeaderContent>
+                <MudTh>First Name</MudTh>
+                <MudTh>Last Name</MudTh>
                 <MudTh>Email</MudTh>
-                <MudTh>ID</MudTh>
                 <MudTh></MudTh>
             </HeaderContent>
 
             <RowTemplate>
+                <MudTd DataLabel="Email">@context.FirstName</MudTd>
+                <MudTd DataLabel="Email">@context.LastName</MudTd>
                 <MudTd DataLabel="Email">@context.Email</MudTd>
-                <MudTd DataLabel="ID">@context.Id</MudTd>
+                
                 <MudTd>
                     <MudIconButton Icon="@Icons.Material.Filled.Edit" 
                                    Color="Color.Primary"

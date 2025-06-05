@@ -42,20 +42,30 @@
                         <DataAnnotationsValidator />
 
                         <MudGrid>
+                            <MudItem md="6">
+                                <MudStaticTextField For="@(() => Input.FirstName)" @bind-Value="Input.FirstName" Variant="Variant.Outlined"
+                                                    Label="First Name"
+                                                    UserAttributes="@(new() { { "autocomplete", "firstname" }, { "aria-required", "true" } } )" />
+                            </MudItem>
+                            <MudItem md="6">
+                                <MudStaticTextField For="@(() => Input.LastName)" @bind-Value="Input.LastName" Variant="Variant.Outlined"
+                                                    Label="Last Name"
+                                                    UserAttributes="@(new() { { "autocomplete", "lastname" }, { "aria-required", "true" } } )" />
+                            </MudItem>
                             <MudItem md="12">
                                 <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email" Variant="Variant.Outlined"
                                                     Label="Email" Placeholder="name@example.com"
-                                                    UserAttributes="@(new() { { "autocomplete", "username" }, { "aria-required", "true" } } )" />
+                                                    UserAttributes="@(new() { { "autocomplete", "username" }, { "aria-required", "true" } })"/>
                             </MudItem>
-                            <MudItem md="12">
+                            <MudItem md="6">
                                 <MudStaticTextField For="@(() => Input.Password)" @bind-Value="Input.Password" Variant="Variant.Outlined"
                                                     Label="Password" InputType="InputType.Password" Placeholder="password"
-                                                    UserAttributes="@(new() { { "autocomplete", "new-password" }, { "aria-required", "true" } } )" />
+                                                    UserAttributes="@(new() { { "autocomplete", "new-password" }, { "aria-required", "true" } })"/>
                             </MudItem>
-                            <MudItem md="12">
+                            <MudItem md="6">
                                 <MudStaticTextField For="@(() => Input.ConfirmPassword)" @bind-Value="Input.ConfirmPassword" Variant="Variant.Outlined"
                                                     Label="Confirm Password" InputType="InputType.Password" Placeholder="confirm password"
-                                                    UserAttributes="@(new() { { "autocomplete", "new-password" }, { "aria-required", "true" } } )" />
+                                                    UserAttributes="@(new() { { "autocomplete", "new-password" }, { "aria-required", "true" } })"/>
                             </MudItem>
                             <MudItem md="12">
                                 <MudStaticButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Primary" FormAction="FormAction.Submit">Create Account</MudStaticButton>
@@ -98,7 +108,7 @@
             var user = await UserManager.FindByEmailAsync(Input.Email);
             if (user == null)
             {
-                user = new ApplicationUser() { UserName = Input.Email, Email = Input.Email, EmailConfirmed = true };
+                user = new ApplicationUser() { UserName = Input.Email, Email = Input.Email, EmailConfirmed = true, FirstName = Input.FirstName, LastName = Input.LastName};
             
                 var result = await UserManager.CreateAsync(user, Input.Password);
             
@@ -131,6 +141,13 @@
         [EmailAddress]
         [Display(Name = "Email")]
         public string Email { get; set; } = "";
+        
+        [Required]
+        public string FirstName { get; set; } = "";
+        
+        [Required]
+        public string LastName { get; set; } = "";
+        
 
         [Required]
         [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 10)]

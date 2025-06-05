@@ -12,11 +12,11 @@ public interface IUserService
     Task<ApplicationUser?> GetUserByIdAsync(string userId);
     Task<bool> UpdateUserAsync(ApplicationUser user);
     Task<bool> DeleteUserAsync(string userId);
-    Task<bool> AddUserAsync(string email, string password);
     Task<bool> UpdateUserRolesAsync(string userId, List<string> newRoles);
     string GeneratePassword();
     Task<ApplicationUser?> GetUserByEmailAsync(string email);
     Task<ApplicationUser?> GetCurrentUserAsync();
+    Task<bool> AddUserAsync(ApplicationUser user, string password);
 }
 
 public class UserService(UserManager<ApplicationUser> userManager, AuthenticationStateProvider authStateProvider) : IUserService
@@ -38,11 +38,11 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
     }
 
 
-    public async Task<bool> AddUserAsync(string email, string password)
+    public async Task<bool> AddUserAsync(ApplicationUser user, string password)
     {
-        var user = new ApplicationUser { UserName = email, Email = email };
+        user.UserName = user.Email;
         var result = await userManager.CreateAsync(user, password);
-        return result.Succeeded;
+         return result.Succeeded;
     }
 
     public async Task<ApplicationUser?> GetUserByIdAsync(string userId)
@@ -57,6 +57,7 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
     
     public async Task<bool> UpdateUserAsync(ApplicationUser user)
     {
+        user.UserName = user.Email;
         var result = await userManager.UpdateAsync(user);
         return result.Succeeded;
     }
