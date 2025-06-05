@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>AppLaunch.Models</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>Applaunch Development Group</Authors>
+        <Description>AppLaunch Models contains the Core DTO models for AppLaunch projects.</Description>
+        <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>
+        <IsPackable>true</IsPackable>
+        <PackageLicenseFile>license.md</PackageLicenseFile>
+        <PackageReadmeFile>readme.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="license.md" Pack="true" PackagePath="license.md" />
+        <None Include="readme.md" Pack="true" PackagePath="readme.md" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="license.md">
+        <Pack>true</Pack>
+        <PackagePath>license.md</PackagePath>
+      </None>
+      <None Update="readme.md">
+        <Pack>true</Pack>
+        <PackagePath>readme.md</PackagePath>
+      </None>
+    </ItemGroup>
+
+</Project>

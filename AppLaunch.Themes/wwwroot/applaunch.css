@@ -1,0 +1,4 @@
+.mud-input,
+.mud-input-control > .mud-input-control-input-container > .mud-input-label-inputcontrol {
+    font-size: 0.875rem; /* Adjust this value as desired */
+}

@@ -1,0 +1,53 @@
+@rendermode InteractiveServer
+@page "/admin/oobe"
+@using AppLaunch.Services.Data
+@using Microsoft.Extensions.Configuration;
+@inject IConfiguration Configuration
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext Context
+@inject IRegistrationService RegistrationService
+@attribute [AllowAnonymous]
+<h3>Welcome</h3>
+
+@foreach (var site in Sites)
+{
+    <p>@site.SiteName</p>
+}
+
+
+@code {
+    List<Site> Sites = new();
+    protected override async Task OnInitializedAsync()
+    {
+        await RunMigrations();
+        await GetSites();
+    }
+
+    private async Task RunMigrations()
+    {
+        try
+        {
+            var connection = Context.Database.GetDbConnection();
+            connection.ConnectionString = Configuration.GetConnectionString("DefaultConnection");;
+
+            await Context.Database.MigrateAsync();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+
+    public async Task GetSites()
+    {
+        try
+        {
+            Sites =await (from s in Context.Sites select s).ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+    }
+
+}

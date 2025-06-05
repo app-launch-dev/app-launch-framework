@@ -1,0 +1,305 @@
+﻿@using AppLaunch.Models.Settings
+@layout AppLaunchDefault
+@inject ISettingsService SettingsService
+@inject IAlertService AlertService
+
+
+<header class="page-header">
+    <h2>Site Settings</h2>
+
+    <div class="right-wrapper text-end">
+        <ol class="breadcrumbs">
+            <li>
+                <a href="/admin">
+                    <i class="bx bx-home-alt"></i>
+                </a>
+            </li>
+            <li><span>Dashboard</span></li>
+            <li><span>Settings</span></li>
+        </ol>
+        <a href="#">&nbsp;</a>
+    </div>
+</header>
+
+@if (SettingsData != null)
+{
+    <EditForm FormName="SettingsForm" Model="SettingsData" Enhance>
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
+        <div class="row">
+            <div class="col-lg-12">
+                <section class="card">
+                    <header class="card-header">
+                        <div class="card-actions">
+                            <a href="#" class="card-action card-action-toggle" data-card-toggle=""></a>
+                        </div>
+
+                        <h2 class="card-title">Settings</h2>
+
+                        <p class="card-subtitle">
+                            Edit global site settings and select a theme / layout for your site.
+                        </p>
+                    </header>
+                    @if (SettingsData != null)
+                    {
+                        <div class="card-body">
+                            <div class="row form-group pb-3">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Site Name</label>
+                                        <InputText @bind-Value="SettingsData.SiteName" class="form-control"
+                                                   placeholder="eg. Acme Corporation"/>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Theme</label>
+
+                                        @* <InputSelect TValue="Guid" class="form-control" @oninput="ChangeTheme" *@
+                                        @*              @bind-Value="SettingsData.ThemeId"> *@
+                                        @*     @if (ThemeData != null) *@
+                                        @*     { *@
+                                        @*         foreach (var t in ThemeData) *@
+                                        @*         { *@
+                                        @*             if (t.ThemeId.ToString() == SettingsData.ThemeId.ToString()) *@
+                                        @*             { *@
+                                        @*                 <option value="@t.ThemeId" selected>@t.ThemeName</option> *@
+                                        @*             } *@
+                                        @*             else *@
+                                        @*             { *@
+                                        @*                 <option value="@t.ThemeId">@t.ThemeName</option> *@
+                                        @*             } *@
+                                        @*         } *@
+                                        @*     } *@
+                                        @* </InputSelect> *@
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row form-group pb-3">
+                                <div class="col-lg-12">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Content Key</label>
+                                        <InputText @bind-Value="SettingsData.ContentKey" class="form-control"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row form-group pb-3">
+                                <div class="col-lg-12">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Layout</label>
+                                        <InputSelect TValue="string" class="form-control"
+                                                     @bind-Value="SettingsData.Layout">
+
+                                            @if (LayoutData != null)
+                                            {
+                                                foreach (var myLayout in LayoutData)
+                                                {
+                                                    if (SettingsData.Layout == myLayout)
+                                                    {
+                                                        <option value="@myLayout" selected>@myLayout</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@myLayout">@myLayout</option>
+                                                    }
+                                                }
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row form-group pb-3">
+                                <div class="col-lg-12">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Custom CSS</label>
+                                        <InputTextArea @bind-Value="SettingsData.OverrideCSS" class="form-control"
+                                                       rows="5"
+                                                       placeholder="Enter Custom CSS"></InputTextArea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </section>
+
+                <section class="card">
+                    <header class="card-header">
+                        <div class="card-actions">
+                            <a href="#" class="card-action card-action-toggle" data-card-toggle=""></a>
+                        </div>
+
+                        <h2 class="card-title">Login Options</h2>
+                    </header>
+                    @if (SettingsData != null)
+                    {
+                        <div class="card-body">
+                            <div class="row form-group pb-3">
+                                <div class="col-lg-8">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Login Page Logo</label>
+                                        LOGO UPLOAD
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="form-group">
+                                        <div class="form-check">
+                                            <InputCheckbox class="form-check-input"
+                                                           @bind-Value="SettingsData.AllowSignUp"/>
+                                            <label class="form-check-label">
+                                                Allow Sign Ups
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="row form-group pb-3">
+                                <div class="col-lg-12">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Login Page CSS</label>
+                                        <InputTextArea @bind-Value="SettingsData.LoginOverrideCSS" class="form-control"
+                                                       rows="5"
+                                                       placeholder="Enter Custom CSS"></InputTextArea>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    }
+                </section>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group">
+                    <button class="btn btn-primary" @onclick="SaveSettings">Save</button>
+                </div>
+            </div>
+        </div>
+
+
+    </EditForm>
+}
+
+
+
+
+@code {
+
+    //todo: lock theme once a page has been created.
+    //todo: Add SiteId to distinguish between sites.
+    [SupplyParameterFromForm] SettingsModel? SettingsData { get; set; }
+    //List<ThemeModel>? ThemeData { get; set; }
+    List<string>? LayoutData { get; set; }
+    bool IsLoading;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (SettingsData == null)
+        {
+            await BindSettings();
+            await BindThemes();
+            await BindLayouts();
+        }
+    }
+
+    private async Task BindSettings()
+    {
+        IsLoading = true;
+        var response = await SettingsService.GetSettings();
+        if (response.IsSuccess) SettingsData = response.Data;
+        IsLoading = false;
+    }
+
+    private async Task BindThemes()
+    {
+        // IsLoading = true;
+        // var response = await CoreXThemeService.GetAllThemes();
+        // if (response.IsSuccess) ThemeData = response.Data;
+        // IsLoading = false;
+    }
+
+    private async Task ChangeTheme(ChangeEventArgs e)
+    {
+        SettingsData.ThemeId = new Guid(e.Value.ToString());
+        await BindLayouts();
+        await AlertService.AddAlert("You have changed themes. You now need to select a layout for this theme.", IAlertService.AlertType.Info, false);
+    }
+
+    private async Task BindLayouts()
+    {
+        try
+        {
+            IsLoading = true;
+            LayoutData = new List<string>();
+
+            //var thisTheme = (from t in ThemeData where t.ThemeId == SettingsData.ThemeId select t).FirstOrDefault();
+            //if (thisTheme == null) throw new Exception("The theme folder saved in settings does not exist.");
+
+
+            //var themeFolderPath = Path.Combine(WebHostEnvironment.ContentRootPath, "components", "layout", "themes", thisTheme.ThemeName);
+
+            var themeFolderPath = "";
+            //todo rewrite this code
+            
+            // Ensure the directory exists
+            if (Directory.Exists(themeFolderPath))
+            {
+                // Get all files ending with 'Layout.razor'
+                var layoutFiles = Directory.EnumerateFiles(themeFolderPath, "*Layout.razor", SearchOption.TopDirectoryOnly);
+
+                // Process each file asynchronously
+                foreach (var file in layoutFiles.OrderBy(f => f))
+                {
+                    var fileName = Path.GetFileName(file);
+                    LayoutData.Add(fileName);
+                }
+            }
+            else
+            {
+                throw new Exception("Theme folder does not exist.");
+            }
+
+            IsLoading = false;
+        }
+        catch (Exception ex)
+        {
+            await AlertService.AddAlert(ex.Message, IAlertService.AlertType.Error);
+        }
+    }
+
+    private async Task SaveSettings()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(SettingsData.Layout)) throw new Exception("You must select a layout");
+            if (SettingsData.ThemeId == default) throw new Exception("You must select a theme");
+            if (string.IsNullOrEmpty(SettingsData.ContentKey)) throw new Exception("Content Key cannot be empty");
+
+            var saveResult = await SettingsService.SaveSettings(SettingsData);
+            if (!saveResult.IsSuccess) throw new Exception(saveResult.Message);
+
+            await BindSettings();
+            await BindThemes();
+            await BindLayouts();
+
+            await AlertService.AddAlert("Settings Saved", IAlertService.AlertType.Success);
+        }
+        catch (Exception ex)
+        {
+            await AlertService.AddAlert(ex.Message, IAlertService.AlertType.Error);
+        }
+    }
+
+    public string FormatRowInParent(string row)
+    {
+        // Perform some manipulation on the row data
+        var formattedRow = $"{row}";
+        return formattedRow;
+    }
+
+}

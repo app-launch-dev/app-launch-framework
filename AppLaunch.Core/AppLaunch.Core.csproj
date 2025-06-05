@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <AssemblyName>$(AssemblyName.Replace(' ', '_'))</AssemblyName>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>AppLaunch.Core</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>Applaunch Development Group</Authors>
+        <Description>AppLaunch is an open source launch platform for .Net based web applications, designed to empower developers to rapidly develop and deliver line of business applications to their customers.</Description>
+        <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>
+        <IsPackable>true</IsPackable>
+        <PackageLicenseFile>license.md</PackageLicenseFile>
+        <PackageReadmeFile>readme.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="license.md" Pack="true" PackagePath="license.md" />
+        <None Include="readme.md" Pack="true" PackagePath="readme.md" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <PackageReference Include="BlazorTemplater" Version="1.5.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.3.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.2.0"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.0-rc.2.24474.3"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.1"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.1">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AppLaunch.Admin\AppLaunch.Admin.csproj" />
+      <ProjectReference Include="..\AppLaunch.Models\AppLaunch.Models.csproj" />
+      <ProjectReference Include="..\AppLaunch.Services\AppLaunch.Services.csproj" />
+      <ProjectReference Include="..\AppLaunch.Themes\AppLaunch.Themes.csproj" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <None Remove="Plugins\plugins.txt" />
+      <Content Include="Plugins\plugins.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+
+   
+
+</Project>

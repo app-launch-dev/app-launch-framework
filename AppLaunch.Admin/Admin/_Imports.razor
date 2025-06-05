@@ -1,0 +1,6 @@
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using AppLaunch.Themes.Layout
+@using AppLaunch.Services
+@using AppLaunch.Models
+@attribute [Authorize(Roles = "Admin, Manager")]

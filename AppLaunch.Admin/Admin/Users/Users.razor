@@ -1,0 +1,97 @@
+﻿@using AppLaunch.Services.Data
+@page "/admin/users"
+
+@inject IUserService UserService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudText Typo="Typo.h4" Color="Color.Primary">Users</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Manage user accounts in your organization
+            </MudText>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudPaper Class="pa-2 mt-4">
+    <MudButton @onclick="AddUser" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" >Add User</MudButton>
+
+</MudPaper>
+
+
+<MudGrid Class="mt-2">
+    <MudItem xs="12">
+        <MudTable Items="@AllUsers" Hover="true" Dense="true" SortLabel="Sort">
+            <HeaderContent>
+                <MudTh>First Name</MudTh>
+                <MudTh>Last Name</MudTh>
+                <MudTh>Email</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+
+            <RowTemplate>
+                <MudTd DataLabel="Email">@context.FirstName</MudTd>
+                <MudTd DataLabel="Email">@context.LastName</MudTd>
+                <MudTd DataLabel="Email">@context.Email</MudTd>
+                
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                   Color="Color.Primary"
+                                   OnClick="() => EditUser(context.Id)" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                   Color="Color.Error"
+                                   OnClick="() => DeleteUser(context.Id)" />
+                </MudTd>
+            </RowTemplate>
+
+            <PagerContent>
+                <MudTablePager/>
+            </PagerContent>
+        </MudTable>
+    </MudItem>
+</MudGrid>
+
+
+@code {
+    private List<ApplicationUser> AllUsers = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetAllUsers();
+    }
+
+    private async Task GetAllUsers()
+    {
+        AllUsers = await UserService.GetAllUsersAsync();
+    }
+
+    private async Task AddUser()
+    {
+        NavigationManager.NavigateTo("/admin/users/addedituser");
+    }
+
+    private async Task EditUser(string UserId)
+    {
+        NavigationManager.NavigateTo($"/admin/users/addedituser/{UserId}");
+    }
+
+    private async Task DeleteUser(string UserId)
+    {
+        try
+        {
+            var currentUser = await UserService.GetCurrentUserAsync();
+            if (UserId==currentUser.Id)  throw new Exception($"Unable to delete user {currentUser.Email} because this is your account.");
+            var isSuccess = await UserService.DeleteUserAsync(UserId);
+            if (!isSuccess) throw new Exception("Unable to delete this user");
+            Snackbar.Add("User has been removed", Severity.Info);
+            await GetAllUsers();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}

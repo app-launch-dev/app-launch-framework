@@ -1,0 +1,93 @@
+﻿@using AppLaunch.Models.Settings
+@page "/admin/settings/"
+@inject ISettingsService SettingsService
+@inject IAlertService AlertService
+
+<MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudText Typo="Typo.h4" Color="Color.Primary">Settings</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Configure global settings for your organization
+            </MudText>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<EditForm Model="@SettingsData" OnValidSubmit="SaveSettings">
+    <DataAnnotationsValidator/>
+    <ValidationSummary />
+    <MudPaper Class="pa-4">
+        <MudText Typo="Typo.h6">General Settings</MudText>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudCard>
+                    <MudCardContent>
+                        <MudTextField Label="Site Name" 
+                                      @bind-Value="SettingsData.SiteName" Variant="Variant.Outlined" />
+                        <MudTextField Label="Content Key" Class="mt-3"
+                                      @bind-Value="SettingsData.ContentKey" Variant="Variant.Outlined" />
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <MudPaper Class="pa-4 mt-4">
+        <MudText Typo="Typo.h6">Email Settings</MudText>
+      
+        <MudGrid>
+            <MudItem xs="12">
+                <MudCard>
+                    <MudCardContent>
+                        <MudTextField Label="Email From" 
+                                      @bind-Value="SettingsData.DefaultEmailFrom" Variant="Variant.Outlined" />
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+
+</EditForm>
+@code {
+    SettingsModel SettingsData { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetSettings();
+    }
+
+    private async Task GetSettings()
+    {
+        var response = await SettingsService.GetSettings();
+        if (response.IsSuccess) SettingsData = response.Data;
+    }
+    
+    private void OnFileUpload(IBrowserFile file)
+    {
+        // Handle the uploaded file (e.g., save it or process it)
+        Console.WriteLine($"Uploaded file: {file.Name}, Size: {file.Size} bytes");
+    }
+
+
+    private async Task SaveSettings()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(SettingsData.ContentKey)) throw new Exception("Content Key cannot be empty");
+
+            var saveResult = await SettingsService.SaveSettings(SettingsData);
+            if (!saveResult.IsSuccess) throw new Exception(saveResult.Message);
+
+            await GetSettings();
+
+            await AlertService.AddAlert("Settings Saved", IAlertService.AlertType.Success);
+        }
+        catch (Exception ex)
+        {
+            await AlertService.AddAlert(ex.Message, IAlertService.AlertType.Error);
+        }
+    }
+
+}

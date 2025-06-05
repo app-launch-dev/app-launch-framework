@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>AppLaunch.Themes</PackageId>
+        <Version>1.0.1</Version>
+        <Authors>Applaunch Development Group</Authors>
+        <Description>AppLaunch Themes contains the Core theme for use in AppLaunch projects.</Description>
+        <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>
+        <IsPackable>true</IsPackable>
+        <PackageLicenseFile>license.md</PackageLicenseFile>
+        <PackageReadmeFile>readme.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Update="license.md">
+            <Pack>true</Pack>
+            <PackagePath>license.md</PackagePath>
+        </None>
+        <None Update="readme.md">
+            <Pack>true</Pack>
+            <PackagePath>readme.md</PackagePath>
+        </None>
+    </ItemGroup>
+
+ 
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
+
+ 
+    <ItemGroup>
+      <PackageReference Include="Extensions.MudBlazor.StaticInput" Version="3.2.0" />
+      <PackageReference Include="MudBlazor" Version="8.5.1" />
+    </ItemGroup>
+    
+</Project>
