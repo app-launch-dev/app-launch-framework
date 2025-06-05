@@ -19,30 +19,8 @@ public class SettingsService(ApplicationDbContext dbContext) : ISettingsService
         CoreResponse<SettingsModel> myResponse = new();
         try
         {
-            GetSettings:
             var response = await (from s in dbContext.Sites
                 select s).FirstOrDefaultAsync();
-            if (response == null)
-            {
-                //initialize settings
-                Site site = new()
-                {
-                    DefaultEmailFrom = "noreply@domain.com",
-                    SiteId = Guid.NewGuid(),
-                    SiteName = "CoreX Sample Site",
-                    ThemeId = new Guid("d145c1f7-2193-473a-aa6f-3ceed8343a44"),
-                    Layout = "PortoLayout.razor",
-                    OverrideCSS = "",
-                    GlobalContent = null,
-                    ContentKey = Guid.NewGuid().ToString(),
-                    AllowSignUp = false,
-                    LoginLogoUrl = null,
-                    LoginOverrideCSS = null
-                };
-                await dbContext.Sites.AddAsync(site);
-                await dbContext.SaveChangesAsync();
-                goto GetSettings;
-            }
 
             SettingsModel mySettings = new()
             {
@@ -55,12 +33,10 @@ public class SettingsService(ApplicationDbContext dbContext) : ISettingsService
                 ContentKey = response.ContentKey,
                 AllowSignUp = response.AllowSignUp,
                 LoginLogoUrl = response.LoginLogoUrl,
-                LoginOverrideCSS = response.LoginOverrideCSS
+                LoginOverrideCSS = response.LoginOverrideCSS,
+                AwsSesAccessKey = response.AwsSesAccessKey,
+                AwsSesSecretKey = response.AwsSesSecretKey
             };
-
-            // if (response.GlobalContent != null)
-            //     mySettings.GlobalContent =
-            //         JsonConvert.DeserializeObject<List<ThemeComponentModel>>(response.GlobalContent);
 
             myResponse.Data = mySettings;
             myResponse.IsSuccess = true;
@@ -93,11 +69,8 @@ public class SettingsService(ApplicationDbContext dbContext) : ISettingsService
             existingSettings.AllowSignUp = model.AllowSignUp;
             existingSettings.LoginLogoUrl = model.LoginLogoUrl;
             existingSettings.LoginOverrideCSS = model.LoginOverrideCSS;
-
-            // if (model.GlobalContent != null)
-            //     existingSettings.GlobalContent = JsonConvert.SerializeObject(model.GlobalContent);
-
-
+            existingSettings.AwsSesAccessKey = model.AwsSesAccessKey;
+            existingSettings.AwsSesSecretKey = model.AwsSesSecretKey;
             await dbContext.SaveChangesAsync();
             myResponse.IsSuccess = true;
         }

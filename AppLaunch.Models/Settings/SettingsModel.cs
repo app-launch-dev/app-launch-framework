@@ -19,5 +19,7 @@ public class SettingsModel
     public bool AllowSignUp { get; set; }
     public string? LoginOverrideCSS { get; set; }
     public string? LoginLogoUrl { get; set; }
+    public string? AwsSesAccessKey { get; set; }
+    public string? AwsSesSecretKey { get; set; }
 }
 

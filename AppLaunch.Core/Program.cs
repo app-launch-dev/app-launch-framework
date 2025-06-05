@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -43,7 +44,9 @@ builder.Services.AddScoped<MyIdentityUserAccessor>();
 builder.Services.AddScoped<MyIdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, MyIdentityRevalidatingAuthenticationStateProvider>();
 
-builder.Services.AddSingleton<IEmailSender<ApplicationUser>, AppLaunch.Admin.Account.IdentityNoOpEmailSender>();
+//builder.Services.AddSingleton<IEmailSender<ApplicationUser>, AppLaunch.Admin.Account.IdentityNoOpEmailSender>();
+builder.Services.AddTransient<IEmailSender, AwsSesEmailService>();
+
 
 builder.Services.AddAuthentication(options =>
     {

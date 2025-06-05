@@ -1,7 +1,11 @@
 ﻿@using AppLaunch.Models.Settings
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity.UI.Services
 @page "/admin/settings/"
 @inject ISettingsService SettingsService
 @inject IAlertService AlertService
+@inject ISnackbar Snackbar
+@inject IEmailSender EmailSender
 
 <MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
     <MudGrid>
@@ -21,38 +25,56 @@
         <MudText Typo="Typo.h6">General Settings</MudText>
         <MudGrid>
             <MudItem xs="12">
-                <MudCard>
-                    <MudCardContent>
-                        <MudTextField Label="Site Name" 
-                                      @bind-Value="SettingsData.SiteName" Variant="Variant.Outlined" />
-                        <MudTextField Label="Content Key" Class="mt-3"
-                                      @bind-Value="SettingsData.ContentKey" Variant="Variant.Outlined" />
-                    </MudCardContent>
-                </MudCard>
+                <MudTextField Label="Site Name"
+                              @bind-Value="SettingsData.SiteName" Variant="Variant.Outlined"/>
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField Label="Content Key" Class="mt-3"
+                              @bind-Value="SettingsData.ContentKey" Variant="Variant.Outlined"/>
             </MudItem>
         </MudGrid>
     </MudPaper>
 
     <MudPaper Class="pa-4 mt-4">
         <MudText Typo="Typo.h6">Email Settings</MudText>
-      
+
         <MudGrid>
             <MudItem xs="12">
-                <MudCard>
-                    <MudCardContent>
-                        <MudTextField Label="Email From" 
-                                      @bind-Value="SettingsData.DefaultEmailFrom" Variant="Variant.Outlined" />
-                    </MudCardContent>
-                </MudCard>
+                <MudTextField Label="Email From"
+                              @bind-Value="SettingsData.DefaultEmailFrom" Variant="Variant.Outlined"/>
+            </MudItem>
+            <MudItem xs="6">
+                <MudTextField Label="AWS SES Access Key"
+                              @bind-Value="SettingsData.AwsSesAccessKey" Variant="Variant.Outlined"/>
+            </MudItem>
+            <MudItem xs="6">
+                <MudTextField Label="AWS SWS Secret Key"
+                              @bind-Value="SettingsData.AwsSesSecretKey" Variant="Variant.Outlined"/>
+            </MudItem>
+            
+            <MudItem xs="8">
+                <MudTextField Label="Test Email"
+                              @bind-Value="testEmail" Variant="Variant.Outlined" Placeholder="johndoe@email.com" />
+            </MudItem>
+            <MudItem xs="4" Class="mt-4">
+                <MudButton ButtonType="ButtonType.Button" @onclick="SendTestEmail" StartIcon="@Icons.Material.Filled.Email" Variant="Variant.Filled"
+                           Color="Color.Secondary">Send Test Email
+                </MudButton>
             </MudItem>
         </MudGrid>
     </MudPaper>
 
-
+    <MudPaper Class="pa-2 mt-4">
+        <MudButton ButtonType="ButtonType.Submit" StartIcon="@Icons.Material.Filled.Update" Variant="Variant.Filled"
+                   Color="Color.Primary">Update Settings
+        </MudButton>
+       
+    </MudPaper>
 </EditForm>
 @code {
     SettingsModel SettingsData { get; set; } = new();
-
+    string testEmail = "";
+    
     protected override async Task OnInitializedAsync()
     {
         await GetSettings();
@@ -82,11 +104,28 @@
 
             await GetSettings();
 
-            await AlertService.AddAlert("Settings Saved", IAlertService.AlertType.Success);
+            Snackbar.Add("Settings Saved", Severity.Success);
         }
         catch (Exception ex)
         {
-            await AlertService.AddAlert(ex.Message, IAlertService.AlertType.Error);
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+    
+    private async Task SendTestEmail()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(testEmail)) throw new Exception("You must provide an e-mail address to send to.");
+            if (string.IsNullOrEmpty(SettingsData.AwsSesAccessKey)) throw new Exception("You must provide the AWS SES Access Key.");
+            if (string.IsNullOrEmpty(SettingsData.AwsSesSecretKey)) throw new Exception("You must provide the AWS SES Secret Key.");
+            await SaveSettings();
+            await EmailSender.SendEmailAsync(testEmail,"Test Message from AppLaunch", "Welcome to AppLaunch.<br /><br />This is a test message sent from the settings screen.");
+            Snackbar.Add("Email Sent", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
         }
     }
 
