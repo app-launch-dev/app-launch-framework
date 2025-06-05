@@ -58,6 +58,11 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
     public async Task<bool> UpdateUserAsync(ApplicationUser user)
     {
         user.UserName = user.Email;
+        
+        // Sanitizing step just before persisting to the database
+        // not in the UI binding - Mask has Spaces parentheses and dashes.
+        user.PhoneNumber = SanitizationExtensions.SanitizePhoneNumber(user.PhoneNumber);
+
         var result = await userManager.UpdateAsync(user);
         return result.Succeeded;
     }
@@ -123,6 +128,28 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
 
         // Shuffle and return
         return new string(password.OrderBy(_ => random.Next()).ToArray());
+    }
+    
+    public static class SanitizationExtensions
+    {
+        /// <summary>
+        /// Removes all non-digit characters from the string.
+        /// </summary>
+        public static string? SanitizePhoneNumber(string? input)
+        {
+            // Return null if no digits (empty array) , else new string
+            // Pros:
+            // Keeps null meaningful (i.e., "no phone number set").
+            // You don't store meaningless or empty values in the DB.
+            // Allows for easier validation logic (e.g., if (PhoneNumber == null) clearly means “not set”).
+            
+            if (string.IsNullOrWhiteSpace(input))
+                return null;
+
+            var sanitized = string.Concat(input.Where(char.IsDigit));
+
+            return string.IsNullOrEmpty(sanitized) ? null : sanitized;
+        }
     }
     
 }

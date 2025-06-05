@@ -44,7 +44,7 @@
             </MudItem>
 
             <MudItem xs="6">
-                <MudTextField Label="Phone" @bind-Value="MyUser.PhoneNumber"
+                <MudTextField Mask="@(new PatternMask("(000) 000-0000"))" Label="Phone" @bind-Value="MyUser.PhoneNumber"
                               Variant="Variant.Outlined"/>
             </MudItem>
             
