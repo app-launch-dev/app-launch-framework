@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using AppLaunch.Services.Data;
 using Microsoft.AspNetCore.Components.Authorization;
+using AppLaunch.Models;
 using Microsoft.AspNetCore.Http;
 
 namespace AppLaunch.Services;
@@ -10,13 +11,13 @@ public interface IUserService
 {
     Task<List<ApplicationUser>> GetAllUsersAsync();
     Task<ApplicationUser?> GetUserByIdAsync(string userId);
-    Task<bool> UpdateUserAsync(ApplicationUser user);
+    Task<CoreResponse> UpdateUserAsync(ApplicationUser user);
     Task<bool> DeleteUserAsync(string userId);
     Task<bool> UpdateUserRolesAsync(string userId, List<string> newRoles);
     string GeneratePassword();
     Task<ApplicationUser?> GetUserByEmailAsync(string email);
     Task<ApplicationUser?> GetCurrentUserAsync();
-    Task<bool> AddUserAsync(ApplicationUser user, string password);
+    Task<CoreResponse> AddUserAsync(ApplicationUser user, string password);
 }
 
 public class UserService(UserManager<ApplicationUser> userManager, AuthenticationStateProvider authStateProvider) : IUserService
@@ -37,12 +38,23 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
         return await userManager.FindByNameAsync(user.Identity.Name);
     }
 
-
-    public async Task<bool> AddUserAsync(ApplicationUser user, string password)
+    public async Task<CoreResponse> AddUserAsync(ApplicationUser user, string password)
     {
-        user.UserName = user.Email;
-        var result = await userManager.CreateAsync(user, password);
-         return result.Succeeded;
+        CoreResponse myResponse = new();
+        try
+        {
+            user.UserName = user.Email;
+            var result = await userManager.CreateAsync(user, password);
+            if (!result.Succeeded) throw new Exception(result.Errors.First().Description);;
+            myResponse.IsSuccess = true;
+        }
+        catch (Exception ex)
+        {
+            myResponse.IsSuccess = false;
+            myResponse.Message = ex.Message;
+        }
+
+        return myResponse;
     }
 
     public async Task<ApplicationUser?> GetUserByIdAsync(string userId)
@@ -55,16 +67,26 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
         return await userManager.FindByEmailAsync(email);
     }
     
-    public async Task<bool> UpdateUserAsync(ApplicationUser user)
+    public async Task<CoreResponse> UpdateUserAsync(ApplicationUser user)
     {
-        user.UserName = user.Email;
+        CoreResponse myResponse = new();
         
-        // Sanitizing step just before persisting to the database
-        // not in the UI binding - Mask has Spaces parentheses and dashes.
-        user.PhoneNumber = SanitizationExtensions.SanitizePhoneNumber(user.PhoneNumber);
-
-        var result = await userManager.UpdateAsync(user);
-        return result.Succeeded;
+        try
+        {
+            var emailExists = await GetUserByEmailAsync(user.Email);
+            if (emailExists != null && emailExists.Id != user.Id) throw new Exception("Email already in use");
+            user.UserName = user.Email;
+            
+            var result = await userManager.UpdateAsync(user);
+            if (!result.Succeeded) throw new Exception("Error updating user");
+            myResponse.IsSuccess = true;
+        }
+        catch (Exception ex)
+        {
+            myResponse.IsSuccess = false;
+            myResponse.Message = ex.Message;
+        }
+        return myResponse;
     }
 
     public async Task<bool> DeleteUserAsync(string userId)
@@ -102,7 +124,6 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
         return true;
     }
     
-    
     public string GeneratePassword()
     {
         const string uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -130,6 +151,14 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
         return new string(password.OrderBy(_ => random.Next()).ToArray());
     }
     
+    public ApplicationUser SanitizeUser(ApplicationUser user)
+    {
+        user.UserName = SanitizationExtensions.SanitizeEmail(user.Email);
+        user.Email = SanitizationExtensions.SanitizeEmail(user.Email);
+        user.PhoneNumber = SanitizationExtensions.SanitizePhoneNumber(user.PhoneNumber);
+        return user;
+    }
+    
     public static class SanitizationExtensions
     {
         /// <summary>
@@ -137,12 +166,6 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
         /// </summary>
         public static string? SanitizePhoneNumber(string? input)
         {
-            // Return null if no digits (empty array) , else new string
-            // Pros:
-            // Keeps null meaningful (i.e., "no phone number set").
-            // You don't store meaningless or empty values in the DB.
-            // Allows for easier validation logic (e.g., if (PhoneNumber == null) clearly means “not set”).
-            
             if (string.IsNullOrWhiteSpace(input))
                 return null;
 
@@ -150,6 +173,18 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
 
             return string.IsNullOrEmpty(sanitized) ? null : sanitized;
         }
+        
+        /// <summary>
+        /// Trims and return the lowercase equivalent of the current string.
+        /// </summary>
+        public static string? SanitizeEmail(string? input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                throw new ArgumentException("Email cannot be null or whitespace.", nameof(input));
+
+            return input.Trim().ToLowerInvariant();
+        }
+
     }
     
 }

@@ -90,20 +90,22 @@
 
     private async Task SaveUser()
     {
+        CoreResponse myResponse = new();
         try
         {
-            bool isSuccess = false;
+            // bool isSuccess = false;
             
             if (UserId == null)
             {
                 //new user
                 var newPassword = UserService.GeneratePassword();
                 MyUser.EmailConfirmed = true;
-                isSuccess = await UserService.AddUserAsync(MyUser, newPassword);
-                if (!isSuccess) throw new Exception("Unable to add user");
+                myResponse = await UserService.AddUserAsync(MyUser, newPassword);
+                if (!myResponse.IsSuccess) throw new Exception(myResponse.Message);
                 
+                //TODO: Convert GetUserByEmailAsync over to CoreResponse return
                 var newUser = await UserService.GetUserByEmailAsync(MyUser.Email);
-                if (!isSuccess) throw new Exception($"Unable to access user {MyUser.Email}");
+                if (!myResponse.IsSuccess) throw new Exception($"Unable to access user {MyUser.Email}");
             
                 Snackbar.Add("User has been added", Severity.Success);
                 NavigationManager.NavigateTo($"/Admin/Users/AddEditUser/{newUser.Id}");
@@ -116,14 +118,15 @@
                 existingUser.FirstName = MyUser.FirstName;
                 existingUser.LastName = MyUser.LastName;
                 existingUser.MiddleName = MyUser.MiddleName;
-                existingUser.Email = MyUser.Email; //todo: verify email is unique
-                isSuccess=await UserService.UpdateUserAsync(existingUser);
-                if (!isSuccess) throw new Exception("Unable to edit user");
+                // existingUser.Email = MyUser.Email; //todo: verify email is unique
+                myResponse = await UserService.UpdateUserAsync(existingUser);
+                if (!myResponse.IsSuccess) throw new Exception(myResponse.Message);
                 Snackbar.Add("User has been updated", Severity.Success);
+                NavigationManager.NavigateTo($"/Admin/Users/AddEditUser/{existingUser.Id}", true);
             }
           
         }
-        catch (Exception ex)
+        catch (Exception ex ) when (ex is not NavigationException)
         {
             Snackbar.Add(ex.Message, Severity.Error);
         }
@@ -131,7 +134,7 @@
 
     private async Task Close()
     {
-        NavigationManager.NavigateTo("/admin/users/");
+        NavigationManager.NavigateTo("/admin/users/", true);
     }
 
 }
