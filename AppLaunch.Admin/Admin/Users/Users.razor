@@ -24,7 +24,7 @@
 
 <MudGrid Class="mt-2">
     <MudItem xs="12">
-        <MudTable Items="@AllUsers" Hover="true" Dense="true" SortLabel="Sort">
+        <MudTable Items="@AllUserData" Hover="true" Dense="true" SortLabel="Sort">
             <HeaderContent>
                 <MudTh>First Name</MudTh>
                 <MudTh>Last Name</MudTh>
@@ -56,7 +56,8 @@
 
 
 @code {
-    private List<ApplicationUser> AllUsers = new();
+    private CoreResponse<List<ApplicationUser>> _allUsers = new();
+    List<ApplicationUser> AllUserData { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -65,7 +66,8 @@
 
     private async Task GetAllUsers()
     {
-        AllUsers = await UserService.GetAllUsersAsync();
+        _allUsers = await UserService.GetAllUsersAsync();
+        if (_allUsers.IsSuccess) AllUserData = _allUsers.Data;
     }
 
     private async Task AddUser()

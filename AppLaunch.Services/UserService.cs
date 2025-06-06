@@ -9,7 +9,7 @@ namespace AppLaunch.Services;
 
 public interface IUserService
 {
-    Task<List<ApplicationUser>> GetAllUsersAsync();
+    Task<CoreResponse<List<ApplicationUser>>> GetAllUsersAsync();
     Task<ApplicationUser?> GetUserByIdAsync(string userId);
     Task<CoreResponse> UpdateUserAsync(ApplicationUser user);
     Task<bool> DeleteUserAsync(string userId);
@@ -22,9 +22,40 @@ public interface IUserService
 
 public class UserService(UserManager<ApplicationUser> userManager, AuthenticationStateProvider authStateProvider) : IUserService
 {
-    public async Task<List<ApplicationUser>> GetAllUsersAsync()
+    public async Task<CoreResponse<List<ApplicationUser>>> GetAllUsersAsync()
     {
-        return await userManager.Users.ToListAsync();
+        CoreResponse<List<ApplicationUser>> myResponse = new();
+        try
+        {
+            List<ApplicationUser> users = new();
+            var response = await userManager.Users.ToListAsync();
+            foreach (var user in response)
+            {
+                ApplicationUser myApplicationUser = new()
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    EmailConfirmed = user.EmailConfirmed,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    PhoneNumber = user.PhoneNumber,
+                    PhoneNumberConfirmed = user.PhoneNumberConfirmed,
+                    UserName = user.UserName,
+                    TwoFactorEnabled = user.TwoFactorEnabled,
+                };
+                users.Add(myApplicationUser);
+            }
+            
+            myResponse.Data = users;
+            myResponse.IsSuccess = true;
+        }
+        catch (Exception ex)
+        {
+            myResponse.IsSuccess = false;
+            myResponse.Message = ex.Message;
+        }
+
+        return myResponse;
     }
     
     public async Task<ApplicationUser?> GetCurrentUserAsync()
