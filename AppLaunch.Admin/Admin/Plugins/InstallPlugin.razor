@@ -1,0 +1,72 @@
+﻿@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@page "/admin/plugins/installplugin"
+@inject NavigationManager NavigationManager
+@using System.Net.Http.Headers
+@inject HttpClient Http
+
+<MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudText Typo="Typo.h4" Color="Color.Primary">Plugins</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Install plugins for your organization
+            </MudText>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+
+<MudPaper Class="pa-2 mt-4">
+    <InputFile id="fileInput" OnChange="LoadPackage" />
+    <MudButton @onclick="InstallPackage" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.CloudUpload" Color="Color.Primary">Upload Plugin</MudButton>
+</MudPaper>
+
+
+
+
+@code {
+    private IBrowserFile? packageFile;
+    
+    private void LoadPackage(InputFileChangeEventArgs e) 
+    {
+        packageFile = e.File;
+    }
+    private async Task InstallPackage()
+    {
+        try
+        {
+            if (packageFile == null) return;
+        
+            // Validate file type
+            if (!packageFile.Name.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Invalid NuGet package format");
+            }
+
+            // Check file size FIRST
+            if (packageFile.Size > 50 * 1024 * 1024) // 50MB limit
+            {
+                throw new InvalidOperationException("File size exceeds 50MB limit");
+            }
+
+            // Create content with EXPLICIT media type
+            using var stream = packageFile.OpenReadStream();
+            var fileContent = new StreamContent(stream);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+        
+            var content = new MultipartFormDataContent();
+            content.Add(fileContent, "package", packageFile.Name);
+            
+            var baseUri = new Uri(NavigationManager.BaseUri);
+            var apiUri = new Uri(baseUri, "api/plugins/install");
+            await Http.PostAsync(apiUri, content);
+        }
+        catch (Exception ex)
+        {
+            System.Console.WriteLine("Package install failed: {Message}", ex.Message);
+            // Consider adding user-facing error message
+        }
+    }
+
+
+}

@@ -55,7 +55,7 @@
 
     <ItemGroup>
       <None Remove="Plugins\plugins.txt" />
-      <Content Include="Plugins\plugins.txt">
+      <Content Include="PluginData\plugins.txt">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
     </ItemGroup>

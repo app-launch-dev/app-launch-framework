@@ -118,51 +118,24 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.ClaimsIdentity.RoleClaimType = ClaimTypes.Role;
 });
 
-
-
 var app = builder.Build();
 
-static Assembly[] LoadPluginAssemblies()
+var pluginsDir = Path.Combine(Environment.CurrentDirectory, "PluginData");
+List<Assembly> additionalAssemblies = new();
+
+foreach (var pluginDir in Directory.GetDirectories(pluginsDir))
 {
-    var pluginPath = Path.Combine(AppContext.BaseDirectory, "Plugins");
-    return Directory.EnumerateFiles(pluginPath, "*.dll")
-        .Select(Assembly.LoadFrom)
-        .ToArray();
-}
+    var libDir = Path.Combine(pluginDir, "lib", "net9.0"); // Or your target framework
+    if (!Directory.Exists(libDir))
+        continue;
 
-var additionalAssemblies = LoadPluginAssemblies().ToList();
-
-void ProcessAssembly(Assembly assembly)
-{
-    try
+    foreach (var dllFile in Directory.GetFiles(libDir, "*.dll"))
     {
-        Type interfaceType = typeof(IAppLaunchPlugin);
-        IEnumerable<Type> pluginTypes = assembly.GetTypes()
-            .Where(t => interfaceType.IsAssignableFrom(t) && !t.IsAbstract && t.IsClass);
-
-        foreach (Type type in pluginTypes)
-        {
-            IAppLaunchPlugin plugin = (IAppLaunchPlugin)Activator.CreateInstance(type);
-            plugin.LoadPlugin();
-        }
-    }
-    catch (ReflectionTypeLoadException ex)
-    {
-        Console.WriteLine($"Error loading types from {assembly.FullName}: {ex.LoaderExceptions.First().Message}");
+        var context = new PluginLoadContext(dllFile);
+        var assembly = context.LoadFromAssemblyPath(dllFile);
+        additionalAssemblies.Add(assembly);
     }
 }
-
-// // Apply migrations at startup
-// try
-// {
-//     using var scope = app.Services.CreateScope();
-//     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-//     dbContext.Database.Migrate();
-// }
-// catch (Exception ex)
-// {
-//    Console.WriteLine($"Skipping migrations: {ex.Message}");
-// }
 
 
 // Configure the HTTP request pipeline.
@@ -188,15 +161,15 @@ app.MapControllers();
 app.MapRazorPages();
 app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(AppLaunch.Admin._Imports).Assembly)
-    //.AddAdditionalAssemblies(additionalAssemblies.ToArray())
+    .AddAdditionalAssemblies(additionalAssemblies.ToArray())
     .AddInteractiveServerRenderMode();
 app.UseAuthorization();
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 
-foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-{
-    ProcessAssembly(assembly);
-}
+// foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+// {
+//     ProcessAssembly(assembly);
+// }
 
 app.Run();
