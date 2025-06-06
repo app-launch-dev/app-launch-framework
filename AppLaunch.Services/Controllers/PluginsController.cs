@@ -19,7 +19,7 @@ public class PluginsController : ControllerBase
     [HttpPost("install")]
     public async Task<IActionResult> InstallPlugin(IFormFile package)
     {
-        const string pluginsDir = "Plugins";
+        const string pluginsDir = "PluginData";
         var extractPath = Path.Combine(pluginsDir, Guid.NewGuid().ToString());
         var nupkgPath = Path.Combine(pluginsDir, package.FileName);
 

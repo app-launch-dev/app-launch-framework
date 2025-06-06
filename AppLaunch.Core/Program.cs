@@ -118,55 +118,9 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.ClaimsIdentity.RoleClaimType = ClaimTypes.Role;
 });
 
-
-
 var app = builder.Build();
 
-// static Assembly[] LoadPluginAssemblies()
-// {
-//     var pluginPath = Path.Combine(AppContext.BaseDirectory, "Plugins");
-//     return Directory.EnumerateFiles(pluginPath, "*.dll")
-//         .Select(Assembly.LoadFrom)
-//         .ToArray();
-// }
-//
-// var additionalAssemblies = LoadPluginAssemblies().ToList();
-//
-// void ProcessAssembly(Assembly assembly)
-// {
-//     try
-//     {
-//         Type interfaceType = typeof(IAppLaunchPlugin);
-//         IEnumerable<Type> pluginTypes = assembly.GetTypes()
-//             .Where(t => interfaceType.IsAssignableFrom(t) && !t.IsAbstract && t.IsClass);
-//
-//         foreach (Type type in pluginTypes)
-//         {
-//             IAppLaunchPlugin plugin = (IAppLaunchPlugin)Activator.CreateInstance(type);
-//             plugin.LoadPlugin();
-//         }
-//     }
-//     catch (ReflectionTypeLoadException ex)
-//     {
-//         Console.WriteLine($"Error loading types from {assembly.FullName}: {ex.LoaderExceptions.First().Message}");
-//     }
-// }
-
-// // Apply migrations at startup
-// try
-// {
-//     using var scope = app.Services.CreateScope();
-//     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-//     dbContext.Database.Migrate();
-// }
-// catch (Exception ex)
-// {
-//    Console.WriteLine($"Skipping migrations: {ex.Message}");
-// }
-
-
-
-var pluginsDir = Path.Combine(Environment.CurrentDirectory, "Plugins");
+var pluginsDir = Path.Combine(Environment.CurrentDirectory, "PluginData");
 List<Assembly> additionalAssemblies = new();
 
 foreach (var pluginDir in Directory.GetDirectories(pluginsDir))

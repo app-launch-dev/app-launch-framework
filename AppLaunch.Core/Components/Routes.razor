@@ -17,7 +17,7 @@
         //add admin as an assembly        
         additionalAssemblies.Add(typeof(AppLaunch.Admin._Imports).Assembly);
         
-        var pluginsDir = Path.Combine(Environment.CurrentDirectory, "Plugins");
+        var pluginsDir = Path.Combine(Environment.CurrentDirectory, "PluginData");
 
         foreach (var pluginDir in Directory.GetDirectories(pluginsDir))
         {

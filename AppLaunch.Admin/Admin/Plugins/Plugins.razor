@@ -1,0 +1,73 @@
+﻿@using AppLaunch.Services.Data
+@page "/admin/plugins"
+
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudText Typo="Typo.h4" Color="Color.Primary">Plugins</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Install plugins for your organization
+            </MudText>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudPaper Class="pa-2 mt-4">
+    <MudButton @onclick="AddPlugin" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.InstallDesktop" Color="Color.Primary" >Install Plugin</MudButton>
+</MudPaper>
+
+
+@* <MudGrid Class="mt-2"> *@
+@*     <MudItem xs="12"> *@
+@*         <MudTable Items="@AllUsers" Hover="true" Dense="true" SortLabel="Sort"> *@
+@*             <HeaderContent> *@
+@*                 <MudTh>First Name</MudTh> *@
+@*                 <MudTh>Last Name</MudTh> *@
+@*                 <MudTh>Email</MudTh> *@
+@*                 <MudTh></MudTh> *@
+@*             </HeaderContent> *@
+@* *@
+@*             <RowTemplate> *@
+@*                 <MudTd DataLabel="Email">@context.FirstName</MudTd> *@
+@*                 <MudTd DataLabel="Email">@context.LastName</MudTd> *@
+@*                 <MudTd DataLabel="Email">@context.Email</MudTd> *@
+@*                  *@
+@*                 <MudTd> *@
+@*                     <MudIconButton Icon="@Icons.Material.Filled.Edit"  *@
+@*                                    Color="Color.Primary" *@
+@*                                    OnClick="() => EditUser(context.Id)" /> *@
+@*                     <MudIconButton Icon="@Icons.Material.Filled.Delete"  *@
+@*                                    Color="Color.Error" *@
+@*                                    OnClick="() => DeleteUser(context.Id)" /> *@
+@*                 </MudTd> *@
+@*             </RowTemplate> *@
+@* *@
+@*             <PagerContent> *@
+@*                 <MudTablePager/> *@
+@*             </PagerContent> *@
+@*         </MudTable> *@
+@*     </MudItem> *@
+@* </MudGrid> *@
+
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetAllPlugins();
+    }
+
+    private async Task GetAllPlugins()
+    {
+        
+    }
+
+    private async Task AddPlugin()
+    {
+        NavigationManager.NavigateTo("/admin/plugins/installplugin");
+    }
+
+}
