@@ -16,7 +16,7 @@ public interface IUserService
     Task<bool> UpdateUserRolesAsync(string userId, List<string> newRoles);
     string GeneratePassword();
     Task<ApplicationUser?> GetUserByEmailAsync(string email);
-    Task<ApplicationUser?> GetCurrentUserAsync();
+    Task<CoreResponse<ApplicationUser?>> GetCurrentUserAsync();
     Task<CoreResponse> AddUserAsync(ApplicationUser user, string password);
 }
 
@@ -58,15 +58,29 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
         return myResponse;
     }
     
-    public async Task<ApplicationUser?> GetCurrentUserAsync()
+    public async Task<CoreResponse<ApplicationUser?>> GetCurrentUserAsync()
     {
-        var authState = await authStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
+        CoreResponse<ApplicationUser?> myResponse = new();
+        try
+        {
+            var authState = await authStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
 
-        if (user.Identity is not { IsAuthenticated: true })
-            return null;
+            if (user.Identity is not { IsAuthenticated: true })
+                return null;
 
-        return await userManager.FindByNameAsync(user.Identity.Name);
+            var response = await userManager.FindByNameAsync(user.Identity.Name);
+            
+            myResponse.Data = response;
+            myResponse.IsSuccess = true;
+        }
+        catch (Exception ex)
+        {
+            myResponse.IsSuccess = false;
+            myResponse.Message = ex.Message;
+        }
+
+        return myResponse;
     }
 
     public async Task<CoreResponse> AddUserAsync(ApplicationUser user, string password)

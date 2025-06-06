@@ -80,13 +80,13 @@
         NavigationManager.NavigateTo($"/admin/users/addedituser/{UserId}");
     }
 
-    private async Task DeleteUser(string UserId)
+    private async Task DeleteUser(string userId)
     {
         try
         {
             var currentUser = await UserService.GetCurrentUserAsync();
-            if (UserId==currentUser.Id)  throw new Exception($"Unable to delete user {currentUser.Email} because this is your account.");
-            var isSuccess = await UserService.DeleteUserAsync(UserId);
+            if (userId==currentUser.Data.Id)  throw new Exception($"Unable to delete user {currentUser.Data.Email} because this is your account.");
+            var isSuccess = await UserService.DeleteUserAsync(userId);
             if (!isSuccess) throw new Exception("Unable to delete this user");
             Snackbar.Add("User has been removed", Severity.Info);
             await GetAllUsers();
