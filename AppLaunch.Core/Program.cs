@@ -46,6 +46,9 @@ builder.Services.AddScoped<AuthenticationStateProvider, MyIdentityRevalidatingAu
 
 //builder.Services.AddSingleton<IEmailSender<ApplicationUser>, AppLaunch.Admin.Account.IdentityNoOpEmailSender>();
 builder.Services.AddTransient<IEmailSender, AwsSesEmailService>();
+builder.Services.AddTransient<IEmailSender<ApplicationUser>>(provider =>
+    new AppLaunch.Services.AwsSesIdentityEmailService(provider.GetRequiredService<ISettingsService>(),provider.GetRequiredService<IEmailSender>())
+);
 
 
 builder.Services.AddAuthentication(options =>
@@ -92,7 +95,6 @@ builder.WebHost.ConfigureKestrel(options =>
 
 // Register HttpClient
 builder.Services.AddHttpClient();
-//builder.Services.AddSingleton<IEmailSender<ApplicationUser>, AppLaunch.Core.Components.Account.IdentityNoOpEmailSender>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<ICacheService, CacheService>();
