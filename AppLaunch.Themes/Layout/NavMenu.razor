@@ -13,6 +13,7 @@
     
     <AuthorizeView Roles="Admin">
         <Authorized>
+            <MudNavLink Href="/Admin/Plugins" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Apps">Plugins</MudNavLink>
             <MudNavLink Href="/Admin/Settings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings">Settings</MudNavLink>
             <MudNavLink Href="/Admin/Users" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Users</MudNavLink>
         </Authorized>
