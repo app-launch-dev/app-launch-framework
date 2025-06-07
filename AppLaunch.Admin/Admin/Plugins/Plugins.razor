@@ -1,6 +1,5 @@
-﻿@using AppLaunch.Services.Data
-@page "/admin/plugins"
-
+﻿@page "/admin/plugins"
+@inject PluginManager PluginManager
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 
@@ -20,54 +19,190 @@
 </MudPaper>
 
 
-@* <MudGrid Class="mt-2"> *@
-@*     <MudItem xs="12"> *@
-@*         <MudTable Items="@AllUsers" Hover="true" Dense="true" SortLabel="Sort"> *@
-@*             <HeaderContent> *@
-@*                 <MudTh>First Name</MudTh> *@
-@*                 <MudTh>Last Name</MudTh> *@
-@*                 <MudTh>Email</MudTh> *@
-@*                 <MudTh></MudTh> *@
-@*             </HeaderContent> *@
-@* *@
-@*             <RowTemplate> *@
-@*                 <MudTd DataLabel="Email">@context.FirstName</MudTd> *@
-@*                 <MudTd DataLabel="Email">@context.LastName</MudTd> *@
-@*                 <MudTd DataLabel="Email">@context.Email</MudTd> *@
-@*                  *@
-@*                 <MudTd> *@
-@*                     <MudIconButton Icon="@Icons.Material.Filled.Edit"  *@
-@*                                    Color="Color.Primary" *@
-@*                                    OnClick="() => EditUser(context.Id)" /> *@
-@*                     <MudIconButton Icon="@Icons.Material.Filled.Delete"  *@
-@*                                    Color="Color.Error" *@
-@*                                    OnClick="() => DeleteUser(context.Id)" /> *@
-@*                 </MudTd> *@
-@*             </RowTemplate> *@
-@* *@
-@*             <PagerContent> *@
-@*                 <MudTablePager/> *@
-@*             </PagerContent> *@
-@*         </MudTable> *@
-@*     </MudItem> *@
-@* </MudGrid> *@
+<MudGrid Class="mt-2">
+    <MudItem xs="12">
+        <MudTable Items="@AdditionalAssemblies" Hover="true" Dense="true" SortLabel="Sort">
+            <HeaderContent>
+                <MudTh>Plugin Name</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+
+            <RowTemplate>
+                <MudTd>@context</MudTd>
+                <MudTd>
+                    @if (PluginManager.IsPluginLoaded(context))
+                    {
+                        <div style="display: flex; align-items: center;">
+                            <MudIcon Icon="@Icons.Material.Filled.Autorenew" Color="Color.Success" />
+                            <span style="margin-left: 8px;">Running</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="display: flex; align-items: center;">
+                            <MudIcon Icon="@Icons.Material.Filled.StopCircle" Color="Color.Error" />
+                            <span style="margin-left: 8px;">Stopped</span>
+                        </div>
+                    }
+                </MudTd>
+                <MudTd>
+                @if (PluginManager.IsPluginLoaded(context))
+                {
+                    <MudTooltip Text="Stop Plugin">
+                        <MudIconButton Icon="@Icons.Material.Filled.StopCircle"
+                                       Color="Color.Dark"
+                                       OnClick="() => PluginManager.StopPlugin(context)"/>
+                    </MudTooltip>
+                }
+                else
+                {
+                    <MudTooltip Text="Start Plugin">
+                        <MudIconButton Icon="@Icons.Material.Filled.Start"
+                                       Color="Color.Success"
+                                       OnClick="() => PluginManager.LoadPlugin(context)"/>
+                    </MudTooltip>
+                }
+                    <MudTooltip Text="Delete Plugin">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       OnClick="() => DeletePlugin(context)"/>
+                    </MudTooltip>
+                </MudTd>
+            </RowTemplate>
+
+            <PagerContent>
+                <MudTablePager/>
+            </PagerContent>
+        </MudTable>
+    </MudItem>
+</MudGrid>
 
 
 @code {
+    List<string> AdditionalAssemblies = new();
 
+    private Dictionary<string, PluginLoadContext> _pluginContexts = new();
+    
     protected override async Task OnInitializedAsync()
     {
-        await GetAllPlugins();
+        AdditionalAssemblies = PluginManager.GetAvailablePlugins();
     }
 
-    private async Task GetAllPlugins()
-    {
-        
-    }
+    
+    // private void RestoreRunningPlugins()
+    // {
+    //     if (!File.Exists("runningPlugins.json")) return;
+    //
+    //     var savedPlugins = JsonSerializer.Deserialize<List<string>>(File.ReadAllText("runningPlugins.json"));
+    //
+    //     if (savedPlugins != null)
+    //     {
+    //         foreach (var pluginName in savedPlugins)
+    //         {
+    //             LoadPlugin(pluginName); // Automatically reloads saved plugins
+    //         }
+    //     }
+    // }
+
+    // private async Task GetAllPlugins()
+    // {
+    //     var pluginsDir = Path.Combine(Environment.CurrentDirectory, "PluginData");
+    //
+    //     foreach (var pluginDir in Directory.GetDirectories(pluginsDir))
+    //     {
+    //         var libDir = Path.Combine(pluginDir, "lib", "net9.0");
+    //         if (!Directory.Exists(libDir)) continue;
+    //
+    //         foreach (var dllFile in Directory.GetFiles(libDir, "*.dll"))
+    //         {
+    //             var pluginName = Path.GetFileNameWithoutExtension(dllFile);
+    //             AdditionalAssemblies.Add(pluginName); // Store plugin name
+    //         }
+    //     }
+    // }
 
     private async Task AddPlugin()
     {
         NavigationManager.NavigateTo("/admin/plugins/installplugin");
     }
+    
+    private async Task DeletePlugin(string PluginId)
+    {
+        NavigationManager.NavigateTo("/admin/plugins/installplugin");
+    }
+    
+    
+    // bool IsAssemblyLoaded(string assemblyName)
+    // {
+    //     return _pluginContexts.ContainsKey(assemblyName); // Checks active plugins
+    // }
+
+    // public void LoadPlugin(string pluginName)
+    // {
+    //     if (_pluginContexts.ContainsKey(pluginName))
+    //         return;
+    //
+    //     var pluginPath = GetPluginPath(pluginName);
+    //     if (pluginPath == null)
+    //     {
+    //         Console.WriteLine($"Plugin '{pluginName}' not found.");
+    //         return;
+    //     }
+    //
+    //     var context = new PluginLoadContext(pluginPath);
+    //     var assembly = context.LoadFromAssemblyPath(pluginPath);
+    //
+    //     _pluginContexts[pluginName] = context;
+    //
+    //     // Ensure plugin name is added only once
+    //     if (!AdditionalAssemblies.Contains(pluginName))
+    //     {
+    //         AdditionalAssemblies.Add(pluginName);
+    //     }
+    //
+    //     SaveRunningPlugins(); // Persist running plugin state
+    // }
+
+
+    // private void SaveRunningPlugins()
+    // {
+    //     var runningPlugins = _pluginContexts.Keys.ToList();
+    //     File.WriteAllText("runningPlugins.json", JsonSerializer.Serialize(runningPlugins));
+    // }
+    
+    // private string? GetPluginPath(string pluginName)
+    // {
+    //     var pluginsDir = Path.Combine(Environment.CurrentDirectory, "PluginData");
+    //
+    //     return Directory.GetFiles(pluginsDir, "*.dll", SearchOption.AllDirectories)
+    //         .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f).Equals(pluginName, StringComparison.OrdinalIgnoreCase));
+    // }
+
+
+
+
+
+
+    // public void StopPlugin(string pluginName)
+    // {
+    //     if (_pluginContexts.TryGetValue(pluginName, out var context))
+    //     {
+    //         context.UnloadPlugin();
+    //         _pluginContexts.Remove(pluginName); // Remove from memory
+    //
+    //         UpdateRunningPlugins(); // Remove from JSON
+    //     }
+    // }
+
+// Update the JSON file after stopping a plugin
+    // private void UpdateRunningPlugins()
+    // {
+    //     var runningPlugins = _pluginContexts.Keys.ToList();
+    //     File.WriteAllText("runningPlugins.json", JsonSerializer.Serialize(runningPlugins));
+    // }
+
+
+
 
 }

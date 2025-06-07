@@ -94,8 +94,11 @@ builder.WebHost.ConfigureKestrel(options =>
 });
 
 // Register HttpClient
+
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddSingleton<PluginManager>();
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<ICacheService, CacheService>();
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
@@ -125,19 +128,19 @@ var app = builder.Build();
 var pluginsDir = Path.Combine(Environment.CurrentDirectory, "PluginData");
 List<Assembly> additionalAssemblies = new();
 
-foreach (var pluginDir in Directory.GetDirectories(pluginsDir))
-{
-    var libDir = Path.Combine(pluginDir, "lib", "net9.0"); // Or your target framework
-    if (!Directory.Exists(libDir))
-        continue;
-
-    foreach (var dllFile in Directory.GetFiles(libDir, "*.dll"))
-    {
-        var context = new PluginLoadContext(dllFile);
-        var assembly = context.LoadFromAssemblyPath(dllFile);
-        additionalAssemblies.Add(assembly);
-    }
-}
+// foreach (var pluginDir in Directory.GetDirectories(pluginsDir))
+// {
+//     var libDir = Path.Combine(pluginDir, "lib", "net9.0"); // Or your target framework
+//     if (!Directory.Exists(libDir))
+//         continue;
+//
+//     foreach (var dllFile in Directory.GetFiles(libDir, "*.dll"))
+//     {
+//         var context = new PluginLoadContext(dllFile);
+//         var assembly = context.LoadFromAssemblyPath(dllFile);
+//         additionalAssemblies.Add(assembly);
+//     }
+// }
 
 
 // Configure the HTTP request pipeline.
@@ -161,17 +164,22 @@ app.UseRouting();
 app.UseAntiforgery();
 app.MapControllers();
 app.MapRazorPages();
+// Auto-load saved plugins on application startup
+var pluginManager = app.Services.GetRequiredService<PluginManager>();
+pluginManager.InitializePlugins();
+
+// Get plugin assemblies for routing, avoiding duplicates
+var existingAssemblies = new List<Assembly> { typeof(AppLaunch.Admin._Imports).Assembly };
+var runningPluginAssemblies = pluginManager.GetRunningPluginAssemblies(existingAssemblies);
+
+// Register Razor components and dynamically add plugin assemblies
 app.MapRazorComponents<App>()
-    .AddAdditionalAssemblies(typeof(AppLaunch.Admin._Imports).Assembly)
-    .AddAdditionalAssemblies(additionalAssemblies.ToArray())
+    .AddAdditionalAssemblies(existingAssemblies.ToArray()) // Always add Admin
+    .AddAdditionalAssemblies(runningPluginAssemblies.ToArray()) // Add dynamically loaded plugins
     .AddInteractiveServerRenderMode();
+
 app.UseAuthorization();
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
-
-// foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-// {
-//     ProcessAssembly(assembly);
-// }
 
 app.Run();

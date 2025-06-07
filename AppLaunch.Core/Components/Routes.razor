@@ -1,4 +1,6 @@
 ﻿@using System.Reflection
+@inject PluginManager PluginManager
+
 <Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="@additionalAssemblies">
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(AppLaunch.Themes.Layout.AppLaunchDefault)">
@@ -6,7 +8,6 @@
                 <RedirectToLogin />
             </NotAuthorized>
         </AuthorizeRouteView>
-        @* <FocusOnNavigate RouteData="routeData" Selector="h1" /> *@
     </Found>
 </Router>
 @code {
@@ -14,26 +15,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        //add admin as an assembly        
         additionalAssemblies.Add(typeof(AppLaunch.Admin._Imports).Assembly);
-        
-        var pluginsDir = Path.Combine(Environment.CurrentDirectory, "PluginData");
 
-        foreach (var pluginDir in Directory.GetDirectories(pluginsDir))
+        var runningPlugins = PluginManager.LoadRunningPlugins();
+        foreach (var pluginName in runningPlugins)
         {
-            var libDir = Path.Combine(pluginDir, "lib", "net9.0"); // Or your target framework
-            if (!Directory.Exists(libDir))
-                continue;
-
-            foreach (var dllFile in Directory.GetFiles(libDir, "*.dll"))
+            var assembly = PluginManager.GetPluginAssembly(pluginName);
+            if (assembly != null)
             {
-                var context = new PluginLoadContext(dllFile);
-                var assembly = context.LoadFromAssemblyPath(dllFile);
                 additionalAssemblies.Add(assembly);
             }
         }
+
+        var bob = 2;
     }
 }
-
-
-@* AdditionalAssemblies="new[] { typeof(AppLaunch.Admin._Imports).Assembly, typeof(AppLaunch.Admin.Account.Pages.Login).Assembly, typeof(AppLaunch.Core.Components._Imports).Assembly,typeof(AppLaunch.Themes._Imports).Assembly }"> *@
