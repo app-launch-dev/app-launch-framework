@@ -18,7 +18,6 @@
     <MudButton @onclick="AddPlugin" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.InstallDesktop" Color="Color.Primary" >Install Plugin</MudButton>
 </MudPaper>
 
-
 <MudGrid Class="mt-2">
     <MudItem xs="12">
         <MudTable Items="@AdditionalAssemblies" Hover="true" Dense="true" SortLabel="Sort">
@@ -89,120 +88,25 @@
         AdditionalAssemblies = PluginManager.GetAvailablePlugins();
     }
 
-    
-    // private void RestoreRunningPlugins()
-    // {
-    //     if (!File.Exists("runningPlugins.json")) return;
-    //
-    //     var savedPlugins = JsonSerializer.Deserialize<List<string>>(File.ReadAllText("runningPlugins.json"));
-    //
-    //     if (savedPlugins != null)
-    //     {
-    //         foreach (var pluginName in savedPlugins)
-    //         {
-    //             LoadPlugin(pluginName); // Automatically reloads saved plugins
-    //         }
-    //     }
-    // }
-
-    // private async Task GetAllPlugins()
-    // {
-    //     var pluginsDir = Path.Combine(Environment.CurrentDirectory, "PluginData");
-    //
-    //     foreach (var pluginDir in Directory.GetDirectories(pluginsDir))
-    //     {
-    //         var libDir = Path.Combine(pluginDir, "lib", "net9.0");
-    //         if (!Directory.Exists(libDir)) continue;
-    //
-    //         foreach (var dllFile in Directory.GetFiles(libDir, "*.dll"))
-    //         {
-    //             var pluginName = Path.GetFileNameWithoutExtension(dllFile);
-    //             AdditionalAssemblies.Add(pluginName); // Store plugin name
-    //         }
-    //     }
-    // }
-
     private async Task AddPlugin()
     {
         NavigationManager.NavigateTo("/admin/plugins/installplugin");
     }
     
-    private async Task DeletePlugin(string PluginId)
+    private async Task DeletePlugin(string pluginName)
     {
-        NavigationManager.NavigateTo("/admin/plugins/installplugin");
+        try
+        {
+            var response=await PluginManager.DeletePlugin(pluginName);
+            if (!response.IsSuccess) throw new Exception(response.Message);
+            Snackbar.Add("Plugin has been deleted", Severity.Info);
+            NavigationManager.NavigateTo("/admin/plugins/",true);
+        }
+        catch (Exception ex ) when (ex is not NavigationException)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+       
     }
     
-    
-    // bool IsAssemblyLoaded(string assemblyName)
-    // {
-    //     return _pluginContexts.ContainsKey(assemblyName); // Checks active plugins
-    // }
-
-    // public void LoadPlugin(string pluginName)
-    // {
-    //     if (_pluginContexts.ContainsKey(pluginName))
-    //         return;
-    //
-    //     var pluginPath = GetPluginPath(pluginName);
-    //     if (pluginPath == null)
-    //     {
-    //         Console.WriteLine($"Plugin '{pluginName}' not found.");
-    //         return;
-    //     }
-    //
-    //     var context = new PluginLoadContext(pluginPath);
-    //     var assembly = context.LoadFromAssemblyPath(pluginPath);
-    //
-    //     _pluginContexts[pluginName] = context;
-    //
-    //     // Ensure plugin name is added only once
-    //     if (!AdditionalAssemblies.Contains(pluginName))
-    //     {
-    //         AdditionalAssemblies.Add(pluginName);
-    //     }
-    //
-    //     SaveRunningPlugins(); // Persist running plugin state
-    // }
-
-
-    // private void SaveRunningPlugins()
-    // {
-    //     var runningPlugins = _pluginContexts.Keys.ToList();
-    //     File.WriteAllText("runningPlugins.json", JsonSerializer.Serialize(runningPlugins));
-    // }
-    
-    // private string? GetPluginPath(string pluginName)
-    // {
-    //     var pluginsDir = Path.Combine(Environment.CurrentDirectory, "PluginData");
-    //
-    //     return Directory.GetFiles(pluginsDir, "*.dll", SearchOption.AllDirectories)
-    //         .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f).Equals(pluginName, StringComparison.OrdinalIgnoreCase));
-    // }
-
-
-
-
-
-
-    // public void StopPlugin(string pluginName)
-    // {
-    //     if (_pluginContexts.TryGetValue(pluginName, out var context))
-    //     {
-    //         context.UnloadPlugin();
-    //         _pluginContexts.Remove(pluginName); // Remove from memory
-    //
-    //         UpdateRunningPlugins(); // Remove from JSON
-    //     }
-    // }
-
-// Update the JSON file after stopping a plugin
-    // private void UpdateRunningPlugins()
-    // {
-    //     var runningPlugins = _pluginContexts.Keys.ToList();
-    //     File.WriteAllText("runningPlugins.json", JsonSerializer.Serialize(runningPlugins));
-    // }
-
-
-
-
 }

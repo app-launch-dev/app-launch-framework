@@ -20,7 +20,8 @@ public class PluginsController : ControllerBase
     public async Task<IActionResult> InstallPlugin(IFormFile package)
     {
         const string pluginsDir = "PluginData";
-        var extractPath = Path.Combine(pluginsDir, Guid.NewGuid().ToString());
+        var guidFolder = Path.Combine(pluginsDir, Guid.NewGuid().ToString()); // Create GUID folder
+        //var extractPath = Path.Combine(pluginsDir, Guid.NewGuid().ToString());
         var nupkgPath = Path.Combine(pluginsDir, package.FileName);
 
         try
@@ -42,22 +43,32 @@ public class PluginsController : ControllerBase
                 return BadRequest("Invalid NuGet package structure");
 
             // 4. Extract package
-            Directory.CreateDirectory(extractPath);
-            ZipFile.ExtractToDirectory(nupkgPath, extractPath);
+            Directory.CreateDirectory(guidFolder);
+            ZipFile.ExtractToDirectory(nupkgPath, guidFolder);
+            
+            // Find the DLL file inside `lib/net9.0`
+            var libFolder = Path.Combine(guidFolder, "lib", "net9.0");
+            var dllFile = Directory.GetFiles(libFolder, "*.dll").FirstOrDefault();
+
+            if (dllFile == null)
+                return BadRequest("No DLL found inside extracted package.");
+
+            var assemblyName = Path.GetFileNameWithoutExtension(dllFile); // Remove `.dll` extension
+            var renamedFolder = Path.Combine(pluginsDir, assemblyName);
+
+            // Rename the GUID-based folder to match the assembly name
+            Directory.Move(guidFolder, renamedFolder);
 
             // 5. Cleanup nupkg
             System.IO.File.Delete(nupkgPath);
 
-            return Ok(new { 
-                ExtractPath = extractPath,
-                AssemblyPath = Path.Combine(extractPath, "lib", "net9.0") 
-            });
+            return Ok(new { ExtractPath = renamedFolder, AssemblyName = assemblyName });
         }
         catch (Exception ex)
         {
             // Cleanup failed installation
-            if (Directory.Exists(extractPath))
-                Directory.Delete(extractPath, recursive: true);
+            if (Directory.Exists(guidFolder))
+                Directory.Delete(guidFolder, recursive: true);
             if (System.IO.File.Exists(nupkgPath))
                 System.IO.File.Delete(nupkgPath);
 

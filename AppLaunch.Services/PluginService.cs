@@ -1,13 +1,13 @@
-using System.Reflection;
-using System.Runtime.Loader;
-using System.Text.Json;
-using AppLaunch.Services.Data;
+using System.IO.Compression;
+using System.Net.Http.Headers;
+using AppLaunch.Models;
 
 namespace AppLaunch.Services;
-
+using System.Text.Json;
 using System;
 using System.Reflection;
 using System.Runtime.Loader;
+using NuGet.Packaging;
 
 public class PluginManager
 {
@@ -38,7 +38,49 @@ public class PluginManager
             SaveRunningPlugins();
         }
     }
+    
+    public async Task<CoreResponse> DeletePlugin(string pluginName)
+    {
+        CoreResponse myResponse = new();
+        try
+        {
+            if (_pluginContexts.TryGetValue(pluginName, out var context))
+            {
+                context.UnloadPlugin();
+                _pluginContexts.Remove(pluginName);
+                SaveRunningPlugins();
+            }
 
+            // Locate plugin folder in PluginData
+            var pluginsDir = Path.Combine(Environment.CurrentDirectory, "PluginData");
+            var pluginFolder = Directory.GetDirectories(pluginsDir)
+                .FirstOrDefault(dir => Path.GetFileName(dir).Equals(pluginName, StringComparison.OrdinalIgnoreCase));
+
+            if (pluginFolder == null)
+            {
+                throw new Exception($"Plugin '{pluginName}' not found.");
+            }
+
+            try
+            {
+                Directory.Delete(pluginFolder, true); // Recursive deletion
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error deleting plugin '{pluginName}': {ex.Message}");
+            }
+
+            myResponse.IsSuccess = true;
+        }
+        catch (Exception ex)
+        {
+            myResponse.IsSuccess=false;
+            myResponse.Message = ex.Message;
+        }
+       
+        return myResponse;
+    }
+    
     private void SaveRunningPlugins()
     {
         var runningPlugins = _pluginContexts.Keys.ToList();
@@ -108,30 +150,22 @@ public class PluginManager
 
         return assemblies;
     }
-
-
-
-
 }
-
 
 public class PluginLoadContext : AssemblyLoadContext
 {
     private readonly AssemblyDependencyResolver _resolver;
     private bool _unloading = false;
 
-    public PluginLoadContext(string pluginPath) : base(isCollectible: true) // Enable unloading
+    public PluginLoadContext(string pluginPath) : base(isCollectible: true) 
     {
+        // Enable unloading
         _resolver = new AssemblyDependencyResolver(pluginPath);
     }
-    
-   
-
 
     protected override Assembly Load(AssemblyName assemblyName)
     {
         if (_unloading) return null; // Prevent loading while unloading
-
         string? assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
         return assemblyPath != null ? LoadFromAssemblyPath(assemblyPath) : null!;
     }
