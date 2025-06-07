@@ -108,7 +108,7 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
         try
         {
            var result = await userManager.FindByIdAsync(userId);
-           if (!myResponse.IsSuccess) throw new Exception("User not found");
+           if (result == null) throw new Exception("User not found");
            
            myResponse.Data = result;
            myResponse.IsSuccess = true;
