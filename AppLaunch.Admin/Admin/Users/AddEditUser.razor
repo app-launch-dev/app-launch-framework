@@ -80,7 +80,9 @@
     {
         try
         {
-            MyUser = await UserService.GetUserByIdAsync(UserId.ToString());
+            var myUserResponse = await UserService.GetUserByIdAsync(UserId.ToString());
+            if(!myUserResponse.IsSuccess) throw new Exception(myUserResponse.Message);
+            MyUser = myUserResponse.Data;
         }
         catch (Exception ex)
         {
@@ -113,8 +115,9 @@
             else
             {
                 //existing user
-                var existingUser = await UserService.GetUserByIdAsync(UserId.ToString());
-                if (existingUser == null) throw new Exception("Unable to access user");
+                var existingUserResponse = await UserService.GetUserByIdAsync(UserId.ToString());
+                if (!existingUserResponse.IsSuccess) throw new Exception("Unable to access user");
+                var existingUser = existingUserResponse.Data;
                 existingUser.FirstName = MyUser.FirstName;
                 existingUser.LastName = MyUser.LastName;
                 existingUser.MiddleName = MyUser.MiddleName;

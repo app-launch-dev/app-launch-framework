@@ -10,7 +10,7 @@ namespace AppLaunch.Services;
 public interface IUserService
 {
     Task<CoreResponse<List<ApplicationUser>>> GetAllUsersAsync();
-    Task<ApplicationUser?> GetUserByIdAsync(string userId);
+    Task<CoreResponse<ApplicationUser>> GetUserByIdAsync(string userId);
     Task<CoreResponse> UpdateUserAsync(ApplicationUser user);
     Task<bool> DeleteUserAsync(string userId);
     Task<bool> UpdateUserRolesAsync(string userId, List<string> newRoles);
@@ -102,9 +102,23 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
         return myResponse;
     }
 
-    public async Task<ApplicationUser?> GetUserByIdAsync(string userId)
+    public async Task<CoreResponse<ApplicationUser>> GetUserByIdAsync(string userId)
     {
-        return await userManager.FindByIdAsync(userId);
+        CoreResponse<ApplicationUser> myResponse = new();
+        try
+        {
+           var result = await userManager.FindByIdAsync(userId);
+           if (!myResponse.IsSuccess) throw new Exception("User not found");
+           
+           myResponse.Data = result;
+           myResponse.IsSuccess = true;
+        }
+        catch (Exception ex)
+        {
+            myResponse.IsSuccess = false;
+            myResponse.Message = ex.Message;
+        }
+        return myResponse;
     }
     
     public async Task<ApplicationUser?> GetUserByEmailAsync(string email)
