@@ -15,7 +15,7 @@ public interface IUserService
     Task<bool> DeleteUserAsync(string userId);
     Task<bool> UpdateUserRolesAsync(string userId, List<string> newRoles);
     string GeneratePassword();
-    Task<ApplicationUser?> GetUserByEmailAsync(string email);
+    Task<CoreResponse<ApplicationUser>> GetUserByEmailAsync(string email);
     Task<CoreResponse<ApplicationUser?>> GetCurrentUserAsync();
     Task<CoreResponse> AddUserAsync(ApplicationUser user, string password);
 }
@@ -121,9 +121,24 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
         return myResponse;
     }
     
-    public async Task<ApplicationUser?> GetUserByEmailAsync(string email)
+    public async Task<CoreResponse<ApplicationUser>> GetUserByEmailAsync(string email)
     {
-        return await userManager.FindByEmailAsync(email);
+        CoreResponse<ApplicationUser> myResponse = new();
+        try
+        {
+            var result = await userManager.FindByEmailAsync(email);
+            if (result == null) throw new Exception("User not found");
+            
+            myResponse.Data = result;
+            myResponse.IsSuccess = true;
+        }
+        catch (Exception ex)
+        {
+            myResponse.IsSuccess = false;
+            myResponse.Message = ex.Message;
+        }
+
+        return myResponse;
     }
     
     public async Task<CoreResponse> UpdateUserAsync(ApplicationUser user)
@@ -132,13 +147,63 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
         
         try
         {
-            var emailExists = await GetUserByEmailAsync(user.Email);
-            if (emailExists != null && emailExists.Id != user.Id) throw new Exception("Email already in use");
-            user.UserName = user.Email;
+            if(user == null) 
+                throw new ArgumentNullException(nameof(user), "User cannot be null");
             
-            var result = await userManager.UpdateAsync(user);
-            if (!result.Succeeded) throw new Exception("Error updating user");
+            if(string.IsNullOrWhiteSpace(user.Email)) 
+                throw new ArgumentException("Email cannot be null or whitespace.", nameof(user.Email));
+            
+            string? newSanitizedEmail = SanitizationExtensions.SanitizeEmail(user.Email);
+
+            var existingUser = await userManager.FindByIdAsync(user.Id);
+            if (existingUser == null)
+            {
+                myResponse.IsSuccess = false;
+                myResponse.Message = "User to update not found.";
+                return myResponse;
+            }
+            
+            bool emailIsChanging = !string.Equals(existingUser.Email, newSanitizedEmail, StringComparison.OrdinalIgnoreCase);
+            if (emailIsChanging)
+            {
+                var userWithNewEmail = await userManager.FindByEmailAsync(newSanitizedEmail);
+                if (userWithNewEmail != null && userWithNewEmail.Id != existingUser.Id)
+                {
+                    throw new Exception($"Email {newSanitizedEmail} is already in use by another account.");
+                }
+            }
+            
+            existingUser.FirstName = user.FirstName;
+            existingUser.LastName = user.LastName;
+            existingUser.MiddleName = user.MiddleName;
+            existingUser.Email = newSanitizedEmail;
+            existingUser.UserName = newSanitizedEmail;
+            existingUser.PhoneNumber = SanitizationExtensions.SanitizePhoneNumber(user.PhoneNumber);
+
+            var result = await userManager.UpdateAsync(existingUser);
+            if (!result.Succeeded)
+            {
+                string errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new Exception($"Error updating user: {errors}");
+            }
             myResponse.IsSuccess = true;
+            myResponse.Message = "User updated successfully.";
+            
+            
+            // var emailExists = await GetUserByEmailAsync(user.Email);
+            // if (emailExists.IsSuccess == false)
+            // {
+            //     if (emailExists.Data == null)
+            //         user.UserName = user.Email;
+            // }
+            // if (emailExists != null && emailExists.Data.Id != user.Id) 
+            //     throw new Exception("Email already in use");
+            //
+            // var result = await userManager.UpdateAsync(user);
+            // if (!result.Succeeded) 
+            //     throw new Exception("Error updating user");
+            //
+            // myResponse.IsSuccess = true;
         }
         catch (Exception ex)
         {

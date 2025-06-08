@@ -110,7 +110,7 @@
                 if (!myResponse.IsSuccess) throw new Exception($"Unable to access user {MyUser.Email}");
             
                 Snackbar.Add("User has been added", Severity.Success);
-                NavigationManager.NavigateTo($"/Admin/Users/AddEditUser/{newUser.Id}");
+                NavigationManager.NavigateTo($"/Admin/Users/AddEditUser/{newUser.Data.Id}");
             }
             else
             {
