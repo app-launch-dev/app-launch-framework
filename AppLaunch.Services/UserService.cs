@@ -291,7 +291,7 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
         return user;
     }
     
-    public static class SanitizationExtensions
+    private static class SanitizationExtensions
     {
         public static string? SanitizePhoneNumber(string? input)
         {
