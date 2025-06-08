@@ -188,22 +188,6 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
             }
             myResponse.IsSuccess = true;
             myResponse.Message = "User updated successfully.";
-            
-            
-            // var emailExists = await GetUserByEmailAsync(user.Email);
-            // if (emailExists.IsSuccess == false)
-            // {
-            //     if (emailExists.Data == null)
-            //         user.UserName = user.Email;
-            // }
-            // if (emailExists != null && emailExists.Data.Id != user.Id) 
-            //     throw new Exception("Email already in use");
-            //
-            // var result = await userManager.UpdateAsync(user);
-            // if (!result.Succeeded) 
-            //     throw new Exception("Error updating user");
-            //
-            // myResponse.IsSuccess = true;
         }
         catch (Exception ex)
         {

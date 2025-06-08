@@ -104,8 +104,6 @@
                 MyUser.EmailConfirmed = true;
                 myResponse = await UserService.AddUserAsync(MyUser, newPassword);
                 if (!myResponse.IsSuccess) throw new Exception(myResponse.Message);
-                
-                //TODO: Convert GetUserByEmailAsync over to CoreResponse return
                 var newUser = await UserService.GetUserByEmailAsync(MyUser.Email);
                 if (!myResponse.IsSuccess) throw new Exception($"Unable to access user {MyUser.Email}");
             
@@ -121,7 +119,6 @@
                 existingUser.FirstName = MyUser.FirstName;
                 existingUser.LastName = MyUser.LastName;
                 existingUser.MiddleName = MyUser.MiddleName;
-                // existingUser.Email = MyUser.Email; //todo: verify email is unique
                 myResponse = await UserService.UpdateUserAsync(existingUser);
                 if (!myResponse.IsSuccess) throw new Exception(myResponse.Message);
                 Snackbar.Add("User has been updated", Severity.Success);
