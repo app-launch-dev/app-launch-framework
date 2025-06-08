@@ -13,7 +13,7 @@ public interface IUserService
     Task<CoreResponse<ApplicationUser>> GetUserByIdAsync(string userId);
     Task<CoreResponse> UpdateUserAsync(ApplicationUser user);
     Task<CoreResponse<bool>> DeleteUserAsync(string userId);
-    Task<bool> UpdateUserRolesAsync(string userId, List<string> newRoles);
+    Task<CoreResponse<bool>> UpdateUserRolesAsync(string userId, List<string> newRoles);
     string GeneratePassword();
     Task<CoreResponse<ApplicationUser>> GetUserByEmailAsync(string email);
     Task<CoreResponse<ApplicationUser?>> GetCurrentUserAsync();
@@ -219,29 +219,41 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
         return myResponse;
     }
     
-    public async Task<bool> UpdateUserRolesAsync(string userId, List<string> newRoles)
+    public async Task<CoreResponse<bool>> UpdateUserRolesAsync(string userId, List<string> newRoles)
     {
-        var user = await userManager.FindByIdAsync(userId);
-        if (user == null)
-            return false;
-
-        var currentRoles = await userManager.GetRolesAsync(user);
-
-        // Remove old roles not in the new list
-        var rolesToRemove = currentRoles.Except(newRoles);
-        foreach (var role in rolesToRemove)
+        CoreResponse<bool> myResponse = new();
+        try
         {
-            await userManager.RemoveFromRoleAsync(user, role);
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null) throw new ArgumentNullException(nameof(user), "User cannot be null"); 
+
+
+            var currentRoles = await userManager.GetRolesAsync(user);
+
+            // Remove old roles not in the new list
+            var rolesToRemove = currentRoles.Except(newRoles);
+            foreach (var role in rolesToRemove)
+            {
+                await userManager.RemoveFromRoleAsync(user, role);
+            }
+
+            // Add new roles not already assigned
+            var rolesToAdd = newRoles.Except(currentRoles);
+            foreach (var role in rolesToAdd)
+            {
+                await userManager.AddToRoleAsync(user, role);
+            }
+            
+            myResponse.Data = true;
+            myResponse.IsSuccess = true;
+        }
+        catch (Exception ex)
+        {
+           myResponse.IsSuccess = false;
+            myResponse.Message = ex.Message;
         }
 
-        // Add new roles not already assigned
-        var rolesToAdd = newRoles.Except(currentRoles);
-        foreach (var role in rolesToAdd)
-        {
-            await userManager.AddToRoleAsync(user, role);
-        }
-
-        return true;
+        return myResponse;
     }
     
     public string GeneratePassword()
