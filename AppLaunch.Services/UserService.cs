@@ -12,7 +12,7 @@ public interface IUserService
     Task<CoreResponse<List<ApplicationUser>>> GetAllUsersAsync();
     Task<CoreResponse<ApplicationUser>> GetUserByIdAsync(string userId);
     Task<CoreResponse> UpdateUserAsync(ApplicationUser user);
-    Task<bool> DeleteUserAsync(string userId);
+    Task<CoreResponse<bool>> DeleteUserAsync(string userId);
     Task<bool> UpdateUserRolesAsync(string userId, List<string> newRoles);
     string GeneratePassword();
     Task<CoreResponse<ApplicationUser>> GetUserByEmailAsync(string email);
@@ -197,14 +197,26 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
         return myResponse;
     }
 
-    public async Task<bool> DeleteUserAsync(string userId)
+    public async Task<CoreResponse<bool>> DeleteUserAsync(string userId)
     {
-        var user = await userManager.FindByIdAsync(userId);
-        if (user == null)
-            return false;
+        CoreResponse<bool> myResponse = new();
+        try
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null) 
+                throw new ArgumentNullException(nameof(user), "User cannot be null"); 
 
-        var result = await userManager.DeleteAsync(user);
-        return result.Succeeded;
+            var result = await userManager.DeleteAsync(user);
+            myResponse.Data = result.Succeeded;
+            myResponse.IsSuccess = true;
+        }
+        catch (Exception ex)
+        {
+            myResponse.IsSuccess = false;
+            myResponse.Message = ex.Message;
+        }
+
+        return myResponse;
     }
     
     public async Task<bool> UpdateUserRolesAsync(string userId, List<string> newRoles)
@@ -269,9 +281,6 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
     
     public static class SanitizationExtensions
     {
-        /// <summary>
-        /// Removes all non-digit characters from the string.
-        /// </summary>
         public static string? SanitizePhoneNumber(string? input)
         {
             if (string.IsNullOrWhiteSpace(input))
@@ -282,9 +291,6 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
             return string.IsNullOrEmpty(sanitized) ? null : sanitized;
         }
         
-        /// <summary>
-        /// Trims and return the lowercase equivalent of the current string.
-        /// </summary>
         public static string? SanitizeEmail(string? input)
         {
             if (string.IsNullOrWhiteSpace(input))
@@ -292,7 +298,5 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
 
             return input.Trim().ToLowerInvariant();
         }
-
     }
-    
 }
