@@ -21,31 +21,32 @@
 
 <EditForm Model="@MyUser" OnValidSubmit="SaveUser">
     <DataAnnotationsValidator/>
-    <ValidationSummary/>
+    @* <ValidationSummary/> *@
     <MudPaper Class="pa-4">
         <MudText Typo="Typo.h6">User Details</MudText>
         <MudGrid>
 
             <MudItem xs="5">
                 <MudTextField Label="First Name" @bind-Value="MyUser.FirstName"
-                              Variant="Variant.Outlined"/>
+                              Variant="Variant.Outlined" For="@(() => MyUser.FirstName)"/>
             </MudItem>
             <MudItem xs="2">
                 <MudTextField Label="Middle" @bind-Value="MyUser.MiddleName"
-                              Variant="Variant.Outlined"/>
+                              Variant="Variant.Outlined" For="@(() => MyUser.MiddleName)"/>
             </MudItem>
             <MudItem xs="5">
                 <MudTextField Label="Last Name" @bind-Value="MyUser.LastName"
-                              Variant="Variant.Outlined"/>
+                              Variant="Variant.Outlined" For="@(() => MyUser.LastName)"/>
             </MudItem>
 
             <MudItem xs="6">
-                <MudTextField Label="Email" @bind-Value="MyUser.Email" Variant="Variant.Outlined"/>
+                <MudTextField Label="Email" @bind-Value="MyUser.Email" 
+                              Variant="Variant.Outlined" For="@(() => MyUser.Email)"/>
             </MudItem>
 
             <MudItem xs="6">
                 <MudTextField Mask="@(new PatternMask("(000) 000-0000"))" Label="Phone" @bind-Value="MyUser.PhoneNumber"
-                              Variant="Variant.Outlined"/>
+                              Variant="Variant.Outlined" For="@(() => MyUser.PhoneNumber)"/>
             </MudItem>
             
         </MudGrid>
