@@ -86,8 +86,8 @@
         {
             var currentUser = await UserService.GetCurrentUserAsync();
             if (userId==currentUser.Data.Id)  throw new Exception($"Unable to delete user {currentUser.Data.Email} because this is your account.");
-            var isSuccess = await UserService.DeleteUserAsync(userId);
-            if (!isSuccess.Data) throw new Exception("Unable to delete this user");
+            var result = await UserService.DeleteUserAsync(userId);
+            if (!result.IsSuccess) throw new Exception("Unable to delete this user");
             Snackbar.Add("User has been removed", Severity.Info);
             await GetAllUsers();
         }

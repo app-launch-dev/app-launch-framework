@@ -12,8 +12,8 @@ public interface IUserService
     Task<CoreResponse<List<ApplicationUser>>> GetAllUsersAsync();
     Task<CoreResponse<ApplicationUser>> GetUserByIdAsync(string userId);
     Task<CoreResponse> UpdateUserAsync(ApplicationUser user);
-    Task<CoreResponse<bool>> DeleteUserAsync(string userId);
-    Task<CoreResponse<bool>> UpdateUserRolesAsync(string userId, List<string> newRoles);
+    Task<CoreResponse> DeleteUserAsync(string userId);
+    Task<CoreResponse> UpdateUserRolesAsync(string userId, List<string> newRoles);
     string GeneratePassword();
     Task<CoreResponse<ApplicationUser>> GetUserByEmailAsync(string email);
     Task<CoreResponse<ApplicationUser?>> GetCurrentUserAsync();
@@ -197,9 +197,9 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
         return myResponse;
     }
 
-    public async Task<CoreResponse<bool>> DeleteUserAsync(string userId)
+    public async Task<CoreResponse> DeleteUserAsync(string userId)
     {
-        CoreResponse<bool> myResponse = new();
+        CoreResponse myResponse = new();
         try
         {
             var user = await userManager.FindByIdAsync(userId);
@@ -207,8 +207,10 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
                 throw new ArgumentNullException(nameof(user), "User cannot be null"); 
 
             var result = await userManager.DeleteAsync(user);
-            myResponse.Data = result.Succeeded;
-            myResponse.IsSuccess = true;
+            if(!result.Succeeded)
+                throw new Exception("Error deleting user");
+            
+            myResponse.IsSuccess = result.Succeeded;
         }
         catch (Exception ex)
         {
@@ -219,9 +221,9 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
         return myResponse;
     }
     
-    public async Task<CoreResponse<bool>> UpdateUserRolesAsync(string userId, List<string> newRoles)
+    public async Task<CoreResponse> UpdateUserRolesAsync(string userId, List<string> newRoles)
     {
-        CoreResponse<bool> myResponse = new();
+        CoreResponse myResponse = new();
         try
         {
             var user = await userManager.FindByIdAsync(userId);
@@ -244,7 +246,6 @@ public class UserService(UserManager<ApplicationUser> userManager, Authenticatio
                 await userManager.AddToRoleAsync(user, role);
             }
             
-            myResponse.Data = true;
             myResponse.IsSuccess = true;
         }
         catch (Exception ex)

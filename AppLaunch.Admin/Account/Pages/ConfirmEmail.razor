@@ -10,11 +10,24 @@
 
 <PageTitle>Confirm email</PageTitle>
 
-<h1>Confirm email</h1>
-<StatusMessage Message="@statusMessage"/>
+<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center pt-16">
+    <MudPaper Elevation="3" Class="pa-8 text-center" Width="100%">
+        <MudText Typo="Typo.h4" GutterBottom="true">Confirm Your Email</MudText>
+
+        @if (!string.IsNullOrEmpty(statusMessage))
+        {
+            <MudAlert Severity="@(IsSuccess ? Severity.Success : Severity.Error)"
+                      Variant="Variant.Filled"
+                      Class="mt-4 mb-4">
+                @statusMessage
+            </MudAlert>
+        }
+    </MudPaper>
+</MudContainer>
 
 @code {
     private string? statusMessage;
+    private bool IsSuccess { get; set; } // Property to track success/failure
 
     [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
 
@@ -24,23 +37,52 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Ensure no message is displayed before processing
+        statusMessage = null;
+
         if (UserId is null || Code is null)
         {
             RedirectManager.RedirectTo("");
+            return; // Important: return after redirect
         }
 
         var user = await UserManager.FindByIdAsync(UserId);
         if (user is null)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            statusMessage = $"Error loading user with ID {UserId}";
+            IsSuccess = false;
+            statusMessage = $"Error: User with ID '{UserId}' not found.";
         }
         else
         {
-            var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
-            var result = await UserManager.ConfirmEmailAsync(user, code);
-            statusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
+            try
+            {
+                var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
+                var result = await UserManager.ConfirmEmailAsync(user, code);
+
+                if (result.Succeeded)
+                {
+                    IsSuccess = true;
+                    statusMessage = "Success! Thank you for confirming your email. Your account is now active.";
+                }
+                else
+                {
+                    IsSuccess = false;
+                    var errors = string.Join(" ", result.Errors.Select(e => e.Description));
+                    statusMessage = $"Error confirming your email: {errors}";
+                }
+            }
+            catch (FormatException)
+            {
+                IsSuccess = false;
+                statusMessage = "Error: Invalid confirmation link. Please check the URL or request a new one.";
+            }
+            catch (Exception ex)
+            {
+                IsSuccess = false;
+                statusMessage = $"An unexpected error occurred: {ex.Message}";
+                // In a real application, you'd log 'ex' here.
+            }
         }
     }
-
 }

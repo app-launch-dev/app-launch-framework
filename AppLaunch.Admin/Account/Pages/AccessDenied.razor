@@ -4,25 +4,31 @@
 
 <PageTitle>Access denied</PageTitle>
 
-<header>
-    <h1 class="text-danger">Access denied</h1>
-    <p class="text-danger">You do not have access to this resource.</p>
-    <hr />
-    @if (userRoles.Any())
-    {
-        <p>Your assigned roles:</p>
-        <ul>
-            @foreach (var role in userRoles)
+<MudContainer MaxWidth="MaxWidth.Small" Class="my-8 py-8">
+    <MudPaper Elevation="3" Class="pa-6">
+        <header>
+            <MudText Typo="Typo.h3" Color="Color.Error" Class="mb-4">Access denied</MudText>
+            <MudText Typo="Typo.body1" Color="Color.Error" Class="mb-4">You do not have access to this resource.</MudText>
+            <MudDivider Class="my-4" />
+
+            @if (userRoles.Any())
             {
-                <li>@role</li>
+                <MudText Typo="Typo.body1" Class="mb-2">Your assigned roles:</MudText>
+                <MudList Items="@userRoles" T="string">
+                    @foreach (var role in userRoles)
+                    {
+                        <MudListItem Icon="@Icons.Material.Filled.CheckCircleOutline">@role</MudListItem>
+                    }
+                </MudList>
             }
-        </ul>
-    }
-    else
-    {
-        <p>You do not have any assigned roles.</p>
-    }
-</header>
+
+            else
+            {
+                <MudText Typo="Typo.body1">You do not have any assigned roles.</MudText>
+            }
+        </header>
+    </MudPaper>
+</MudContainer>
 
 @code {
     private List<string> userRoles = new();
