@@ -3,6 +3,7 @@
 @inject NavigationManager NavigationManager
 @using System.Net.Http.Headers
 @inject HttpClient Http
+@inject ISnackbar Snackbar
 
 <MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
     <MudGrid>
@@ -56,17 +57,31 @@
         
             var content = new MultipartFormDataContent();
             content.Add(fileContent, "package", packageFile.Name);
-            
+ 
             var baseUri = new Uri(NavigationManager.BaseUri);
-            var apiUri = new Uri(baseUri, "api/plugins/install");
-            await Http.PostAsync(apiUri, content);
+            var apiUri = new Uri(baseUri, $"api/plugins/install");
+            var response=await Http.PostAsync(apiUri, content);
+            if (!response.IsSuccessStatusCode) throw new Exception("Failed to install plugin");
+
+            Snackbar.Add("Plugin Installed", Severity.Success);
+            RestartApplication();
+            NavigationManager.NavigateTo("/admin/plugins/",true);
+            
         }
-        catch (Exception ex)
+        catch (Exception ex ) when (ex is not NavigationException)
         {
-            System.Console.WriteLine("Package install failed: {Message}", ex.Message);
-            // Consider adding user-facing error message
+            Snackbar.Add(ex.Message, Severity.Error);
         }
     }
+    
+    public static void RestartApplication()
+    {
+        var filePath = Path.Combine(AppContext.BaseDirectory, "restart.flag");
+        File.Create(filePath).Close(); // Create restart flag
+        Environment.Exit(0); // Trigger restart
+    }
+
+
 
 
 }
