@@ -38,7 +38,7 @@
 
     <PropertyGroup>
         <PackageId>AppLaunch.Services</PackageId>
-        <Version>1.0.0</Version>
+        <Version>1.0.2</Version>
         <Authors>Applaunch Development Group</Authors>
         <Description>AppLaunch Services contains the Core Services for use in AppLaunch projects.</Description>
         <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>
