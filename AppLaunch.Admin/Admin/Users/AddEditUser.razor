@@ -1,7 +1,6 @@
 @using AppLaunch.Services.Data
 @page "/admin/users/addedituser"
 @page "/admin/users/addedituser/{UserId:guid}"
-@inject IAlertService AlertService
 @inject IUserService UserService
 @inject IRoleService RoleService
 @inject NavigationManager NavigationManager
@@ -87,7 +86,7 @@
         }
         catch (Exception ex)
         {
-            await AlertService.AddAlert(ex.Message, IAlertService.AlertType.Error);
+            Snackbar.Add($"{ex.Message}", Severity.Error);
         }
     }
 

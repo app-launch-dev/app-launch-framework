@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Reflection;
 using System.Security.Claims;
 using AppLaunch.Core.Components;
@@ -17,16 +16,6 @@ using MyIdentityRevalidatingAuthenticationStateProvider =
     AppLaunch.Admin.Account.IdentityRevalidatingAuthenticationStateProvider;
 using MyIdentityUserAccessor = AppLaunch.Admin.Account.IdentityUserAccessor;
 using MudBlazor.Services;
-
-var restartFlag = Path.Combine(AppContext.BaseDirectory, "restart.flag");
-
-// If restart flag exists, restart the app
-if (File.Exists(restartFlag))
-{
-    File.Delete(restartFlag); // Remove flag before restart
-    Process.Start(Process.GetCurrentProcess().MainModule.FileName); // Relaunch
-    Environment.Exit(0); // Gracefully exit current process
-}
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("applaunch.json", optional: true, reloadOnChange: true);
@@ -100,10 +89,9 @@ builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<ICacheService, CacheService>();
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
-// builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
-builder.Services.AddScoped<IAlertService, AlertService>();
 
 // Add RoleManager and UserManager 
 builder.Services
@@ -130,8 +118,8 @@ else
 }
 
 app.UseHttpsRedirection();
-app.UseMiddleware<CoreXTenantMiddleware>();
-app.UseMiddleware<CoreXCookieMiddleware>();
+app.UseMiddleware<TenantMiddleware>();
+app.UseMiddleware<CookieMiddleware>();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAntiforgery();

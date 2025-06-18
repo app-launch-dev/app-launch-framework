@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Http;
 
 namespace AppLaunch.Services
 {
-    public class CoreXTenantMiddleware
+    public class TenantMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CoreXTenantMiddleware(RequestDelegate next, IHttpContextAccessor httpContextAccessor)
+        public TenantMiddleware(RequestDelegate next, IHttpContextAccessor httpContextAccessor)
         {
             _next = next;
             _httpContextAccessor = httpContextAccessor;

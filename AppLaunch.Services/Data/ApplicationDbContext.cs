@@ -11,6 +11,7 @@ namespace AppLaunch.Services.Data
   
     public virtual DbSet<Site> Sites { get; set; }
     public virtual DbSet<SiteHost> SiteHosts { get; set; }
+    public virtual DbSet<File> Files { get; set; }
     
    protected override void OnModelCreating(ModelBuilder modelBuilder)
    {

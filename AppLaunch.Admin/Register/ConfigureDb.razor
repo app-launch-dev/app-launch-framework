@@ -180,7 +180,7 @@
         try
         {
             string AppSettingsPath = "applaunch.json";
-            string json = File.ReadAllText(AppSettingsPath);
+            string json = System.IO.File.ReadAllText(AppSettingsPath);
             var config = JsonSerializer.Deserialize<JsonDocument>(json);
 
             using var stream = new FileStream(AppSettingsPath, FileMode.Create);

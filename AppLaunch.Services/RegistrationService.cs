@@ -3,6 +3,7 @@ using AppLaunch.Services.Data;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using File = System.IO.File;
 
 namespace AppLaunch.Services;
 

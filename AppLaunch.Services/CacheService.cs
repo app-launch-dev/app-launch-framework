@@ -17,8 +17,8 @@ public class CacheService(IMemoryCache MemoryCache, IHttpContextAccessor HttpCon
         {
             AbsoluteExpirationRelativeToNow = expiry
         };
-        string coreXId=await GetCoreXId();
-        string uniqueCacheKey = $"{coreXId}_{cacheKey}";
+        string coreId=await GetCoreId();
+        string uniqueCacheKey = $"{coreId}_{cacheKey}";
         MemoryCache.Set(uniqueCacheKey, cacheValue, cacheEntryOptions);
     }
 
@@ -27,9 +27,9 @@ public class CacheService(IMemoryCache MemoryCache, IHttpContextAccessor HttpCon
         string cacheValue = "";
         try
         {
-            string coreXId=await GetCoreXId();
-            if (string.IsNullOrEmpty(coreXId)) throw new Exception("");
-            string uniqueCacheKey = $"{coreXId}_{cacheKey}";
+            string coreId=await GetCoreId();
+            if (string.IsNullOrEmpty(coreId)) throw new Exception("");
+            string uniqueCacheKey = $"{coreId}_{cacheKey}";
             cacheValue= MemoryCache.Get<string>(uniqueCacheKey);
         }
         catch (Exception ex)
@@ -39,12 +39,12 @@ public class CacheService(IMemoryCache MemoryCache, IHttpContextAccessor HttpCon
         return cacheValue;
     }
 
-    private async Task<string> GetCoreXId()
+    private async Task<string> GetCoreId()
     {
         string cookieValue = "";
         try
         {
-            cookieValue = HttpContextAccessor.HttpContext.Request.Cookies["CoreXId"];
+            cookieValue = HttpContextAccessor.HttpContext.Request.Cookies["CoreId"];
         }
         catch (Exception ex)
         {
