@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using AppLaunch.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,8 +18,10 @@ public class PluginsController : ControllerBase
     }
 
     [HttpPost("install")]
-    public async Task<IActionResult> InstallPlugin(IFormFile package)
+    public async Task<CoreResponse> InstallPlugin(IFormFile package)
     {
+        CoreResponse myResponse = new CoreResponse();
+        
         const string pluginsDir = "PluginData";
         var guidFolder = Path.Combine(pluginsDir, Guid.NewGuid().ToString()); // Create GUID folder
         //var extractPath = Path.Combine(pluginsDir, Guid.NewGuid().ToString());
@@ -28,7 +31,9 @@ public class PluginsController : ControllerBase
         {
             // 1. Validate package
             if (!package.FileName.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase))
-                return BadRequest("Invalid NuGet package format");
+            {
+                throw new Exception("Invalid NuGet package format");
+            }
 
             // 2. Save uploaded package
             Directory.CreateDirectory(pluginsDir);
@@ -40,8 +45,11 @@ public class PluginsController : ControllerBase
             // 3. Validate NuGet package structure
             using var archive = ZipFile.OpenRead(nupkgPath);
             if (!archive.Entries.Any(e => e.FullName.EndsWith(".nuspec", StringComparison.OrdinalIgnoreCase)))
-                return BadRequest("Invalid NuGet package structure");
-
+            {
+                throw new Exception("Invalid NuGet package structure");    
+            }
+            
+            
             // 4. Extract package
             Directory.CreateDirectory(guidFolder);
             ZipFile.ExtractToDirectory(nupkgPath, guidFolder);
@@ -51,7 +59,9 @@ public class PluginsController : ControllerBase
             var dllFile = Directory.GetFiles(libFolder, "*.dll").FirstOrDefault();
 
             if (dllFile == null)
-                return BadRequest("No DLL found inside extracted package.");
+            {
+                throw new Exception("No DLL found inside extracted package.");    
+            }
 
             var assemblyName = Path.GetFileNameWithoutExtension(dllFile); // Remove `.dll` extension
             var renamedFolder = Path.Combine(pluginsDir, assemblyName);
@@ -61,22 +71,33 @@ public class PluginsController : ControllerBase
 
             // 5. Cleanup nupkg
             if (Directory.Exists(guidFolder))
+            {
                 Directory.Delete(guidFolder, recursive: true);
-            if (System.IO.File.Exists(nupkgPath))
-                System.IO.File.Delete(nupkgPath);
-
-            return Ok(new { ExtractPath = renamedFolder, AssemblyName = assemblyName });
+            }
+            // if (System.IO.File.Exists(nupkgPath))
+            // {
+            //     System.IO.File.Delete(nupkgPath);
+            // }
+            myResponse.IsSuccess = true;
+            //return Ok(new { ExtractPath = renamedFolder, AssemblyName = assemblyName });
         }
         catch (Exception ex)
         {
             // Cleanup failed installation
             if (Directory.Exists(guidFolder))
+            {
                 Directory.Delete(guidFolder, recursive: true);
-            if (System.IO.File.Exists(nupkgPath))
-                System.IO.File.Delete(nupkgPath);
+            }
+            // if (System.IO.File.Exists(nupkgPath))
+            // {
+            //     System.IO.File.Delete(nupkgPath);
+            // }
 
-            return Problem($"Package installation failed: {ex.Message}");
+            myResponse.Message = ex.Message;
+            myResponse.IsSuccess = false;
+            //return Problem($"Package installation failed: {ex.Message}");
         }
+        return myResponse;
     }
 
 }
