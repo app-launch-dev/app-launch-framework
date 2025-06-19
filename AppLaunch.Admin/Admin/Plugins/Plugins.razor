@@ -51,7 +51,7 @@
                     <MudTooltip Text="Stop Plugin">
                         <MudIconButton Icon="@Icons.Material.Filled.StopCircle"
                                        Color="Color.Dark"
-                                       OnClick="() => PluginManager.StopPlugin(context)"/>
+                                       OnClick="() => StopPlugin(context)"/>
                     </MudTooltip>
                 }
                 else
@@ -59,7 +59,7 @@
                     <MudTooltip Text="Start Plugin">
                         <MudIconButton Icon="@Icons.Material.Filled.Start"
                                        Color="Color.Success"
-                                       OnClick="() => PluginManager.LoadPlugin(context)"/>
+                                       OnClick="() => StartPlugin(context)"/>
                     </MudTooltip>
                 }
                     <MudTooltip Text="Delete Plugin">
@@ -93,6 +93,9 @@
         NavigationManager.NavigateTo("/admin/plugins/installplugin");
     }
     
+    
+    
+    
     private async Task DeletePlugin(string pluginName)
     {
         try
@@ -100,7 +103,7 @@
             var response=await PluginManager.DeletePlugin(pluginName);
             if (!response.IsSuccess) throw new Exception(response.Message);
             Snackbar.Add("Plugin has been deleted", Severity.Info);
-            NavigationManager.NavigateTo("/admin/plugins/",true);
+            PluginManager.RestartApplication();
         }
         catch (Exception ex ) when (ex is not NavigationException)
         {
@@ -109,4 +112,35 @@
        
     }
     
+    private async Task StartPlugin(string pluginName)
+    {
+        try
+        {
+            PluginManager.LoadPlugin(pluginName);
+            Snackbar.Add("Plugin Started", Severity.Success);
+            PluginManager.RestartApplication();
+        }
+        catch (Exception ex ) when (ex is not NavigationException)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+       
+    } 
+    
+    private async Task StopPlugin(string pluginName)
+    {
+        try
+        {
+            PluginManager.StopPlugin(pluginName);
+            Snackbar.Add("Plugin Stopped", Severity.Info);
+            PluginManager.RestartApplication();
+        }
+        catch (Exception ex ) when (ex is not NavigationException)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+       
+    }
+    
+   
 }

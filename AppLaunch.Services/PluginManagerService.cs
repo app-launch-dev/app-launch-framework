@@ -70,6 +70,7 @@ public class PluginManager
                 throw new Exception($"Error deleting plugin '{pluginName}': {ex.Message}");
             }
 
+
             myResponse.IsSuccess = true;
         }
         catch (Exception ex)
@@ -105,6 +106,14 @@ public class PluginManager
     
     public void InitializePlugins()
     {
+        var pluginDataPath = Path.Combine(Directory.GetCurrentDirectory(), "PluginData");
+
+        if (!Directory.Exists(pluginDataPath))
+        {
+            Directory.CreateDirectory(pluginDataPath);
+        }
+
+        
         if (!File.Exists("runningPlugins.json")) return;
 
         var savedPlugins = JsonSerializer.Deserialize<List<string>>(File.ReadAllText("runningPlugins.json"));
@@ -150,6 +159,22 @@ public class PluginManager
 
         return assemblies;
     }
+    
+    public void RestartApplication()
+    {
+        var exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+
+        // Start a new instance
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = exePath,
+            UseShellExecute = true // needed for GUI apps or if you want default behavior
+        });
+
+        // Terminate the current instance
+        Environment.Exit(0);
+    }    
+    
 }
 
 public class PluginLoadContext : AssemblyLoadContext
@@ -177,4 +202,8 @@ public class PluginLoadContext : AssemblyLoadContext
         GC.Collect();
         GC.WaitForPendingFinalizers(); // Ensure cleanup
     }
+    
+   
+    
+
 }
