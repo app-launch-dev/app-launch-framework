@@ -60,7 +60,10 @@ public class PluginsController : ControllerBase
             Directory.Move(guidFolder, renamedFolder);
 
             // 5. Cleanup nupkg
-            System.IO.File.Delete(nupkgPath);
+            if (Directory.Exists(guidFolder))
+                Directory.Delete(guidFolder, recursive: true);
+            if (System.IO.File.Exists(nupkgPath))
+                System.IO.File.Delete(nupkgPath);
 
             return Ok(new { ExtractPath = renamedFolder, AssemblyName = assemblyName });
         }
