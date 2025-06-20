@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppLaunch.Themes", "AppLaun
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppLaunch.Admin", "AppLaunch.Admin\AppLaunch.Admin.csproj", "{CC9C187B-B840-4652-AE5F-AC3B654B6E84}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppLaunch.Updater", "AppLaunch.Updater\AppLaunch.Updater.csproj", "{0F75660B-1C7E-4D38-812B-E7FCB9A97DCE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{CC9C187B-B840-4652-AE5F-AC3B654B6E84}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC9C187B-B840-4652-AE5F-AC3B654B6E84}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC9C187B-B840-4652-AE5F-AC3B654B6E84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F75660B-1C7E-4D38-812B-E7FCB9A97DCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F75660B-1C7E-4D38-812B-E7FCB9A97DCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F75660B-1C7E-4D38-812B-E7FCB9A97DCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F75660B-1C7E-4D38-812B-E7FCB9A97DCE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
