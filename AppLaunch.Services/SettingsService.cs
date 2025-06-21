@@ -35,7 +35,11 @@ public class SettingsService(ApplicationDbContext dbContext) : ISettingsService
                 LoginLogoUrl = response.LoginLogoUrl,
                 LoginOverrideCSS = response.LoginOverrideCSS,
                 AwsSesAccessKey = response.AwsSesAccessKey,
-                AwsSesSecretKey = response.AwsSesSecretKey
+                AwsSesSecretKey = response.AwsSesSecretKey,
+                GitHubWorkflowFile = response.GitHubWorkflowFile,
+                GitHubOwner = response.GitHubOwner,
+                GitHubRepo = response.GitHubRepo,
+                GitHubToken = response.GitHubToken
             };
 
             myResponse.Data = mySettings;
@@ -71,6 +75,10 @@ public class SettingsService(ApplicationDbContext dbContext) : ISettingsService
             existingSettings.LoginOverrideCSS = model.LoginOverrideCSS;
             existingSettings.AwsSesAccessKey = model.AwsSesAccessKey;
             existingSettings.AwsSesSecretKey = model.AwsSesSecretKey;
+            existingSettings.GitHubWorkflowFile = model.GitHubWorkflowFile;
+            existingSettings.GitHubOwner = model.GitHubOwner;
+            existingSettings.GitHubRepo = model.GitHubRepo;
+            existingSettings.GitHubToken = model.GitHubToken;
             await dbContext.SaveChangesAsync();
             myResponse.IsSuccess = true;
         }

@@ -1,7 +1,10 @@
 ﻿@page "/admin/"
+@using System.Net.Http.Headers
+@using System.Text
 @layout AppLaunchDefault
 @inject HttpClient Http
-
+@inject  ISettingsService SettingsService
+@inject ISnackbar Snackbar
 <MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
     <MudGrid>
         <MudItem xs="12">
@@ -51,6 +54,20 @@
                 </MudSimpleTable>
             }
         </MudItem>
+        
+        @if (showUpdateButton)
+        {
+            <MudItem xs="12">
+                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Update" @onclick="TriggerGitHubActionAsync" Color="Color.Primary">Update Now</MudButton>
+            </MudItem>
+        }
+        else
+        {
+            <MudItem xs="12">
+                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Update" Color="Color.Primary" Disabled="true">Update Now</MudButton>
+            </MudItem>
+        }
+
        
         
     </MudGrid>
@@ -58,48 +75,70 @@
 
 @code {
     private List<PackageInfo>? packages;
-
+    bool showUpdateButton = false;
+    AppLaunch.Models.Settings.SettingsModel mySettings = new();
+    
     protected override async Task OnInitializedAsync()
     {
-        packages = AppDomain.CurrentDomain
-            .GetAssemblies()
-            .Where(a => a.GetName().Name?.StartsWith("AppLaunch.") == true)
-            .Select(a => new PackageInfo
-            {
-                Name = a.GetName().Name ?? "",
-                InstalledVersion = a.GetName().Version?.ToString() ?? "unknown"
-            })
-
-            .OrderBy(p => p.Name)
-            .ToList();
-
-        foreach (var pkg in packages)
+        try
         {
-            try
-            {
-                var url = $"https://api.nuget.org/v3-flatcontainer/{pkg.Name.ToLowerInvariant()}/index.json";
-                var versionList = await Http.GetFromJsonAsync<NuGetVersionIndex>(url);
-                var latest = versionList?.Versions?.LastOrDefault();
-
-                if (!string.IsNullOrWhiteSpace(latest))
+            var mySettingsResponse = await SettingsService.GetSettings();
+            if (!mySettingsResponse.IsSuccess) throw new Exception(mySettingsResponse.Message);
+            mySettings = mySettingsResponse.Data;
+        
+            
+            packages = AppDomain.CurrentDomain
+                .GetAssemblies()
+                .Where(a => a.GetName().Name?.StartsWith("AppLaunch.") == true)
+                .Select(a => new PackageInfo
                 {
-                    pkg.Latest = latest;
+                    Name = a.GetName().Name ?? "",
+                    InstalledVersion = a.GetName().Version?.ToString() ?? "unknown"
+                })
 
-                    // Parse versions and compare only major.minor.patch
-                    var localVer = new Version(pkg.InstalledVersion);
-                    var remoteVer = new Version(latest);
+                .OrderBy(p => p.Name)
+                .ToList();
 
-                    var simplifiedLocal = new Version(localVer.Major, localVer.Minor, localVer.Build);
-                    var simplifiedRemote = new Version(remoteVer.Major, remoteVer.Minor, remoteVer.Build);
+            foreach (var pkg in packages)
+            {
+                try
+                {
+                    var url = $"https://api.nuget.org/v3-flatcontainer/{pkg.Name.ToLowerInvariant()}/index.json";
+                    var versionList = await Http.GetFromJsonAsync<NuGetVersionIndex>(url);
+                    var latest = versionList?.Versions?.LastOrDefault();
 
-                    pkg.UpdateAvailable = simplifiedLocal < simplifiedRemote;
+                    if (!string.IsNullOrWhiteSpace(latest))
+                    {
+                        pkg.Latest = latest;
+
+                        // Parse versions and compare only major.minor.patch
+                        var localVer = new Version(pkg.InstalledVersion);
+                        var remoteVer = new Version(latest);
+
+                        var simplifiedLocal = new Version(localVer.Major, localVer.Minor, localVer.Build);
+                        var simplifiedRemote = new Version(remoteVer.Major, remoteVer.Minor, remoteVer.Build);
+
+                        pkg.UpdateAvailable = simplifiedLocal < simplifiedRemote;
+                        
+                        //show update button if settings configured and new version found
+                        if (pkg.UpdateAvailable && !string.IsNullOrEmpty(mySettings.GitHubWorkflowFile))
+                        {
+                            showUpdateButton = true;
+                        }
+                        showUpdateButton = true; //todo: remove this line after testing
+                    }
+                }
+                catch
+                {
+                    pkg.Latest = "unavailable";
                 }
             }
-            catch
-            {
-                pkg.Latest = "unavailable";
-            }
         }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+       
 
     }
 
@@ -119,5 +158,35 @@
             System.Version.TryParse(InstalledVersion, out var v)
                 ? $"{v.Major}.{v.Minor}.{v.Build}"
                 : InstalledVersion;
+    }
+    
+    public async Task TriggerGitHubActionAsync()
+    {
+        try
+        {
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AppLaunch", "1.0"));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", $"{mySettings.GitHubToken}");
+
+            var response = await client.PostAsync(
+                $"https://api.github.com/repos/{mySettings.GitHubOwner}/{mySettings.GitHubRepo}/actions/workflows/{mySettings.GitHubWorkflowFile}/dispatches",
+                new StringContent("{\"ref\":\"main\"}", Encoding.UTF8, "application/json"));
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Success feedback
+                Snackbar.Add($"Updates have been requested. Your site will temporarily go offline while updates are in process.", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add($"Unable to initiate updates: {response.ReasonPhrase}", Severity.Error);
+            }
+
+            showUpdateButton = false;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
     }
 }

@@ -62,6 +62,30 @@
             </MudItem>
         </MudGrid>
     </MudPaper>
+    
+    <MudPaper Class="pa-4 mt-4">
+        <MudText Typo="Typo.h6">Automatic Updates (Github)</MudText>
+
+        <MudGrid>
+            <MudItem xs="12">
+                <MudTextField Label="Personal Access Token "
+                              @bind-Value="SettingsData.GitHubToken" Variant="Variant.Outlined"/>
+            </MudItem>
+            <MudItem xs="6">
+                <MudTextField Label="Owner"
+                              @bind-Value="SettingsData.GitHubOwner" Variant="Variant.Outlined"/>
+            </MudItem>
+            <MudItem xs="6">
+                <MudTextField Label="Repo"
+                              @bind-Value="SettingsData.GitHubRepo" Variant="Variant.Outlined"/>
+            </MudItem>
+            
+            <MudItem xs="6">
+                <MudTextField Label="Workflow File"
+                              @bind-Value="SettingsData.GitHubWorkflowFile" Variant="Variant.Outlined"/>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
 
     <MudPaper Class="pa-2 mt-4">
         <MudButton ButtonType="ButtonType.Submit" StartIcon="@Icons.Material.Filled.Update" Variant="Variant.Filled"

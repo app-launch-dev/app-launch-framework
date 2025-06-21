@@ -21,5 +21,9 @@ public class SettingsModel
     public string? LoginLogoUrl { get; set; }
     public string? AwsSesAccessKey { get; set; }
     public string? AwsSesSecretKey { get; set; }
+    public string? GitHubToken { get; set; }
+    public string? GitHubOwner { get; set; }
+    public string? GitHubRepo { get; set; }
+    public string? GitHubWorkflowFile { get; set; }
 }
 
