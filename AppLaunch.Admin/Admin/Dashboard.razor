@@ -5,6 +5,8 @@
 @inject HttpClient Http
 @inject  ISettingsService SettingsService
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
 <MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
     <MudGrid>
         <MudItem xs="12">
@@ -17,7 +19,7 @@
         <MudItem xs="12">
             @if (packages == null)
             {
-                <p><em>Loading…</em></p>
+                <p><em>Checking for updates…</em></p>
             }
             else if (!packages.Any())
             {
@@ -63,11 +65,22 @@
         }
         else
         {
-            <MudItem xs="12">
-                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Update" Color="Color.Primary" Disabled="true">Update Now</MudButton>
+            <MudItem xs="6">
+                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.UpdateDisabled" Color="Color.Primary" Disabled="true">Update Now</MudButton>
             </MudItem>
+            <MudItem xs="6" Class="d-flex justify-end">
+                <MudButton Variant="Variant.Text"
+                           StartIcon="@Icons.Material.Filled.Update"
+                           Color="Color.Secondary"
+                           @onclick="TriggerGitHubActionAsync"
+                           Style="text-transform:none">
+                    Force Update / ReInstall
+                </MudButton>
+            </MudItem>
+           
         }
 
+        
        
         
     </MudGrid>
@@ -125,7 +138,6 @@
                         {
                             showUpdateButton = true;
                         }
-                        showUpdateButton = true; //todo: remove this line after testing
                     }
                 }
                 catch
@@ -164,6 +176,13 @@
     {
         try
         {
+            bool? runUpdates = await DialogService.ShowMessageBox(
+                "Start Updates", 
+                "Once initialized, your site will go offline until the updates have completed. Proceed?", 
+                yesText:"Update Now!", cancelText:"Cancel");
+            if (runUpdates != true) throw new Exception("Update Cancelled");
+           
+            
             var client = new HttpClient();
             client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AppLaunch", "1.0"));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", $"{mySettings.GitHubToken}");
