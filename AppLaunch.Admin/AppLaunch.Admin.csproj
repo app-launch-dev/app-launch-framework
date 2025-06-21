@@ -10,7 +10,7 @@
 
     <PropertyGroup>
         <PackageId>AppLaunch.Admin</PackageId>
-        <Version>1.0.8</Version>
+        <Version>1.0.9</Version>
         <Authors>Applaunch Development Group</Authors>
         <Description>AppLaunch Admin contains the core admin pages for use in AppLaunch projects.</Description>
         <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>
