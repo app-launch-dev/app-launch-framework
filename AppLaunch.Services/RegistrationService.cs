@@ -18,7 +18,7 @@ public interface IRegistrationService
     Task<bool> IsCMSPluginInstalled();
 }
 
-public class RegistrationService(ApplicationDbContext dbContext, IConfiguration configuration) : IRegistrationService
+public class RegistrationService(IDbContextFactory<ApplicationDbContext> contextFactory, IConfiguration configuration) : IRegistrationService
 {
     public async Task<(bool HasError, string ErrorMessage, bool IsSuccessful)> TestDatabaseConnection(
         string connectionString)
@@ -88,6 +88,8 @@ public class RegistrationService(ApplicationDbContext dbContext, IConfiguration 
         {
             try
             {
+                using var context = contextFactory.CreateDbContext();
+
                 // Check 1: File existence
                 if (!File.Exists("applaunch.json"))
                 {
@@ -96,7 +98,7 @@ public class RegistrationService(ApplicationDbContext dbContext, IConfiguration 
                 }
 
                 // Check 2: Connection string validity
-                var connection = dbContext.Database.GetDbConnection();
+                var connection = context.Database.GetDbConnection();
                 connection.ConnectionString = configuration.GetConnectionString("DefaultConnection");
             
                 if (string.IsNullOrEmpty(connection.ConnectionString))
@@ -121,14 +123,16 @@ public class RegistrationService(ApplicationDbContext dbContext, IConfiguration 
     {
         try
         {
-            var adminRoleId = dbContext.Roles
+            using var context = contextFactory.CreateDbContext();
+
+            var adminRoleId = context.Roles
                 .Where(r => r.Name == "Admin")
                 .Select(r => r.Id)
                 .FirstOrDefault();
 
             if (adminRoleId != null)
             {
-                var hasAdminUsers = dbContext.UserRoles
+                var hasAdminUsers = context.UserRoles
                     .Any(ur => ur.RoleId == adminRoleId);
 
                 return hasAdminUsers;

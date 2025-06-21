@@ -4,6 +4,7 @@ using AppLaunch.Services.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AppLaunch.Services.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250621053639_ColorSettings")]
+    partial class ColorSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -263,26 +266,6 @@ namespace AppLaunch.Services.Migrations
                         {
                             SiteId = new Guid("16c4e35d-1ce6-404d-9a61-c61b55f51a17"),
                             AllowSignUp = false,
-                            ColorAppbarBackgroundDark = "#191a1a",
-                            ColorAppbarBackgroundLight = "#191a1a",
-                            ColorAppbarTextDark = "#dadada",
-                            ColorAppbarTextLight = "#dadada",
-                            ColorBackgroundDark = "#191a1a",
-                            ColorBackgroundLight = "#F5F5F5",
-                            ColorDrawerBackgroundDark = "#212222",
-                            ColorDrawerBackgroundLight = "#212222",
-                            ColorDrawerTextDark = "#FFFFFF",
-                            ColorDrawerTextLight = "#FFFFFF",
-                            ColorPrimaryDark = "#0081c4",
-                            ColorPrimaryLight = "#0081c4",
-                            ColorSecondaryDark = "#808080",
-                            ColorSecondaryLight = "#808080",
-                            ColorSurfaceDark = "#212222",
-                            ColorSurfaceLight = "#FFFFFF",
-                            ColorTextPrimaryDark = "#FFFFFF",
-                            ColorTextPrimaryLight = "#202020",
-                            ColorTextSecondaryDark = "#757575",
-                            ColorTextSecondaryLight = "#757575",
                             ContentKey = "f15998d5-c4b7-4719-b0b4-c86761ce9ae8",
                             DefaultEmailFrom = "no-reply@mydomain.com",
                             Layout = "AppLaunchDefault.razor",

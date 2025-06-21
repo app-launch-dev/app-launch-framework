@@ -1,9 +1,11 @@
-﻿@using AppLaunch.Models.Settings
+﻿@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@using AppLaunch.Models.Settings
 @using Microsoft.AspNetCore.Identity.UI.Services
 @page "/admin/settings/"
 @inject ISettingsService SettingsService
 @inject ISnackbar Snackbar
 @inject IEmailSender EmailSender
+@inject NavigationManager NavigationManager
 
 <MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
     <MudGrid>
@@ -16,6 +18,8 @@
     </MudGrid>
 </MudPaper>
 
+@if (SettingsData != null)
+{
 <EditForm Model="@SettingsData" OnValidSubmit="SaveSettings">
     <DataAnnotationsValidator/>
     <ValidationSummary />
@@ -30,6 +34,82 @@
                 <MudTextField Label="Content Key" Class="mt-3"
                               @bind-Value="SettingsData.ContentKey" Variant="Variant.Outlined"/>
             </MudItem>
+        </MudGrid>
+    </MudPaper>
+    
+    <MudPaper Class="pa-4 mt-4">
+        <MudText Typo="Typo.h6">Dashboard Colors</MudText>
+        <MudGrid>
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="Primary (Light)" @bind-Text="SettingsData.ColorPrimaryLight" Style="@($"color: {SettingsData.ColorPrimaryLight};")" Placeholder="Select Color" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX"  Label="Primary (Dark)" @bind-Text="SettingsData.ColorPrimaryDark" Style="@($"color: {SettingsData.ColorPrimaryDark};")" Placeholder="Select Color" />
+            </MudItem>
+            
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="Secondary (Light)" @bind-Text="SettingsData.ColorSecondaryLight" Style="@($"color: {SettingsData.ColorTextSecondaryLight};")" Placeholder="Select Color" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="Secondary (Dark)" @bind-Text="SettingsData.ColorSecondaryDark" Style="@($"color: {SettingsData.ColorTextSecondaryDark};")" Placeholder="Select Color" />
+            </MudItem>
+            
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="App Bar Background (Light)" @bind-Text="SettingsData.ColorAppbarBackgroundLight" Style="@($"color: {SettingsData.ColorAppbarBackgroundLight};")" Placeholder="Select Color" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="App Bar Background (Dark)" @bind-Text="SettingsData.ColorAppbarBackgroundDark" Style="@($"color: {SettingsData.ColorAppbarBackgroundDark};")" Placeholder="Select Color" />
+            </MudItem>
+            
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="App Bar Text (Light)" @bind-Text="SettingsData.ColorAppbarTextLight" Style="@($"color: {SettingsData.ColorAppbarTextLight};")" Placeholder="Select Color" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="App Bar Text (Dark)" @bind-Text="SettingsData.ColorAppbarTextDark" Style="@($"color: {SettingsData.ColorAppbarTextDark};")" Placeholder="Select Color" />
+            </MudItem>
+            
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="Background (Light)" @bind-Text="SettingsData.ColorBackgroundLight" Style="@($"color: {SettingsData.ColorBackgroundLight};")" Placeholder="Select Color" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="Background (Dark)" @bind-Text="SettingsData.ColorBackgroundDark" Style="@($"color: {SettingsData.ColorBackgroundDark};")" Placeholder="Select Color" />
+            </MudItem>
+            
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="Text Primary (Light)" @bind-Text="SettingsData.ColorTextPrimaryLight" Style="@($"color: {SettingsData.ColorTextPrimaryLight};")" Placeholder="Select Color" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="Text Primary (Dark)" @bind-Text="SettingsData.ColorTextPrimaryDark" Style="@($"color: {SettingsData.ColorTextPrimaryDark};")" Placeholder="Select Color" />
+            </MudItem>
+            
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="Text Secondary (Light)" @bind-Text="SettingsData.ColorTextSecondaryLight" Style="@($"color: {SettingsData.ColorTextSecondaryLight};")" Placeholder="Select Color" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="Text Secondary (Dark)" @bind-Text="SettingsData.ColorTextSecondaryDark" Style="@($"color: {SettingsData.ColorTextSecondaryDark};")" Placeholder="Select Color" />
+            </MudItem>
+            
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="Drawer Background(Light)" @bind-Text="SettingsData.ColorDrawerBackgroundLight" Style="@($"color: {SettingsData.ColorDrawerBackgroundLight};")" Placeholder="Select Color" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="Drawer Background (Dark)" @bind-Text="SettingsData.ColorDrawerBackgroundDark" Style="@($"color: {SettingsData.ColorDrawerBackgroundDark};")" Placeholder="Select Color" />
+            </MudItem>
+            
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="Drawer Text(Light)" @bind-Text="SettingsData.ColorDrawerTextLight" Style="@($"color: {SettingsData.ColorDrawerTextLight};")" Placeholder="Select Color" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="Drawer Text (Dark)" @bind-Text="SettingsData.ColorDrawerTextDark" Style="@($"color: {SettingsData.ColorDrawerTextDark};")" Placeholder="Select Color" />
+            </MudItem>
+            
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="Surface (Light)" @bind-Text="SettingsData.ColorSurfaceLight" Style="@($"color: {SettingsData.ColorSurfaceLight};")" Placeholder="Select Color" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudColorPicker ColorPickerMode="ColorPickerMode.HEX" Label="Surface (Dark)" @bind-Text="SettingsData.ColorSurfaceDark" Style="@($"color: {SettingsData.ColorSurfaceDark};")" Placeholder="Select Color" />
+            </MudItem>
+            
         </MudGrid>
     </MudPaper>
 
@@ -85,16 +165,19 @@
             </MudItem>
         </MudGrid>
     </MudPaper>
-
-    <MudPaper Class="pa-2 mt-4">
+    
+    <MudPaper Class="pa-2 mt-4 mb-12">
         <MudButton ButtonType="ButtonType.Submit" StartIcon="@Icons.Material.Filled.Update" Variant="Variant.Filled"
                    Color="Color.Primary">Update Settings
         </MudButton>
        
     </MudPaper>
-</EditForm>
+    
+</EditForm>    
+}
+
 @code {
-    SettingsModel SettingsData { get; set; } = new();
+    SettingsModel? SettingsData { get; set; } 
     string testEmail = "";
     
     protected override async Task OnInitializedAsync()
@@ -104,8 +187,16 @@
 
     private async Task GetSettings()
     {
+        try
+        {
         var response = await SettingsService.GetSettings();
-        if (response.IsSuccess) SettingsData = response.Data;
+        if (!response.IsSuccess) throw new Exception("Unable to access settings");
+        SettingsData = response.Data;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
     }
     
     private void OnFileUpload(IBrowserFile file)
@@ -125,10 +216,9 @@
             if (!saveResult.IsSuccess) throw new Exception(saveResult.Message);
 
             await GetSettings();
-
             Snackbar.Add("Settings Saved", Severity.Success);
         }
-        catch (Exception ex)
+        catch (Exception ex ) when (ex is not NavigationException)
         {
             Snackbar.Add(ex.Message, Severity.Error);
         }

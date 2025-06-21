@@ -1,5 +1,7 @@
-﻿@inherits LayoutComponentBase
-
+﻿@using AppLaunch.Services
+@inherits LayoutComponentBase
+@inject ISettingsService SettingsService
+@inject ISnackbar Snackbar
 <MudThemeProvider @bind-IsDarkMode="_isDarkMode" Theme="MyCustomTheme" />
 
 <MudPopoverProvider />
@@ -53,6 +55,7 @@
     private bool _drawerOpen = true;
     private MudTheme MyCustomTheme = new MudTheme()
     {
+        
         PaletteLight = new PaletteLight()
         {
             Primary = "#0081c4", // Soft blue
@@ -112,10 +115,65 @@
             }
         }
     };
-    
+
+    protected override async Task OnInitializedAsync()
+    {
+        SettingsService.SettingsChanged += OnSettingsChanged;
+        await LoadTheme();
+    }
+
+    private async Task LoadTheme()
+    { 
+        try
+        {
+           
+            var settingsResponse = await SettingsService.GetSettings();
+            if (!settingsResponse.IsSuccess) throw new Exception("Unable to access settings");
+            var settingsData = settingsResponse.Data;
+
+            MyCustomTheme.PaletteLight.Primary = settingsData.ColorPrimaryLight!;
+            MyCustomTheme.PaletteLight.Secondary = settingsData.ColorSecondaryLight!;
+            MyCustomTheme.PaletteLight.AppbarBackground = settingsData.ColorAppbarBackgroundLight!;
+            MyCustomTheme.PaletteLight.AppbarText = settingsData.ColorAppbarTextLight!;
+            MyCustomTheme.PaletteLight.Background = settingsData.ColorBackgroundLight!;
+            MyCustomTheme.PaletteLight.TextPrimary = settingsData.ColorTextPrimaryLight!;
+            MyCustomTheme.PaletteLight.TextSecondary = settingsData.ColorTextSecondaryLight!;
+            MyCustomTheme.PaletteLight.DrawerBackground = settingsData.ColorDrawerBackgroundLight!;
+            MyCustomTheme.PaletteLight.DrawerText = settingsData.ColorDrawerTextLight!;
+            MyCustomTheme.PaletteLight.Surface = settingsData.ColorSurfaceLight!;
+            
+            MyCustomTheme.PaletteDark.Primary = settingsData.ColorPrimaryDark!;
+            MyCustomTheme.PaletteDark.Secondary = settingsData.ColorSecondaryDark!;
+            MyCustomTheme.PaletteDark.AppbarBackground = settingsData.ColorAppbarBackgroundDark!;
+            MyCustomTheme.PaletteDark.AppbarText = settingsData.ColorAppbarTextDark!;
+            MyCustomTheme.PaletteDark.Background = settingsData.ColorBackgroundDark!;
+            MyCustomTheme.PaletteDark.TextPrimary = settingsData.ColorTextPrimaryDark!;
+            MyCustomTheme.PaletteDark.TextSecondary = settingsData.ColorTextSecondaryDark!;
+            MyCustomTheme.PaletteDark.DrawerBackground = settingsData.ColorDrawerBackgroundDark!;
+            MyCustomTheme.PaletteDark.DrawerText = settingsData.ColorDrawerTextDark!;
+            MyCustomTheme.PaletteDark.Surface = settingsData.ColorSurfaceDark!;
+
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
     private void ToggleDarkMode()
     {
         _isDarkMode = !_isDarkMode;
+    }
+    
+    private async void OnSettingsChanged()
+    {
+        await LoadTheme();
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        SettingsService.SettingsChanged -= OnSettingsChanged;
     }
 
 
