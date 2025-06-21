@@ -16,7 +16,7 @@
                 Rapidly develop and deliver line of business applications
             </MudText>
         </MudItem>
-        @if (!updateInProcess && isCheckForUpdatesComplete)
+        @if (!updateInProcess)
         {
             <MudItem xs="12">
                 @if (packages == null)
@@ -103,7 +103,6 @@
     private List<PackageInfo>? packages;
     bool showUpdateButton = false;
     bool updateInProcess = false;
-    bool isCheckForUpdatesComplete = false;
     AppLaunch.Models.Settings.SettingsModel mySettings = new();
 
     protected override async Task OnInitializedAsync()
@@ -115,7 +114,6 @@
     {
         try
         {
-            isCheckForUpdatesComplete = false;
             await Task.Delay(1000);
             var mySettingsResponse = await SettingsService.GetSettings();
             if (!mySettingsResponse.IsSuccess) throw new Exception(mySettingsResponse.Message);
@@ -171,8 +169,6 @@
         {
             Snackbar.Add(ex.Message, Severity.Error);
         }
-
-        isCheckForUpdatesComplete = true;
     }
 
     record NuGetVersionIndex
