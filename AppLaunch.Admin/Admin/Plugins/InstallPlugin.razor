@@ -2,6 +2,7 @@
 @page "/admin/plugins/installplugin"
 @inject NavigationManager NavigationManager
 @using System.Net.Http.Headers
+@using Newtonsoft.Json
 @inject HttpClient Http
 @inject ISnackbar Snackbar
 @inject PluginManager PluginManager
@@ -61,8 +62,27 @@
  
             var baseUri = new Uri(NavigationManager.BaseUri);
             var apiUri = new Uri(baseUri, $"api/plugins/install");
-            var response=await Http.PostAsync(apiUri, content);
-            if (!response.IsSuccessStatusCode) throw new Exception("Failed to install plugin");
+            
+            
+            
+            
+            // var response=await Http.PostAsync(apiUri, content);
+            // if (!response.IsSuccessStatusCode) throw new Exception("Failed to install plugin");
+            
+            
+            var response = await Http.PostAsync(apiUri, content);
+            if (!response.IsSuccessStatusCode) throw new Exception("Invalid Response Code: Failed to install plugin");
+
+            var jsonString = await response.Content.ReadAsStringAsync();
+            var coreResponse = JsonConvert.DeserializeObject<CoreResponse>(jsonString);
+
+            if (!coreResponse.IsSuccess) throw new Exception(coreResponse.Message);
+            
+            
+            
+            
+            
+            
 
             Snackbar.Add("Plugin Installed", Severity.Success);
             NavigationManager.NavigateTo("/admin/plugins/");
