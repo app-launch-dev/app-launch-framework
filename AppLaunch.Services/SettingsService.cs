@@ -10,16 +10,20 @@ public interface ISettingsService
 {
     Task<CoreResponse<SettingsModel>> GetSettings();
     Task<CoreResponse> SaveSettings(SettingsModel model);
+    event Action? SettingsChanged;
 }
 
-public class SettingsService(ApplicationDbContext dbContext) : ISettingsService
+public class SettingsService(IDbContextFactory<ApplicationDbContext> contextFactory) : ISettingsService
 {
+    public event Action? SettingsChanged;
+    
     public async Task<CoreResponse<SettingsModel>> GetSettings()
     {
         CoreResponse<SettingsModel> myResponse = new();
         try
         {
-            var response = await (from s in dbContext.Sites
+            using var context = contextFactory.CreateDbContext();
+            var response = await (from s in context.Sites
                 select s).FirstOrDefaultAsync();
 
             SettingsModel mySettings = new()
@@ -35,7 +39,31 @@ public class SettingsService(ApplicationDbContext dbContext) : ISettingsService
                 LoginLogoUrl = response.LoginLogoUrl,
                 LoginOverrideCSS = response.LoginOverrideCSS,
                 AwsSesAccessKey = response.AwsSesAccessKey,
-                AwsSesSecretKey = response.AwsSesSecretKey
+                AwsSesSecretKey = response.AwsSesSecretKey,
+                GitHubWorkflowFile = response.GitHubWorkflowFile,
+                GitHubOwner = response.GitHubOwner,
+                GitHubRepo = response.GitHubRepo,
+                GitHubToken = response.GitHubToken,
+                ColorPrimaryLight = response.ColorPrimaryLight,
+                ColorSecondaryLight = response.ColorSecondaryLight,
+                ColorAppbarBackgroundLight = response.ColorAppbarBackgroundLight,
+                ColorAppbarTextLight = response.ColorAppbarTextLight,
+                ColorBackgroundLight = response.ColorBackgroundLight,
+                ColorTextPrimaryLight = response.ColorTextPrimaryLight,
+                ColorTextSecondaryLight = response.ColorTextSecondaryLight,
+                ColorDrawerBackgroundLight = response.ColorDrawerBackgroundLight,
+                ColorDrawerTextLight = response.ColorDrawerTextLight,
+                ColorSurfaceLight = response.ColorSurfaceLight,
+                ColorPrimaryDark = response.ColorPrimaryDark,
+                ColorSecondaryDark = response.ColorSecondaryDark,
+                ColorAppbarBackgroundDark = response.ColorAppbarBackgroundDark,
+                ColorAppbarTextDark = response.ColorAppbarTextDark,
+                ColorBackgroundDark = response.ColorBackgroundDark,
+                ColorTextPrimaryDark = response.ColorTextPrimaryDark,
+                ColorTextSecondaryDark = response.ColorTextSecondaryDark,
+                ColorDrawerBackgroundDark = response.ColorDrawerBackgroundDark,
+                ColorDrawerTextDark = response.ColorDrawerTextDark,
+                ColorSurfaceDark = response.ColorSurfaceDark
             };
 
             myResponse.Data = mySettings;
@@ -56,7 +84,8 @@ public class SettingsService(ApplicationDbContext dbContext) : ISettingsService
         CoreResponse myResponse = new();
         try
         {
-            var existingSettings = await dbContext.Sites.FirstOrDefaultAsync();
+            using var context = contextFactory.CreateDbContext();
+            var existingSettings = await context.Sites.FirstOrDefaultAsync();
 
             if (existingSettings == null) throw new Exception("Settings not initialized");
 
@@ -71,7 +100,32 @@ public class SettingsService(ApplicationDbContext dbContext) : ISettingsService
             existingSettings.LoginOverrideCSS = model.LoginOverrideCSS;
             existingSettings.AwsSesAccessKey = model.AwsSesAccessKey;
             existingSettings.AwsSesSecretKey = model.AwsSesSecretKey;
-            await dbContext.SaveChangesAsync();
+            existingSettings.GitHubWorkflowFile = model.GitHubWorkflowFile;
+            existingSettings.GitHubOwner = model.GitHubOwner;
+            existingSettings.GitHubRepo = model.GitHubRepo;
+            existingSettings.GitHubToken = model.GitHubToken;
+            existingSettings.ColorPrimaryLight = model.ColorPrimaryLight;
+            existingSettings.ColorSecondaryLight = model.ColorSecondaryLight;
+            existingSettings.ColorAppbarBackgroundLight = model.ColorAppbarBackgroundLight;
+            existingSettings.ColorAppbarTextLight = model.ColorAppbarTextLight;
+            existingSettings.ColorBackgroundLight = model.ColorBackgroundLight;
+            existingSettings.ColorTextPrimaryLight = model.ColorTextPrimaryLight;
+            existingSettings.ColorTextSecondaryLight = model.ColorTextSecondaryLight;
+            existingSettings.ColorDrawerBackgroundLight = model.ColorDrawerBackgroundLight;
+            existingSettings.ColorDrawerTextLight = model.ColorDrawerTextLight;
+            existingSettings.ColorSurfaceLight = model.ColorSurfaceLight;
+            existingSettings.ColorPrimaryDark = model.ColorPrimaryDark;
+            existingSettings.ColorSecondaryDark = model.ColorSecondaryDark;
+            existingSettings.ColorAppbarBackgroundDark = model.ColorAppbarBackgroundDark;
+            existingSettings.ColorAppbarTextDark = model.ColorAppbarTextDark;
+            existingSettings.ColorBackgroundDark = model.ColorBackgroundDark;
+            existingSettings.ColorTextPrimaryDark = model.ColorTextPrimaryDark;
+            existingSettings.ColorTextSecondaryDark = model.ColorTextSecondaryDark;
+            existingSettings.ColorDrawerBackgroundDark = model.ColorDrawerBackgroundDark;
+            existingSettings.ColorDrawerTextDark = model.ColorDrawerTextDark;
+            existingSettings.ColorSurfaceDark = model.ColorSurfaceDark;
+            await context.SaveChangesAsync();
+            SettingsChanged?.Invoke();
             myResponse.IsSuccess = true;
         }
         catch (Exception ex)

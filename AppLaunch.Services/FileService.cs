@@ -17,16 +17,17 @@ public interface IFileService
     Task<CoreResponse<List<FileCategoryDto>>> GetAllCategories();
 }
 
-public class FileService(ApplicationDbContext dbContext) : IFileService
+public class FileService(IDbContextFactory<ApplicationDbContext> contextFactory) : IFileService
 {
     public async Task<CoreResponse<List<FileDto>>> GetAllFiles()
     {
         CoreResponse<List<FileDto>> myResponse = new();
         try
         {
+            using var context = contextFactory.CreateDbContext();
             List<FileDto> myFiles = new();
             
-            var dbFiles = await (from s in dbContext.Files
+            var dbFiles = await (from s in context.Files
                 select new 
                 {
                     s.FileId,
@@ -63,9 +64,10 @@ public class FileService(ApplicationDbContext dbContext) : IFileService
         CoreResponse<List<FileCategoryDto>> myResponse = new();
         try
         {
+            using var context = contextFactory.CreateDbContext();
             List<FileCategoryDto> myCategories = new();
             
-            var dbCategories = await (from s in dbContext.Files
+            var dbCategories = await (from s in context.Files
                 orderby s.Category
                 select new {s.Category}).Distinct().ToListAsync();
 
@@ -93,7 +95,8 @@ public class FileService(ApplicationDbContext dbContext) : IFileService
         CoreResponse<FileDto> myResponse = new();
         try
         {
-            var dbFile = await (from s in dbContext.Files
+            using var context = contextFactory.CreateDbContext();
+            var dbFile = await (from s in context.Files
                 where s.FileId == model.FileId
                 select new 
                 {
@@ -128,7 +131,8 @@ public class FileService(ApplicationDbContext dbContext) : IFileService
         CoreResponse<FileDataDto> myResponse = new();
         try
         {
-            var dbFile = await (from s in dbContext.Files
+            using var context = contextFactory.CreateDbContext();
+            var dbFile = await (from s in context.Files
                 where s.FileId == model.FileId
                 select new 
                 {
@@ -165,13 +169,14 @@ public class FileService(ApplicationDbContext dbContext) : IFileService
         CoreResponse myResponse = new();
         try
         {
-            var dbFile = await (from f in dbContext.Files
+            using var context = contextFactory.CreateDbContext();
+            var dbFile = await (from f in context.Files
                 where f.FileId == model.FileId
                 select f).FirstOrDefaultAsync();
             if (dbFile == null) throw new Exception("File not found");
-            dbContext.Files.Attach(dbFile);
-            dbContext.Files.Remove(dbFile);
-            await dbContext.SaveChangesAsync();
+            context.Files.Attach(dbFile);
+            context.Files.Remove(dbFile);
+            await context.SaveChangesAsync();
             myResponse.IsSuccess = true;
         }
         catch (Exception ex)
@@ -187,21 +192,22 @@ public class FileService(ApplicationDbContext dbContext) : IFileService
         CoreResponse<FileDto> myResponse = new();
         try
         {
+            using var context = contextFactory.CreateDbContext();
             File dbFile = new();
             if (model.FileId == Guid.Empty) model.FileId = Guid.NewGuid();
 
-            var existingFile = await dbContext.Files
+            var existingFile = await context.Files
                 .Where(f => f.FileId == model.FileId)
                 .FirstOrDefaultAsync();
 
             if (existingFile == null)
             {
-                dbContext.Files.Add(dbFile);
+                context.Files.Add(dbFile);
             }
             else
             {
                 dbFile = existingFile;
-                dbContext.Files.Attach(dbFile).State = EntityState.Modified;
+                context.Files.Attach(dbFile).State = EntityState.Modified;
             }
             
             dbFile.FileId = model.FileId;
@@ -209,7 +215,7 @@ public class FileService(ApplicationDbContext dbContext) : IFileService
             dbFile.Category = model.Category;
             dbFile.MimeType =  await GetMimeType(model.FileName);
             dbFile.FileBytes = model.FileBytes;
-            await dbContext.SaveChangesAsync();
+            await context.SaveChangesAsync();
             
             //get file
             FileRequestDto fileRequest = new()

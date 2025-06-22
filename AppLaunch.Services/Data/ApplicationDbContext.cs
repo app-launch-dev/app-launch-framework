@@ -32,7 +32,27 @@ namespace AppLaunch.Services.Data
                    SiteName = "My AppLaunch Site",
                    ThemeId = new Guid("d145c1f7-2193-473a-aa6f-3ceed8343a44"),
                    ContentKey = "f15998d5-c4b7-4719-b0b4-c86761ce9ae8",
-                   AllowSignUp = false
+                   AllowSignUp = false,
+                   ColorPrimaryLight = "#0081c4",
+                   ColorPrimaryDark = "#0081c4",
+                   ColorSecondaryLight = "#808080",
+                   ColorSecondaryDark = "#808080",
+                   ColorAppbarBackgroundLight = "#191a1a",
+                   ColorAppbarBackgroundDark = "#191a1a",
+                   ColorAppbarTextLight = "#dadada",
+                   ColorAppbarTextDark = "#dadada",
+                   ColorBackgroundLight = "#F5F5F5",
+                   ColorBackgroundDark = "#191a1a",
+                   ColorTextPrimaryLight = "#202020",
+                   ColorTextPrimaryDark = "#FFFFFF",
+                   ColorTextSecondaryLight = "#757575",
+                   ColorTextSecondaryDark = "#757575",
+                   ColorDrawerBackgroundLight = "#212222",
+                   ColorDrawerBackgroundDark = "#212222",
+                   ColorDrawerTextLight = "#FFFFFF",
+                   ColorDrawerTextDark = "#FFFFFF",
+                   ColorSurfaceLight = "#FFFFFF",
+                   ColorSurfaceDark = "#212222"
                }
            );
            

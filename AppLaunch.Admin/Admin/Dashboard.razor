@@ -1,7 +1,13 @@
-﻿@page "/admin/"
+﻿@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@page "/admin/"
+@using System.Net.Http.Headers
+@using System.Text
 @layout AppLaunchDefault
 @inject HttpClient Http
-
+@inject ISettingsService SettingsService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
 <MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
     <MudGrid>
         <MudItem xs="12">
@@ -10,97 +16,159 @@
                 Rapidly develop and deliver line of business applications
             </MudText>
         </MudItem>
-        
-        <MudItem xs="12">
-            @if (packages == null)
+        @if (!updateInProcess)
+        {
+            <MudItem xs="12">
+                @if (packages == null)
+                {
+                    <p>
+                        <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true"/>
+                        <em>Checking for updates…</em>
+                    </p>
+                }
+                else if (!packages.Any())
+                {
+                    <p>No AppLaunch packages found.</p>
+                }
+                else
+                {
+                    <MudSimpleTable Style="overflow-x: auto;">
+                        <thead>
+                        <tr>
+
+                            <th>Package</th>
+                            <th>Installed</th>
+                            <th>Latest</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var pkg in packages)
+                        {
+                            <tr>
+                                <td>@pkg.Name</td>
+                                <td>@pkg.DisplayVersion</td>
+                                <td>@pkg.Latest</td>
+                                <td>
+                                    @if (pkg.UpdateAvailable)
+                                    {
+                                        <MudChip T="string" Color="Color.Success" Variant="Variant.Filled">Update
+                                            Available
+                                        </MudChip>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </MudSimpleTable>
+                }
+            </MudItem>
+
+            if (showUpdateButton)
             {
-                <p><em>Loading…</em></p>
-            }
-            else if (!packages.Any())
-            {
-                <p>No AppLaunch packages found.</p>
+                <MudItem xs="12">
+                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Update"
+                               @onclick="TriggerGitHubActionAsync" Color="Color.Primary">Update Now
+                    </MudButton>
+                </MudItem>
             }
             else
             {
-                <MudSimpleTable Style="overflow-x: auto;">
-                    <thead>
-                    <tr>
-
-                        <th>Package</th>
-                        <th>Installed</th>
-                        <th>Latest</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach (var pkg in packages)
-                    {
-                        <tr>
-                            <td>@pkg.Name</td>
-                            <td>@pkg.DisplayVersion</td>
-                            <td>@pkg.Latest</td>
-                            <td>
-                                @if (pkg.UpdateAvailable)
-                                {
-                                    <MudChip T="string" Color="Color.Success" Variant="Variant.Filled">Update Available</MudChip>
-                                }
-                            </td>
-                        </tr>
-                    }
-                    </tbody>
-                </MudSimpleTable>
+                <MudItem xs="6">
+                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.UpdateDisabled"
+                               Color="Color.Primary" Disabled="true">Update Now
+                    </MudButton>
+                </MudItem>
+                <MudItem xs="6" Class="d-flex justify-end">
+                    <MudButton Variant="Variant.Text"
+                               StartIcon="@Icons.Material.Filled.Update"
+                               Color="Color.Secondary"
+                               @onclick="TriggerGitHubActionAsync"
+                               Style="text-transform:none">
+                        Force Update / ReInstall
+                    </MudButton>
+                </MudItem>
             }
-        </MudItem>
-       
-        
+        }
+        else
+        {
+            <MudItem xs="12" Class="d-flex justify-center">
+                <MudProgressCircular Color="Color.Success" Indeterminate="true"/> Update In Process. Please be patient. Your site may go offline once installation begins.
+            </MudItem>
+        }
     </MudGrid>
 </MudPaper>
 
 @code {
     private List<PackageInfo>? packages;
+    bool showUpdateButton = false;
+    bool updateInProcess = false;
+    AppLaunch.Models.Settings.SettingsModel mySettings = new();
 
     protected override async Task OnInitializedAsync()
     {
-        packages = AppDomain.CurrentDomain
-            .GetAssemblies()
-            .Where(a => a.GetName().Name?.StartsWith("AppLaunch.") == true)
-            .Select(a => new PackageInfo
-            {
-                Name = a.GetName().Name ?? "",
-                InstalledVersion = a.GetName().Version?.ToString() ?? "unknown"
-            })
+        await CheckForUpdates();
+    }
 
-            .OrderBy(p => p.Name)
-            .ToList();
-
-        foreach (var pkg in packages)
+    private async Task CheckForUpdates()
+    {
+        try
         {
-            try
-            {
-                var url = $"https://api.nuget.org/v3-flatcontainer/{pkg.Name.ToLowerInvariant()}/index.json";
-                var versionList = await Http.GetFromJsonAsync<NuGetVersionIndex>(url);
-                var latest = versionList?.Versions?.LastOrDefault();
+            await Task.Delay(1000);
+            var mySettingsResponse = await SettingsService.GetSettings();
+            if (!mySettingsResponse.IsSuccess) throw new Exception(mySettingsResponse.Message);
+            mySettings = mySettingsResponse.Data;
 
-                if (!string.IsNullOrWhiteSpace(latest))
+
+            packages = AppDomain.CurrentDomain
+                .GetAssemblies()
+                .Where(a => a.GetName().Name?.StartsWith("AppLaunch.") == true)
+                .Select(a => new PackageInfo
                 {
-                    pkg.Latest = latest;
+                    Name = a.GetName().Name ?? "",
+                    InstalledVersion = a.GetName().Version?.ToString() ?? "unknown"
+                })
+                .OrderBy(p => p.Name)
+                .ToList();
 
-                    // Parse versions and compare only major.minor.patch
-                    var localVer = new Version(pkg.InstalledVersion);
-                    var remoteVer = new Version(latest);
+            foreach (var pkg in packages)
+            {
+                try
+                {
+                    var url = $"https://api.nuget.org/v3-flatcontainer/{pkg.Name.ToLowerInvariant()}/index.json";
+                    var versionList = await Http.GetFromJsonAsync<NuGetVersionIndex>(url);
+                    var latest = versionList?.Versions?.LastOrDefault();
 
-                    var simplifiedLocal = new Version(localVer.Major, localVer.Minor, localVer.Build);
-                    var simplifiedRemote = new Version(remoteVer.Major, remoteVer.Minor, remoteVer.Build);
+                    if (!string.IsNullOrWhiteSpace(latest))
+                    {
+                        pkg.Latest = latest;
 
-                    pkg.UpdateAvailable = simplifiedLocal < simplifiedRemote;
+                        // Parse versions and compare only major.minor.patch
+                        var localVer = new Version(pkg.InstalledVersion);
+                        var remoteVer = new Version(latest);
+
+                        var simplifiedLocal = new Version(localVer.Major, localVer.Minor, localVer.Build);
+                        var simplifiedRemote = new Version(remoteVer.Major, remoteVer.Minor, remoteVer.Build);
+
+                        pkg.UpdateAvailable = simplifiedLocal < simplifiedRemote;
+
+                        //show update button if settings configured and new version found
+                        if (pkg.UpdateAvailable && !string.IsNullOrEmpty(mySettings.GitHubWorkflowFile))
+                        {
+                            showUpdateButton = true;
+                        }
+                    }
+                }
+                catch
+                {
+                    pkg.Latest = "unavailable";
                 }
             }
-            catch
-            {
-                pkg.Latest = "unavailable";
-            }
         }
-
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
     }
 
     record NuGetVersionIndex
@@ -120,4 +188,43 @@
                 ? $"{v.Major}.{v.Minor}.{v.Build}"
                 : InstalledVersion;
     }
+
+    public async Task TriggerGitHubActionAsync()
+    {
+        try
+        {
+            bool? runUpdates = await DialogService.ShowMessageBox(
+                "Start Updates",
+                "Once initialized, your site will go offline until the updates have completed. Proceed?",
+                yesText: "Update Now!", cancelText: "Cancel");
+            if (runUpdates != true) throw new Exception("Update Cancelled");
+
+
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AppLaunch", "1.0"));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", $"{mySettings.GitHubToken}");
+
+            var response = await client.PostAsync(
+                $"https://api.github.com/repos/{mySettings.GitHubOwner}/{mySettings.GitHubRepo}/actions/workflows/{mySettings.GitHubWorkflowFile}/dispatches",
+                new StringContent("{\"ref\":\"main\"}", Encoding.UTF8, "application/json"));
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Success feedback
+                Snackbar.Add($"Updates have been requested. Your site will temporarily go offline while updates are in process.", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add($"Unable to initiate updates: {response.ReasonPhrase}", Severity.Error);
+            }
+
+            showUpdateButton = false;
+            updateInProcess = true;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
 }

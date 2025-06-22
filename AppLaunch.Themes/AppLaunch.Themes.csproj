@@ -40,5 +40,11 @@
       <PackageReference Include="Extensions.MudBlazor.StaticInput" Version="3.2.0" />
       <PackageReference Include="MudBlazor" Version="8.5.1" />
     </ItemGroup>
+
+ 
+    <ItemGroup>
+      <ProjectReference Include="..\AppLaunch.Models\AppLaunch.Models.csproj" />
+      <ProjectReference Include="..\AppLaunch.Services\AppLaunch.Services.csproj" />
+    </ItemGroup>
     
 </Project>
