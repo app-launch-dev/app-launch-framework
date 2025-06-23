@@ -92,7 +92,7 @@
 
     private async Task OnValidSubmitAsync()
     {
-        // Clean the input code by removing spaces and hyphens
+        //TODO: Clean the input code by removing spaces and hyphens - This could join the other sanitation scripts
         var authenticatorCode = Input.TwoFactorCode!.Replace(" ", string.Empty).Replace("-", string.Empty);
 
         var result = await SignInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, RememberMe, Input.RememberMachine);
