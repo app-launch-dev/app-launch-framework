@@ -6,6 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <AssemblyName>$(AssemblyName.Replace(' ', '_'))</AssemblyName>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -26,23 +27,24 @@
 
 
     <ItemGroup>
-        <PackageReference Include="BlazorTemplater" Version="1.5.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.3.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.2.0"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.0-rc.2.24474.3"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
+        <PackageReference Include="BlazorTemplater" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.UI" />
+        <PackageReference Include="Microsoft.AspNetCore.Session" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" >
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.1"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.1">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" >
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0"/>
+        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" />
+        <PackageReference Include="MudBlazor" />
     </ItemGroup>
 
     <ItemGroup>

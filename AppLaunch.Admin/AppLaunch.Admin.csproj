@@ -6,11 +6,12 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     </PropertyGroup>
 
     <PropertyGroup>
         <PackageId>AppLaunch.Admin</PackageId>
-        <Version>1.0.11</Version>
+        <Version>1.0.12</Version>
         <Authors>Applaunch Development Group</Authors>
         <Description>AppLaunch Admin contains the core admin pages for use in AppLaunch projects.</Description>
         <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>

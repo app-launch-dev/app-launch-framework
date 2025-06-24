@@ -20,6 +20,24 @@ using MudBlazor.Services;
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("applaunch.json", optional: true, reloadOnChange: true);
 
+builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+{
+    options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+    options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"], b => b.MigrationsAssembly("AppLaunch.Services"));
+});
+
+//dynamically register services defined in plugins
+var pluginTypes = AppDomain.CurrentDomain.GetAssemblies()
+    .SelectMany(a => a.GetTypes())
+    .Where(t => typeof(IPlugin).IsAssignableFrom(t) && !t.IsAbstract);
+
+foreach (var pluginType in pluginTypes)
+{
+    var plugin = (IPlugin)Activator.CreateInstance(pluginType)!;
+    plugin.RegisterServices(builder.Services, builder.Configuration);
+}
+
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddRazorPages();
@@ -50,13 +68,6 @@ builder.Services.AddAuthentication(options =>
         options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
     })
     .AddIdentityCookies();
-
-builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
-{
-    options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
-    options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"], b => b.MigrationsAssembly("AppLaunch.Services"));
-});
-
 
 builder.Services.AddIdentityCore<ApplicationUser>(options =>
         {
