@@ -11,89 +11,62 @@
 
 <PageTitle>Two-factor authentication</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center pt-16">
-    <MudPaper Elevation="3" Class="pa-8 text-center">Two-factor authentication
-    <MudDivider Class="my-4"/>
-    
-    @if (!string.IsNullOrEmpty(message))
-    {
-        <MudAlert Severity="Severity.Error"
-                  Variant="Variant.Filled"
-                  Class="mb-4"
-                  Icon="@Icons.Material.Filled.Warning"
-                  NoIcon="false">
-            @message
-        </MudAlert>
-    }
-    
-    <MudText Typo="Typo.body1" GutterBottom="true">Your login is protected with an authenticator app. Enter your authenticator code below.</MudText>
-    
-    <EditForm Model="Input" FormName="login-with-2fa" OnValidSubmit="OnValidSubmitAsync" method="post">
-        @* Hidden inputs for ReturnUrl and RememberMe *@
-        <input type="hidden" name="ReturnUrl" value="@ReturnUrl"/>
-        <input type="hidden" name="RememberMe" value="@RememberMe"/>
-        
-        <DataAnnotationsValidator/>
-        @* Using MudValidationSummary for better MudBlazor integration - I don't think this is needed *@
-        <MudValidationSummary Class="mb-4" />
-        
-        <MudGrid Spacing="2">
-            <MudItem xs="12">
-                <MudTextField @bind-Value="Input.TwoFactorCode"
-                              Label="Authenticator code"
-                              Variant="Variant.Outlined"
-                              InputType="InputType.Text"
-                              Adornment="Adornment.Start"
-                              AdornmentIcon="@Icons.Material.Filled.Key"
-                              For="@(() => Input.TwoFactorCode)"
-                              Required="true"
-                              RequiredError="Authenticator code is required."
-                              HelperText="Enter your 6-digit code from the authenticator app (spaces and hyphens are ignored)."
-                              AutoComplete="off"/>
-            </MudItem>
-            <MudItem xs="12">
-                <MudCheckBox @bind-Checked="Input.RememberMachine" Color="Color.Primary">Remember this machine</MudCheckBox>
-            </MudItem>
-            <MudItem xs="12">
-                <MudButton ButtonType="ButtonType.Submit"
-                           Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           FullWidth="true"
-                           Class="mt-4">
-                    Log in
-                </MudButton>
-            </MudItem>
-        </MudGrid>
-    </EditForm>
-    <MudText Typo="Typo.body2" Class="mt-4">
-        Don't have access to your authenticator device? You can
-        <MudLink Href="@($"Account/LoginWithRecoveryCode?ReturnUrl={ReturnUrl}")" Typo="Typo.body2">log in with a recovery code</MudLink>.
-    </MudText>
-    </MudPaper>
-</MudContainer>
+<h1>Two-factor authentication</h1>
+<MudDivider />
+<StatusMessage Message="@message" />
+<p>Your login is protected with an authenticator app. Enter your authenticator code below.</p>
+<div class="row">
+    <div class="col-md-4">
+        <EditForm Model="Input" FormName="login-with-2fa" OnValidSubmit="OnValidSubmitAsync" method="post">
+            <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
+            <input type="hidden" name="RememberMe" value="@RememberMe" />
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.TwoFactorCode" id="Input.TwoFactorCode" class="form-control" autocomplete="off" />
+                <label for="Input.TwoFactorCode" class="form-label">Authenticator code</label>
+                <ValidationMessage For="() => Input.TwoFactorCode" class="text-danger" />
+            </div>
+            <div class="checkbox mb-3">
+                <label for="remember-machine" class="form-label">
+                    <InputCheckbox @bind-Value="Input.RememberMachine" />
+                    Remember this machine
+                </label>
+            </div>
+            <div>
+                <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+<p>
+    Don't have access to your authenticator device? You can
+    <a class="mud-link mud-primary-text mud-link-underline-hover" href="Account/LoginWithRecoveryCode?ReturnUrl=@ReturnUrl">log in with a recovery code</a>.
+</p>
 
 @code {
     private string? message;
     private ApplicationUser user = default!;
 
-    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
 
-    [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
 
-    [SupplyParameterFromQuery] private bool RememberMe { get; set; }
+    [SupplyParameterFromQuery]
+    private bool RememberMe { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         // Ensure the user has gone through the username & password screen first
-        // If not, this throws an InvalidOperationException and stops rendering/execution.
         user = await SignInManager.GetTwoFactorAuthenticationUserAsync() ??
-               throw new InvalidOperationException("Unable to load two-factor authentication user. Please try logging in again.");
+            throw new InvalidOperationException("Unable to load two-factor authentication user.");
     }
 
     private async Task OnValidSubmitAsync()
     {
-        var authenticatorCode = Services.Utils.Sanitize.RemoveSpacesAndHyphens(Input.TwoFactorCode!);
-
+        var authenticatorCode = Input.TwoFactorCode!.Replace(" ", string.Empty).Replace("-", string.Empty);
         var result = await SignInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, RememberMe, Input.RememberMachine);
         var userId = await UserManager.GetUserIdAsync(user);
 
@@ -109,7 +82,6 @@
         }
         else
         {
-            // Only set message if login attempt fails and no redirect occurs
             Logger.LogWarning("Invalid authenticator code entered for user with ID '{UserId}'.", userId);
             message = "Error: Invalid authenticator code.";
         }
@@ -117,7 +89,7 @@
 
     private sealed class InputModel
     {
-        [Required(ErrorMessage = "Authenticator code is required.")]
+        [Required]
         [StringLength(7, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
         [DataType(DataType.Text)]
         [Display(Name = "Authenticator code")]
