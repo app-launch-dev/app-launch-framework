@@ -6,6 +6,15 @@
                  name="AppLaunchInternal"
                  start-page="applaunch.md">
 
+    <toc-element topic="Template.md">
+        <toc-element topic="Packaging.md"/>
+        <toc-element topic="Publishing.md">
+            <toc-element topic="Pack-the-Template.md"/>
+            <toc-element topic="Updating-Template.md"/>
+        </toc-element>
+        <toc-element topic="Install.md"/>
+        <toc-element topic="Uninstalling.md"/>
+    </toc-element>
     <toc-element topic="applaunch.md"/>
     <toc-element topic="Layout.md"/>
     <toc-element topic="Routing.md"/>
