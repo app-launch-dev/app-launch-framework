@@ -9,7 +9,7 @@
 
     <PropertyGroup>
         <PackageId>AppLaunch.Models</PackageId>
-        <Version>1.0.4</Version>
+        <Version>1.0.5</Version>
         <Authors>Applaunch Development Group</Authors>
         <Description>AppLaunch Models contains the Core DTO models for AppLaunch projects.</Description>
         <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>
