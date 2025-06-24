@@ -66,7 +66,7 @@
 
     private async Task OnValidSubmitAsync()
     {
-        var authenticatorCode = Input.TwoFactorCode!.Replace(" ", string.Empty).Replace("-", string.Empty);
+        var authenticatorCode = Services.Utils.Sanitize.RemoveSpacesAndHyphens(Input.TwoFactorCode!);
         var result = await SignInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, RememberMe, Input.RememberMachine);
         var userId = await UserManager.GetUserIdAsync(user);
 

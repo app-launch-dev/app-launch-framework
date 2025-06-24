@@ -14,70 +14,40 @@
 
 <PageTitle>Resend email confirmation</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center pt-16">
-    <MudPaper Elevation="3" Class="pa-8 text-center" Width="100%">
-        <MudText Typo="Typo.h4" GutterBottom="true">Resend Email Confirmation</MudText>
-        <MudText Typo="Typo.h6" GutterBottom="true">Enter your email.</MudText>
-        <MudDivider Class="my-4"/>
+<MudText Typo="Typo.h3" GutterBottom="true">Resend email confirmation</MudText>
 
-        @if (!string.IsNullOrEmpty(_message))
-        {
-            <MudAlert Severity="Severity.Success"
-                      Variant="Variant.Filled"
-                      Class="mb-4"
-                      Icon="@Icons.Material.Filled.CheckCircle"
-                      NoIcon="false">
-                @_message
-            </MudAlert>
-        }
+<MudText Typo="Typo.body1" GutterBottom="true">Enter your email.</MudText>
 
-        <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
-            <DataAnnotationsValidator/>
-            <MudValidationSummary Class="mb-4" /> @* Using MudValidationSummary for integrated styling - I don't think that this is needed *@
+<StatusMessage Message="@message" />
 
-            <MudGrid Spacing="2">
-                <MudItem xs="12">
-                    <MudTextField @bind-Value="Input.Email"
-                                  Label="Email"
-                                  Variant="Variant.Outlined"
-                                  InputType="InputType.Email"
-                                  Adornment="Adornment.Start"
-                                  AdornmentIcon="@Icons.Material.Filled.Email"
-                                  For="@(() => Input.Email)"
-                                  Required="true"
-                                  RequiredError="Email is required."
-                                  AutoComplete="username" />
-                </MudItem>
-                <MudItem xs="12">
-                    <MudButton ButtonType="ButtonType.Submit"
-                               Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               FullWidth="true"
-                               Class="mt-4">
-                        Resend
-                    </MudButton>
-                </MudItem>
-            </MudGrid>
-        </EditForm>
-    </MudPaper>
-</MudContainer>
+<EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
+    <DataAnnotationsValidator />
+
+    <MudGrid>
+        <MudItem md="12">
+            <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email"
+                                Label="Email" Placeholder="name@example.com"
+                                UserAttributes="@(new() { { "autocomplete", "username" }, { "aria-required", "true" } } )" />
+        </MudItem>
+        <MudItem md="12">
+            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">Resend</MudStaticButton>
+        </MudItem>
+    </MudGrid>
+</EditForm>
 
 @code {
-    private string? _message;
+    private string? message;
 
-    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
 
     private async Task OnValidSubmitAsync()
     {
-        _message = null;
-
         var user = await UserManager.FindByEmailAsync(Input.Email!);
         if (user is null)
         {
-            // The original logic is a security measure: always tell the user a verification email was sent,
-            // even if the user doesn't exist, to avoid revealing valid email addresses.
-            _message = "Verification email sent. Please check your email.";
-            return; // No further action needed if user is null as email already "sent".
+            message = "Verification email sent. Please check your email.";
+            return;
         }
 
         var userId = await UserManager.GetUserIdAsync(user);
@@ -88,13 +58,13 @@
             new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
         await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
-        _message = "Verification email sent. Please check your email.";
+        message = "Verification email sent. Please check your email.";
     }
 
     private sealed class InputModel
     {
-        [Required(ErrorMessage = "Email is required.")]
-        [EmailAddress(ErrorMessage = "Invalid email address.")]
+        [Required]
+        [EmailAddress]
         public string Email { get; set; } = "";
     }
 }

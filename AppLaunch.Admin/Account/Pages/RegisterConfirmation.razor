@@ -12,81 +12,47 @@
 
 <PageTitle>Register confirmation</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center pt-16">
-    <MudPaper Elevation="3" Class="pa-8 text-center" Width="100%">
-        <MudText Typo="Typo.h4" GutterBottom="true">Register Confirmation</MudText>
-        <MudDivider Class="my-4"/>
+<h1>Register confirmation</h1>
 
-        @if (!string.IsNullOrEmpty(_message))
-        {
-            <MudAlert Severity="Severity.Error"
-                      Variant="Variant.Filled"
-                      Class="mb-4"
-                      Icon="@Icons.Material.Filled.Warning"
-                      NoIcon="false">
-                @_message
-            </MudAlert>
-        }
+<StatusMessage Message="@statusMessage" />
 
-        @if (emailConfirmationLink is not null)
-        {
-            @* Content for when no real email sender is configured *@
-            <MudAlert Severity="Severity.Warning"
-                      Variant="Variant.Outlined"
-                      Class="my-4"
-                      Icon="@Icons.Material.Filled.Warning"
-                      NoIcon="false">
-                <MudText Typo="Typo.body2" GutterBottom="true">
-                    This app does not currently have a real email sender registered, see
-                    <MudLink Href="https://aka.ms/aspaccountconf" Target="_blank">these docs</MudLink>
-                    for how to configure a real email sender.
-                </MudText>
-                <MudText Typo="Typo.body1" Class="mt-2">
-                    Normally this would be emailed:
-                    <MudLink Href="@emailConfirmationLink" Target="_blank" Color="Color.Primary" Typo="Typo.body1">Click here to confirm your account</MudLink>
-                </MudText>
-            </MudAlert>
-        }
-        else
-        {
-            @* Content for when a real email sender is configured *@
-            <MudAlert Severity="Severity.Info"
-                      Variant="Variant.Filled"
-                      Class="my-4"
-                      Icon="@Icons.Material.Filled.Email"
-                      NoIcon="false">
-                Please check your email to confirm your account.
-            </MudAlert>
-        }
-    </MudPaper>
-</MudContainer>
+@if (emailConfirmationLink is not null)
+{
+    <p>
+        This app does not currently have a real email sender registered, see <a class="mud-link mud-primary-text mud-link-underline-hover" href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
+        Normally this would be emailed: <a class="mud-link mud-primary-text mud-link-underline-hover" href="@emailConfirmationLink">Click here to confirm your account</a>
+    </p>
+}
+else
+{
+    <p role="alert">Please check your email to confirm your account.</p>
+}
 
 @code {
     private string? emailConfirmationLink;
-    private string? _message; // Changed from private string message; for clarity based on original code
+    private string? statusMessage;
 
-    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
 
-    [SupplyParameterFromQuery] private string? Email { get; set; }
+    [SupplyParameterFromQuery]
+    private string? Email { get; set; }
 
-    [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        // Ensure statusMessage is null on initial load
-        _message = null;
-
         if (Email is null)
         {
             RedirectManager.RedirectTo("");
-            // No 'return;' needed here as RedirectTo throws a NavigationException
         }
 
         var user = await UserManager.FindByEmailAsync(Email);
         if (user is null)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            _message = "Error finding user for unspecified email.";
+            statusMessage = "Error finding user for unspecified email";
         }
         else if (EmailSender is IdentityNoOpEmailSender)
         {
@@ -99,5 +65,4 @@
                 new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
         }
     }
-
 }

@@ -5,97 +5,64 @@
 @using Microsoft.AspNetCore.WebUtilities
 @using AppLaunch.Services.Data
 
-
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Confirm email change</PageTitle>
 
+<h1>Confirm email change</h1>
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center pt-16">
-    <MudPaper Elevation="3" Class="pa-8 text-center" Width="100%">
-        <MudText Typo="Typo.h4" GutterBottom="true">Confirm email change</MudText>
-        
-        @if (!string.IsNullOrEmpty(message))
-        {
-            <MudAlert Severity="@(IsSuccess ? Severity.Success : Severity.Error)"
-                      Variant="Variant.Filled"
-                      Class="mt-4 mb-4">
-                @message
-            </MudAlert>
-        }
-    </MudPaper>
-</MudContainer>
+<StatusMessage Message="@message" />
 
 @code {
     private string? message;
-    private bool IsSuccess { get; set; }
 
-    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
 
-    [SupplyParameterFromQuery] private string? UserId { get; set; }
+    [SupplyParameterFromQuery]
+    private string? UserId { get; set; }
 
-    [SupplyParameterFromQuery] private string? Email { get; set; }
+    [SupplyParameterFromQuery]
+    private string? Email { get; set; }
 
-    [SupplyParameterFromQuery] private string? Code { get; set; }
+    [SupplyParameterFromQuery]
+    private string? Code { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        message = null;
-        
         if (UserId is null || Email is null || Code is null)
         {
             RedirectManager.RedirectToWithStatus(
                 "Account/Login", "Error: Invalid email change confirmation link.", HttpContext);
-            return;
         }
 
         var user = await UserManager.FindByIdAsync(UserId);
         if (user is null)
         {
-            IsSuccess = false;
-            message = $"Error: Unable to find user with ID '{UserId}'.";
+            message = "Unable to find user with Id '{userId}'";
             return;
         }
 
-        try
+        var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
+        var result = await UserManager.ChangeEmailAsync(user, Email, code);
+        if (!result.Succeeded)
         {
-            var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
-            var result = await UserManager.ChangeEmailAsync(user, Email, code);
-            if (!result.Succeeded)
-            {
-                IsSuccess = false;
-                var errors = string.Join(" ", result.Errors.Select(e => e.Description));
-                message = $"Error changing email: {errors}";
-                return;
-            }
+            message = "Error changing email.";
+            return;
+        }
 
-            // In our UI email and user name are one and the same, so when we update the email
-            // we need to update the user name.
-            var setUserNameResult = await UserManager.SetUserNameAsync(user, Email);
-            if (!setUserNameResult.Succeeded)
-            {
-                IsSuccess = false;
-                var errors = string.Join(" ", setUserNameResult.Errors.Select(e => e.Description));
-                message = $"Error changing user name: {errors}";
-                return;
-            }
+        // In our UI email and user name are one and the same, so when we update the email
+        // we need to update the user name.
+        var setUserNameResult = await UserManager.SetUserNameAsync(user, Email);
+        if (!setUserNameResult.Succeeded)
+        {
+            message = "Error changing user name.";
+            return;
+        }
 
-            await SignInManager.RefreshSignInAsync(user);
-            IsSuccess = true;
-            message = "Success! Thank you for confirming your email change. Your account information has been updated.";
-        }
-        catch (FormatException)
-        {
-            IsSuccess = false;
-            message = "Error: Invalid confirmation link. Please check the URL or request a new email change link.";
-        }
-        catch (Exception ex)
-        {
-            IsSuccess = false;
-            message = $"An unexpected error occurred: {ex.Message}";
-            //TODO: In a production application, you would log 'ex' here for debugging
-        }
+        await SignInManager.RefreshSignInAsync(user);
+        message = "Thank you for confirming your email change.";
     }
 }
