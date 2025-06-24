@@ -1,6 +1,6 @@
 @inject IRegistrationService RegistrationService
 @inject NavigationManager NavigationManager
-@inject ApplicationDbContext Context
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject IConfiguration Configuration
 @using Microsoft.EntityFrameworkCore
 @using AppLaunch.Services.Data
@@ -75,10 +75,11 @@
   {
       try
       {
-          var connection = Context.Database.GetDbConnection();
+          using var context = ContextFactory.CreateDbContext();
+          var connection = context.Database.GetDbConnection();
           connection.ConnectionString = Configuration.GetConnectionString("DefaultConnection");;
 
-          await Context.Database.MigrateAsync();
+          await context.Database.MigrateAsync();
       }
       catch (Exception e)
       {

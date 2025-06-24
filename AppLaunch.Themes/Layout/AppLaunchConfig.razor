@@ -1,0 +1,113 @@
+﻿@using AppLaunch.Services
+@inherits LayoutComponentBase
+@inject ISettingsService SettingsService
+@inject ISnackbar Snackbar
+<MudThemeProvider Theme="MyCustomTheme" />
+
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudStaticNavDrawerToggle DrawerId="nav-drawer" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" />
+        <MudImage Src="_content/AppLaunch.Themes/images/applaunch-logo.png" 
+        Alt="AppLaunch Logo"
+        Class="appbar-logo ml-3"
+        Style="height:45px; width:auto; object-fit:contain; display:block;" />
+        <MudSpacer />
+    </MudAppBar>
+    @* <MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2"> *@
+    @*     $1$ <NavMenu /> #1# *@
+    @* </MudDrawer> *@
+    <MudMainContent Class="pt-16 pa-4">
+        @Body
+    </MudMainContent>
+    
+    <MudAppBar Bottom="true" Fixed="true" Elevation="1" Dense="true">
+        <!-- Footer content here -->
+        <MudText>© @DateTime.Now.Year AppLaunch</MudText>
+    </MudAppBar>
+
+
+</MudLayout>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+
+
+@code {
+    private bool _isDarkMode=false;
+    private bool _drawerOpen = false;
+    private MudTheme MyCustomTheme = new MudTheme()
+    {
+        
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#0081c4", // Soft blue
+            Secondary = "#808080", // Cool gray
+            AppbarBackground = "#191a1a", // Light gray
+            AppbarText = "#dadada", // Dark gray
+            Background = "#F5F5F5", // Neutral light
+            TextPrimary = "#202020", // Almost black
+            TextSecondary = "#757575", // Medium gray
+            DrawerBackground = "#212222", // Light gray
+            DrawerText = "#FFFFFF", // Dark gray
+            Surface = "#FFFFFF"
+
+        },
+        PaletteDark = new PaletteDark()
+        {
+            Primary = "#0081c4", // Soft blue
+            Secondary = "#808080", // Cool gray
+            AppbarBackground = "#191a1a", // Light gray
+            AppbarText = "#dadada", // Dark gray
+            Background = "#191a1a", // Neutral light
+            TextPrimary = "#FFFFFF", // Almost black
+            TextSecondary = "#757575", // Medium gray
+            DrawerBackground = "#212222", // Light gray
+            DrawerText = "#FFFFFF", // Dark gray
+            Surface = "#212222"
+        },
+        LayoutProperties = new LayoutProperties()
+        {
+            DefaultBorderRadius = "8px" // Adjust this value as needed
+        },
+        Typography = new Typography
+        {
+            Default = new DefaultTypography()
+            {
+                FontFamily = new[] { "Poppins", "Helvetica", "Arial", "sans-serif" },
+                FontSize = "0.875rem"
+            },
+            H1 = new H1Typography()
+            {
+                FontSize = "1.5rem", // or any size you prefer
+                FontWeight = "700"
+            },
+            H2 = new H1Typography()
+            {
+            FontSize = "1.0rem", // or any size you prefer
+            FontWeight = "700"
+        },
+            H3 = new H1Typography()
+            {
+                FontSize = "0.5rem", // or any size you prefer
+                FontWeight = "700"
+            },
+            Body1 = new Body1Typography()
+            {
+                FontSize = "0.875rem"
+            }
+        }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+       
+    }
+ 
+}

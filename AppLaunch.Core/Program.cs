@@ -20,11 +20,30 @@ using MudBlazor.Services;
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("applaunch.json", optional: true, reloadOnChange: true);
 
-builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+builder.Services.AddSingleton<TemporaryConnectionStringProvider>();
+
+builder.Services.AddDbContextFactory<ApplicationDbContext>((serviceProvider, optionsBuilder) =>
 {
-    options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
-    options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"], b => b.MigrationsAssembly("AppLaunch.Services"));
+    // Get the TemporaryConnectionStringProvider from the service provider
+    var connectionStringProvider = serviceProvider.GetRequiredService<TemporaryConnectionStringProvider>();
+
+    // Check if the temporary connection string is set
+    var connectionString = connectionStringProvider.ConnectionString;
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        // If not set, use the connection string from IConfiguration (appsettings.json)
+        connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
+    }
+    optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+    optionsBuilder.UseSqlServer(connectionString, b => b.MigrationsAssembly("AppLaunch.Services"));
 });
+
+
+// builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+// {
+//     options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+//     options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"], b => b.MigrationsAssembly("AppLaunch.Services"));
+// });
 
 //dynamically register services defined in plugins
 var pluginTypes = AppDomain.CurrentDomain.GetAssemblies()
@@ -81,6 +100,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     .AddSignInManager()
     .AddRoles<IdentityRole>() // Critical for role management
     .AddDefaultTokenProviders();
+
 
 //Max form size
 builder.Services.Configure<FormOptions>(options =>

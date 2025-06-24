@@ -3,6 +3,7 @@ using AppLaunch.Services.Data;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using File = System.IO.File;
 
 namespace AppLaunch.Services;
@@ -18,8 +19,9 @@ public interface IRegistrationService
     Task<bool> IsCMSPluginInstalled();
 }
 
-public class RegistrationService(IDbContextFactory<ApplicationDbContext> contextFactory, IConfiguration configuration) : IRegistrationService
+public class RegistrationService(IDbContextFactory<ApplicationDbContext> contextFactory, IConfiguration configuration, IServiceProvider serviceProvider) : IRegistrationService
 {
+
     public async Task<(bool HasError, string ErrorMessage, bool IsSuccessful)> TestDatabaseConnection(
         string connectionString)
     {
@@ -80,8 +82,8 @@ public class RegistrationService(IDbContextFactory<ApplicationDbContext> context
     
     public async Task<bool> IsDatabaseConfigured()
     {
-        var timeout = TimeSpan.FromSeconds(3);
-        var retryDelay = TimeSpan.FromMilliseconds(100);
+        var timeout = TimeSpan.FromSeconds(5);
+        var retryDelay = TimeSpan.FromMilliseconds(200);
         var startTime = DateTime.UtcNow;
 
         while (DateTime.UtcNow - startTime < timeout)
@@ -89,7 +91,7 @@ public class RegistrationService(IDbContextFactory<ApplicationDbContext> context
             try
             {
                 using var context = contextFactory.CreateDbContext();
-
+              
                 // Check 1: File existence
                 if (!File.Exists("applaunch.json"))
                 {

@@ -1,12 +1,10 @@
+@layout AppLaunchConfig
 @page "/register/createaccount/"
 @using System.ComponentModel.DataAnnotations
-@using System.Text
-@using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.WebUtilities
 @using AppLaunch.Services.Data
 @using System.Text.RegularExpressions
-
+@using Microsoft.Extensions.Configuration
 @inject UserManager<ApplicationUser> UserManager
 @inject IUserStore<ApplicationUser> UserStore
 @inject SignInManager<ApplicationUser> SignInManager
@@ -16,6 +14,7 @@
 @inject NavigationManager NavigationManager
 @inject IHttpContextAccessor HttpContext
 @inject IRegistrationService RegistrationService
+@inject ISnackbar Snackbar
 
 <PageTitle>Register</PageTitle>
 
@@ -92,9 +91,26 @@
 
     protected override async Task OnInitializedAsync()
     {
-        //check for account creation completion
-        var isRegistrationComplete = await RegistrationService.IRegistrationComplete();
-        if (isRegistrationComplete) NavigationManager.NavigateTo("/admin/",true);
+        await Init();
+    }
+
+    private async Task Init()
+    {
+        try
+        {
+            //confirm database created
+            var isDbCreated = await RegistrationService.IsDatabaseConfigured();
+            if (!isDbCreated) throw new Exception("");
+        
+            //check for account creation completion
+            var isRegistrationComplete = await RegistrationService.IRegistrationComplete();
+            if (isRegistrationComplete) NavigationManager.NavigateTo("/admin/",true);
+
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
     }
     
     
@@ -115,22 +131,22 @@
                 if (result.Succeeded)
                 {
                     await UserManager.AddToRoleAsync(user, roleName);
-                    Console.WriteLine("Admin user created successfully.");
+                    Snackbar.Add("Admin User Created", Severity.Success);
                     await SignInUser();
                 }
                 else
                 {
-                    Console.WriteLine("Failed to create admin user: " + string.Join(", ", result.Errors));
+                    Snackbar.Add("Failed to create admin user: " + string.Join(", ", result.Errors), Severity.Error);
                 }
             }
             else
             {
-                Console.WriteLine("User already exists.");
+                Snackbar.Add("User already exists.", Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            Snackbar.Add(ex.Message, Severity.Error);
         }
        
     }
@@ -183,7 +199,7 @@
         }
         catch (Exception ex ) 
         {
-            Console.WriteLine(ex);
+            Snackbar.Add(ex.Message, Severity.Error);
         }
        
 
