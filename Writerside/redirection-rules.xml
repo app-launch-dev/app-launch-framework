@@ -10,4 +10,12 @@
         <description>Created after removal of "Scaffolding﻿" from AppLaunchInternal</description>
         <accepts>Scaffolding﻿.html</accepts>
     </rule>
+    <rule id="758355ac">
+        <description>Created after removal of "Update" from AppLaunchInternal</description>
+        <accepts>Update.html</accepts>
+    </rule>
+    <rule id="26978ae0">
+        <description>Created after removal of "Create" from AppLaunchInternal</description>
+        <accepts>Create.html</accepts>
+    </rule>
 </rules>

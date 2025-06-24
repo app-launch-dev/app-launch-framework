@@ -11,27 +11,59 @@
 
 <PageTitle>Recovery code verification</PageTitle>
 
-<h1>Recovery code verification</h1>
-<hr/>
-<StatusMessage Message="@message"/>
-<p>
-    You have requested to log in with a recovery code. This login will not be remembered until you provide
-    an authenticator app code at log in or disable 2FA and log in again.
-</p>
-<div class="row">
-    <div class="col-md-4">
+<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center pt-16">
+    <MudPaper Elevation="3" Class="pa-8 text-center" Width="100%">
+        <MudText Typo="Typo.h4" GutterBottom="true">Recovery Code Verification</MudText>
+        <MudDivider Class="my-4"/>
+
+        @* Display message using MudAlert for consistent error/status reporting *@
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <MudAlert Severity="Severity.Error"
+                      Variant="Variant.Filled"
+                      Class="mb-4"
+                      Icon="@Icons.Material.Filled.Warning"
+                      NoIcon="false">
+                @message
+            </MudAlert>
+        }
+
+        <MudText Typo="Typo.body1" GutterBottom="true">
+            You have requested to log in with a recovery code. This login will not be remembered until you provide
+            an authenticator app code at log in or disable 2FA and log in again.
+        </MudText>
+
         <EditForm Model="Input" FormName="login-with-recovery-code" OnValidSubmit="OnValidSubmitAsync" method="post">
             <DataAnnotationsValidator/>
-            <ValidationSummary class="text-danger" role="alert"/>
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.RecoveryCode" id="Input.RecoveryCode" class="form-control" autocomplete="off" placeholder="RecoveryCode"/>
-                <label for="Input.RecoveryCode" class="form-label">Recovery Code</label>
-                <ValidationMessage For="() => Input.RecoveryCode" class="text-danger"/>
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+            @* Using MudValidationSummary for better MudBlazor integration and styling *@
+            <MudValidationSummary Class="mb-4"/>
+
+            <MudGrid Spacing="2">
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Input.RecoveryCode"
+                                  Label="Recovery Code"
+                                  Variant="Variant.Outlined"
+                                  InputType="InputType.Text"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.LockReset"
+                                  For="@(() => Input.RecoveryCode)"
+                                  Required="true"
+                                  RequiredError="Recovery Code is required."
+                                  AutoComplete="off" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudButton ButtonType="ButtonType.Submit"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               Class="mt-4">
+                        Log in
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
         </EditForm>
-    </div>
-</div>
+    </MudPaper>
+</MudContainer>
 
 @code {
     private string? message;
@@ -43,14 +75,15 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Ensure the user has gone through the username & password screen first
+        // Ensure the user has gone through the username & password screen first.
+        // This throws an InvalidOperationException and stops rendering/execution if the user is not found.
         user = await SignInManager.GetTwoFactorAuthenticationUserAsync() ??
-               throw new InvalidOperationException("Unable to load two-factor authentication user.");
+               throw new InvalidOperationException("Unable to load two-factor authentication user. Please try logging in again.");
     }
 
     private async Task OnValidSubmitAsync()
     {
-        var recoveryCode = Input.RecoveryCode.Replace(" ", string.Empty);
+        var recoveryCode = Services.Utils.Sanitize.RemoveSpaces(Input.RecoveryCode!); 
 
         var result = await SignInManager.TwoFactorRecoveryCodeSignInAsync(recoveryCode);
 
@@ -68,6 +101,7 @@
         }
         else
         {
+            // Only set message if login attempt fails and no redirect occurs
             Logger.LogWarning("Invalid recovery code entered for user with ID '{UserId}' ", userId);
             message = "Error: Invalid recovery code entered.";
         }
@@ -75,10 +109,9 @@
 
     private sealed class InputModel
     {
-        [Required]
+        [Required(ErrorMessage = "Recovery Code is required.")]
         [DataType(DataType.Text)]
         [Display(Name = "Recovery Code")]
         public string RecoveryCode { get; set; } = "";
     }
-
 }
