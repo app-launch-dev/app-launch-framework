@@ -19,24 +19,97 @@ using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("applaunch.json", optional: true, reloadOnChange: true);
+builder.Services.AddSingleton<IConnectionStringProvider, ConnectionStringProvider>();
 
-builder.Services.AddSingleton<TemporaryConnectionStringProvider>();
 
-builder.Services.AddDbContextFactory<ApplicationDbContext>((serviceProvider, optionsBuilder) =>
-{
-    // Get the TemporaryConnectionStringProvider from the service provider
-    var connectionStringProvider = serviceProvider.GetRequiredService<TemporaryConnectionStringProvider>();
-
-    // Check if the temporary connection string is set
-    var connectionString = connectionStringProvider.ConnectionString;
-    if (string.IsNullOrEmpty(connectionString))
+builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
     {
-        // If not set, use the connection string from IConfiguration (appsettings.json)
-        connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
+        var connectionProvider = serviceProvider.GetRequiredService<IConnectionStringProvider>();
+        var connectionString = connectionProvider.GetConnectionString();
+        
+        options.ConfigureWarnings(warnings => 
+            warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+        options.UseSqlServer(
+            connectionString,
+            sqlOptions => sqlOptions.MigrationsAssembly("AppLaunch.Services")
+        );
+    },
+    contextLifetime: ServiceLifetime.Scoped,
+    optionsLifetime: ServiceLifetime.Singleton
+);
+
+// 3. Configure AddDbContextFactory to use the same provider
+builder.Services.AddDbContextFactory<ApplicationDbContext>((serviceProvider, options) =>
+    {
+        var connectionProvider = serviceProvider.GetRequiredService<IConnectionStringProvider>();
+        var connectionString = connectionProvider.GetConnectionString();
+        
+        options.ConfigureWarnings(warnings =>
+            warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+        options.UseSqlServer(
+            connectionString,
+            sqlOptions => sqlOptions.MigrationsAssembly("AppLaunch.Services")
+        );
     }
-    optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
-    optionsBuilder.UseSqlServer(connectionString, b => b.MigrationsAssembly("AppLaunch.Services"));
-});
+);
+
+// builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//     {
+//         // options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+//         // options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"],
+//         //     b => b.MigrationsAssembly("AppLaunch.Services"));
+//     },
+//     contextLifetime: ServiceLifetime.Scoped,
+//     optionsLifetime: ServiceLifetime.Singleton
+// );
+//
+//
+// builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+// {
+//     // options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+//     // options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"],
+//     //     b => b.MigrationsAssembly("AppLaunch.Services"));
+// });
+
+
+// builder.Services.AddDbContextFactory<ApplicationDbContext>((optionsBuilder) =>
+// {
+//     // // Get the TemporaryConnectionStringProvider from the service provider
+//     // var connectionStringProvider = serviceProvider.GetRequiredService<TemporaryConnectionStringProvider>();
+//     //
+//     // // Check if the temporary connection string is set
+//     // var connectionString = connectionStringProvider.ConnectionString;
+//     // if (string.IsNullOrEmpty(connectionString))
+//     // {
+//     //     // If not set, use the connection string from IConfiguration (appsettings.json)
+//     //     connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
+//     // }
+//     var connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
+//     optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+//     optionsBuilder.UseSqlServer(connectionString, b => b.MigrationsAssembly("AppLaunch.Services"));
+// });
+
+
+
+
+// builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, optionsBuilder) =>
+// {
+//     // Get the TemporaryConnectionStringProvider from the service provider
+//     var connectionStringProvider = serviceProvider.GetRequiredService<TemporaryConnectionStringProvider>();
+//
+//     // Check if the temporary connection string is set
+//     var connectionString = connectionStringProvider.ConnectionString;
+//     if (string.IsNullOrEmpty(connectionString))
+//     {
+//         // If not set, use the connection string from IConfiguration (appsettings.json)
+//         connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
+//     }
+//     optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+//     optionsBuilder.UseSqlServer(connectionString, b => b.MigrationsAssembly("AppLaunch.Services"));
+// });
+
+IdentityRegistrar.Register(builder.Services);
+
 
 
 // builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
@@ -72,8 +145,8 @@ builder.Services.AddMudServices(config =>
 });
 
 builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddScoped<MyIdentityUserAccessor>();
-builder.Services.AddScoped<MyIdentityRedirectManager>();
+//builder.Services.AddScoped<MyIdentityUserAccessor>();
+builder.Services.AddScoped<MyIdentityRedirectManager>(); //todo: may not be used
 builder.Services.AddScoped<AuthenticationStateProvider, MyIdentityRevalidatingAuthenticationStateProvider>();
 
 builder.Services.AddTransient<IEmailSender, AwsSesEmailService>();
@@ -87,20 +160,6 @@ builder.Services.AddAuthentication(options =>
         options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
     })
     .AddIdentityCookies();
-
-builder.Services.AddIdentityCore<ApplicationUser>(options =>
-        {
-            options.SignIn.RequireConfirmedAccount = true;
-            // Password Requirements
-            options.Password.RequireNonAlphanumeric = true; // Must contain a symbol (!, @, #, etc.)
-            options.Password.RequiredLength = 10; // Minimum password length
-        }
-    )
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddSignInManager()
-    .AddRoles<IdentityRole>() // Critical for role management
-    .AddDefaultTokenProviders();
-
 
 //Max form size
 builder.Services.Configure<FormOptions>(options =>
@@ -122,21 +181,25 @@ builder.Services.AddScoped<ICacheService, CacheService>();
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 builder.Services.AddScoped<IFileService, FileService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IRoleService, RoleService>();
+//builder.Services.AddScoped<IUserService, UserService>();
+//builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddSingleton<IdentityRegistrar>();
 
-// Add RoleManager and UserManager 
-builder.Services
-    .AddScoped<IUserStore<ApplicationUser>, UserStore<ApplicationUser, IdentityRole, ApplicationDbContext>>();
-builder.Services.AddScoped<IRoleStore<IdentityRole>, RoleStore<IdentityRole, ApplicationDbContext>>();
-builder.Services.AddScoped<UserManager<ApplicationUser>>();
-builder.Services.AddScoped<RoleManager<IdentityRole>>();
 
-builder.Services.Configure<IdentityOptions>(options =>
-{
-    options.ClaimsIdentity.RoleClaimType = ClaimTypes.Role;
-});
+// // Add RoleManager and UserManager 
+// builder.Services
+//     .AddScoped<IUserStore<ApplicationUser>, UserStore<ApplicationUser, IdentityRole, ApplicationDbContext>>();
+// builder.Services.AddScoped<IRoleStore<IdentityRole>, RoleStore<IdentityRole, ApplicationDbContext>>();
+// builder.Services.AddScoped<UserManager<ApplicationUser>>();
+// builder.Services.AddScoped<RoleManager<IdentityRole>>();
+
+// builder.Services.Configure<IdentityOptions>(options =>
+// {
+//     options.ClaimsIdentity.RoleClaimType = ClaimTypes.Role;
+// });
 var app = builder.Build();
+
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -3,7 +3,6 @@ using AppLaunch.Services.Data;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using File = System.IO.File;
 
 namespace AppLaunch.Services;
@@ -19,7 +18,7 @@ public interface IRegistrationService
     Task<bool> IsCMSPluginInstalled();
 }
 
-public class RegistrationService(IDbContextFactory<ApplicationDbContext> contextFactory, IConfiguration configuration, IServiceProvider serviceProvider) : IRegistrationService
+public class RegistrationService(ApplicationDbContext context, IDbContextFactory<ApplicationDbContext> contextFactory, IConfiguration configuration, IConnectionStringProvider connectionProvider) : IRegistrationService
 {
 
     public async Task<(bool HasError, string ErrorMessage, bool IsSuccessful)> TestDatabaseConnection(
@@ -63,23 +62,6 @@ public class RegistrationService(IDbContextFactory<ApplicationDbContext> context
         }
     }
 
-    // public async Task<bool> IsDatabaseConfigured()
-    // {
-    //     try
-    //     {
-    //         string configFilePath = "applaunch.json";
-    //         if (!File.Exists(configFilePath)) return false;
-    //
-    //         var connection = dbContext.Database.GetDbConnection();
-    //         connection.ConnectionString = configuration.GetConnectionString("DefaultConnection");
-    //         return !string.IsNullOrEmpty(connection.ConnectionString);
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         return false;
-    //     }
-    // }
-    
     public async Task<bool> IsDatabaseConfigured()
     {
         var timeout = TimeSpan.FromSeconds(5);
@@ -90,7 +72,7 @@ public class RegistrationService(IDbContextFactory<ApplicationDbContext> context
         {
             try
             {
-                using var context = contextFactory.CreateDbContext();
+                using var context2 = contextFactory.CreateDbContext();
               
                 // Check 1: File existence
                 if (!File.Exists("applaunch.json"))
@@ -102,8 +84,12 @@ public class RegistrationService(IDbContextFactory<ApplicationDbContext> context
                 // Check 2: Connection string validity
                 var connection = context.Database.GetDbConnection();
                 connection.ConnectionString = configuration.GetConnectionString("DefaultConnection");
-            
-                if (string.IsNullOrEmpty(connection.ConnectionString))
+                
+                var connection2 = context2.Database.GetDbConnection();
+                connectionProvider.SetConnectionString(configuration.GetConnectionString("DefaultConnection"));
+                connection2.ConnectionString=configuration.GetConnectionString("DefaultConnection");
+
+                if (string.IsNullOrEmpty(connection.ConnectionString) || string.IsNullOrEmpty(connection2.ConnectionString))
                 {
                     await Task.Delay(retryDelay);
                     continue;
@@ -125,7 +111,7 @@ public class RegistrationService(IDbContextFactory<ApplicationDbContext> context
     {
         try
         {
-            using var context = contextFactory.CreateDbContext();
+            //using var context = contextFactory.CreateDbContext();
 
             var adminRoleId = context.Roles
                 .Where(r => r.Name == "Admin")
