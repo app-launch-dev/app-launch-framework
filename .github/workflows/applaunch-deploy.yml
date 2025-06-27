@@ -15,7 +15,6 @@ on:
 permissions:
   contents: write
 
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -26,6 +25,7 @@ jobs:
         with:
           persist-credentials: true
           fetch-depth: 0
+
       - uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '9.0.x'
@@ -69,19 +69,21 @@ jobs:
             cat "$CSPROJ"
           done
 
-          - name: Commit updated .csproj files
-            run: |
-              git config user.name "github-actions"
-              git config user.email "github-actions@github.com"
-          
-              git add AppLaunch.Services/*.csproj AppLaunch.Admin/*.csproj AppLaunch.Models/*.csproj AppLaunch.Themes/*.csproj
-          
-              if git diff --cached --quiet; then
-                echo "No version changes to commit."
-              else
-                git commit -m "chore: bump patch version for NuGet packages [skip ci]"
-                git push origin HEAD
-              fi
+      - name: Commit updated .csproj files
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git checkout main
+
+          git add AppLaunch.Services/*.csproj AppLaunch.Admin/*.csproj AppLaunch.Models/*.csproj AppLaunch.Themes/*.csproj
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: bump patch version for NuGet packages [skip ci]"
+            git push origin main
+          fi
 
       - name: Restore dependencies
         run: dotnet restore
