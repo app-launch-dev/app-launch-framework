@@ -10,16 +10,14 @@ namespace AppLaunch.Services.Data
         IConnectionStringProvider connectionProvider)
         : IdentityDbContext<ApplicationUser>(options)
     {
-        // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        // {
-        //     if (!optionsBuilder.IsConfigured)
-        //     {
-        //         var connectionString = connectionProvider.GetConnectionString();
-        //         optionsBuilder.ConfigureWarnings(warnings =>
-        //             warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
-        //         optionsBuilder.UseSqlServer(connectionString, b => b.MigrationsAssembly("AppLaunch.Services"));
-        //     }
-        // }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            var connectionString = connectionProvider.GetConnectionString();
+
+            optionsBuilder.UseSqlServer(
+                connectionString,
+                sqlOptions => sqlOptions.MigrationsAssembly("AppLaunch.Services"));
+        }
 
         public virtual DbSet<Site> Sites { get; set; }
         public virtual DbSet<SiteHost> SiteHosts { get; set; }

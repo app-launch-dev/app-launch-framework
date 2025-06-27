@@ -1,20 +1,17 @@
 using System.Reflection;
-using System.Security.Claims;
 using AppLaunch.Core.Components;
 using AppLaunch.Services.Data;
 using AppLaunch.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using MudBlazor;
 using MyIdentityRedirectManager = AppLaunch.Admin.Account.IdentityRedirectManager;
 using MyIdentityRevalidatingAuthenticationStateProvider =
-    AppLaunch.Admin.Account.IdentityRevalidatingAuthenticationStateProvider;
-using MyIdentityUserAccessor = AppLaunch.Admin.Account.IdentityUserAccessor;
+AppLaunch.Admin.Account.IdentityRevalidatingAuthenticationStateProvider;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,71 +49,8 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>((serviceProvider, opt
         );
     }
 );
-
-// builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//     {
-//         // options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
-//         // options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"],
-//         //     b => b.MigrationsAssembly("AppLaunch.Services"));
-//     },
-//     contextLifetime: ServiceLifetime.Scoped,
-//     optionsLifetime: ServiceLifetime.Singleton
-// );
-//
-//
-// builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
-// {
-//     // options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
-//     // options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"],
-//     //     b => b.MigrationsAssembly("AppLaunch.Services"));
-// });
-
-
-// builder.Services.AddDbContextFactory<ApplicationDbContext>((optionsBuilder) =>
-// {
-//     // // Get the TemporaryConnectionStringProvider from the service provider
-//     // var connectionStringProvider = serviceProvider.GetRequiredService<TemporaryConnectionStringProvider>();
-//     //
-//     // // Check if the temporary connection string is set
-//     // var connectionString = connectionStringProvider.ConnectionString;
-//     // if (string.IsNullOrEmpty(connectionString))
-//     // {
-//     //     // If not set, use the connection string from IConfiguration (appsettings.json)
-//     //     connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
-//     // }
-//     var connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
-//     optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
-//     optionsBuilder.UseSqlServer(connectionString, b => b.MigrationsAssembly("AppLaunch.Services"));
-// });
-
-
-
-
-// builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, optionsBuilder) =>
-// {
-//     // Get the TemporaryConnectionStringProvider from the service provider
-//     var connectionStringProvider = serviceProvider.GetRequiredService<TemporaryConnectionStringProvider>();
-//
-//     // Check if the temporary connection string is set
-//     var connectionString = connectionStringProvider.ConnectionString;
-//     if (string.IsNullOrEmpty(connectionString))
-//     {
-//         // If not set, use the connection string from IConfiguration (appsettings.json)
-//         connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
-//     }
-//     optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
-//     optionsBuilder.UseSqlServer(connectionString, b => b.MigrationsAssembly("AppLaunch.Services"));
-// });
-
 IdentityRegistrar.Register(builder.Services);
 
-
-
-// builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
-// {
-//     options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
-//     options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"], b => b.MigrationsAssembly("AppLaunch.Services"));
-// });
 
 //dynamically register services defined in plugins
 var pluginTypes = AppDomain.CurrentDomain.GetAssemblies()
@@ -128,7 +62,6 @@ foreach (var pluginType in pluginTypes)
     var plugin = (IPlugin)Activator.CreateInstance(pluginType)!;
     plugin.RegisterServices(builder.Services, builder.Configuration);
 }
-
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -145,7 +78,6 @@ builder.Services.AddMudServices(config =>
 });
 
 builder.Services.AddCascadingAuthenticationState();
-//builder.Services.AddScoped<MyIdentityUserAccessor>();
 builder.Services.AddScoped<MyIdentityRedirectManager>(); //todo: may not be used
 builder.Services.AddScoped<AuthenticationStateProvider, MyIdentityRevalidatingAuthenticationStateProvider>();
 
@@ -181,25 +113,9 @@ builder.Services.AddScoped<ICacheService, CacheService>();
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 builder.Services.AddScoped<IFileService, FileService>();
-//builder.Services.AddScoped<IUserService, UserService>();
-//builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddSingleton<IdentityRegistrar>();
 
-
-// // Add RoleManager and UserManager 
-// builder.Services
-//     .AddScoped<IUserStore<ApplicationUser>, UserStore<ApplicationUser, IdentityRole, ApplicationDbContext>>();
-// builder.Services.AddScoped<IRoleStore<IdentityRole>, RoleStore<IdentityRole, ApplicationDbContext>>();
-// builder.Services.AddScoped<UserManager<ApplicationUser>>();
-// builder.Services.AddScoped<RoleManager<IdentityRole>>();
-
-// builder.Services.Configure<IdentityOptions>(options =>
-// {
-//     options.ClaimsIdentity.RoleClaimType = ClaimTypes.Role;
-// });
 var app = builder.Build();
-
-
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -221,7 +137,7 @@ app.UseAntiforgery();
 app.MapControllers();
 app.MapRazorPages();
 
-// Auto-load saved plugins on application startup
+// Auto load saved plugins on application startup
 var pluginManager = app.Services.GetRequiredService<PluginManager>();
 pluginManager.InitializePlugins();
 
