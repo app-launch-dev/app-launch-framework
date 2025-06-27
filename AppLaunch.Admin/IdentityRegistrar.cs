@@ -4,6 +4,7 @@ using AppLaunch.Services.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 using MyIdentityUserAccessor = AppLaunch.Admin.Account.IdentityUserAccessor;
 
 public class IdentityRegistrar
@@ -42,6 +43,5 @@ public class IdentityRegistrar
         services.AddScoped<UserManager<ApplicationUser>>();
         services.AddScoped<RoleManager<IdentityRole>>();
         services.Configure<IdentityOptions>(options => { options.ClaimsIdentity.RoleClaimType = ClaimTypes.Role; });
-        
     }
 }

@@ -1,23 +1,20 @@
 using System.Reflection;
 using AppLaunch.Core.Components;
-using AppLaunch.Services.Data;
 using AppLaunch.Services;
-using Microsoft.AspNetCore.Components.Authorization;
+using AppLaunch.Services.Data;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using MudBlazor;
+using MudBlazor.Services;
+using Microsoft.AspNetCore.Components.Authorization;
 using MyIdentityRedirectManager = AppLaunch.Admin.Account.IdentityRedirectManager;
 using MyIdentityRevalidatingAuthenticationStateProvider =
-AppLaunch.Admin.Account.IdentityRevalidatingAuthenticationStateProvider;
-using MudBlazor.Services;
+    AppLaunch.Admin.Account.IdentityRevalidatingAuthenticationStateProvider;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("applaunch.json", optional: true, reloadOnChange: true);
 builder.Services.AddSingleton<IConnectionStringProvider, ConnectionStringProvider>();
-
 
 builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
     {
@@ -35,7 +32,7 @@ builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =
     optionsLifetime: ServiceLifetime.Singleton
 );
 
-// 3. Configure AddDbContextFactory to use the same provider
+//Configure AddDbContextFactory to use the same provider
 builder.Services.AddDbContextFactory<ApplicationDbContext>((serviceProvider, options) =>
     {
         var connectionProvider = serviceProvider.GetRequiredService<IConnectionStringProvider>();
@@ -49,8 +46,13 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>((serviceProvider, opt
         );
     }
 );
-IdentityRegistrar.Register(builder.Services);
 
+builder.Services.AddSingleton<IdentityRegistrar>();
+builder.Services.AddSingleton<StartupHelper>();
+builder.Services.AddScoped<MyIdentityRedirectManager>(); //todo: may not be used
+builder.Services.AddScoped<AuthenticationStateProvider, MyIdentityRevalidatingAuthenticationStateProvider>();
+IdentityRegistrar.Register(builder.Services);
+StartupHelper.Register(builder.Services);
 
 //dynamically register services defined in plugins
 var pluginTypes = AppDomain.CurrentDomain.GetAssemblies()
@@ -63,36 +65,6 @@ foreach (var pluginType in pluginTypes)
     plugin.RegisterServices(builder.Services, builder.Configuration);
 }
 
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
-builder.Services.AddRazorPages();
-builder.Services.AddControllersWithViews();
-builder.Services.AddServerSideBlazor();
-builder.Services.AddMudServices(config =>
-{
-    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopCenter;
-    config.SnackbarConfiguration.PreventDuplicates = true;
-    config.SnackbarConfiguration.NewestOnTop = true;
-    config.SnackbarConfiguration.ShowCloseIcon = true;
-    config.SnackbarConfiguration.VisibleStateDuration = 5000;
-});
-
-builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddScoped<MyIdentityRedirectManager>(); //todo: may not be used
-builder.Services.AddScoped<AuthenticationStateProvider, MyIdentityRevalidatingAuthenticationStateProvider>();
-
-builder.Services.AddTransient<IEmailSender, AwsSesEmailService>();
-builder.Services.AddTransient<IEmailSender<ApplicationUser>>(provider =>
-    new AppLaunch.Services.AwsSesIdentityEmailService(provider.GetRequiredService<ISettingsService>(),provider.GetRequiredService<IEmailSender>())
-);
-
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultScheme = IdentityConstants.ApplicationScheme;
-        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-    })
-    .AddIdentityCookies();
-
 //Max form size
 builder.Services.Configure<FormOptions>(options =>
 {
@@ -104,16 +76,14 @@ builder.WebHost.ConfigureKestrel(options =>
     options.Limits.MaxRequestBodySize = 1 * 1000 * 1000 * 1000; // 1 GB
 });
 
-builder.Services.AddHttpClient();
-builder.Services.AddHttpContextAccessor();
-
-builder.Services.AddSingleton<PluginManager>();
-builder.Services.AddScoped<ITenantService, TenantService>();
-builder.Services.AddScoped<ICacheService, CacheService>();
-builder.Services.AddScoped<IRegistrationService, RegistrationService>();
-builder.Services.AddScoped<ISettingsService, SettingsService>();
-builder.Services.AddScoped<IFileService, FileService>();
-builder.Services.AddSingleton<IdentityRegistrar>();
+builder.Services.AddMudServices(config =>
+{
+    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopCenter;
+    config.SnackbarConfiguration.PreventDuplicates = true;
+    config.SnackbarConfiguration.NewestOnTop = true;
+    config.SnackbarConfiguration.ShowCloseIcon = true;
+    config.SnackbarConfiguration.VisibleStateDuration = 5000;
+});
 
 var app = builder.Build();
 
