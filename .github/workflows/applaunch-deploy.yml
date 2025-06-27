@@ -29,21 +29,38 @@ jobs:
 
       - name: Increment patch version and update .csproj
         run: |
+          set -euo pipefail
+
           for project in AppLaunch.Services AppLaunch.Admin AppLaunch.Models AppLaunch.Themes
           do
             CSPROJ="$project/$project.csproj"
-            CURRENT_VERSION=$(xmlstarlet sel -N msbuild="http://schemas.microsoft.com/developer/msbuild/2003" -t -v "//msbuild:Version" $CSPROJ)
-            if [ -z "$CURRENT_VERSION" ]; then
-              CURRENT_VERSION=$(xmlstarlet sel -t -v "//Version" $CSPROJ)
-            fi
-            echo "Current version of $project is $CURRENT_VERSION"
+            echo "Checking version in $CSPROJ"
 
-            IFS='.' read -ra PARTS <<< "$CURRENT_VERSION"
+            VERSION=$(xmlstarlet sel -t -v "//Version" "$CSPROJ" 2> xmlstarlet-err.log || true)
+
+            if [ -z "$VERSION" ]; then
+              echo "Failed to retrieve version from $CSPROJ"
+              cat xmlstarlet-err.log
+              continue
+            fi
+
+            echo "Before update:"
+            cat "$CSPROJ"
+
+            IFS='.' read -ra PARTS <<< "$VERSION"
             PATCH=$((PARTS[2]+1))
             NEW_VERSION="${PARTS[0]}.${PARTS[1]}.$PATCH"
+            echo "Updating $project from $VERSION to $NEW_VERSION"
 
-            echo "Updating $project to version $NEW_VERSION"
-            xmlstarlet ed --inplace -u "//Version" -v "$NEW_VERSION" $CSPROJ
+            xmlstarlet ed --inplace -u "//Version" -v "$NEW_VERSION" "$CSPROJ" \
+              > xmlstarlet-out.log 2> xmlstarlet-err.log || {
+                echo "xmlstarlet failed for $CSPROJ"
+                cat xmlstarlet-err.log
+                exit 1
+              }
+
+            echo "After update:"
+            cat "$CSPROJ"
           done
 
       - name: Restore dependencies
