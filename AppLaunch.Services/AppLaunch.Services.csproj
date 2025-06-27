@@ -1,66 +1,56 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="AWSSDK.SimpleEmail" Version="4.0.0.5" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.3.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.1"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.1"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.1"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.1">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0"/>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
-        <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="*"/>
-    </ItemGroup>
-
-    <PropertyGroup>
-        <PackageId>AppLaunch.Services</PackageId>
-        <Version>1.0.11</Version>
-        <Authors>Applaunch Development Group</Authors>
-        <Description>AppLaunch Services contains the Core Services for use in AppLaunch projects.</Description>
-        <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>
-        <IsPackable>true</IsPackable>
-        <PackageLicenseFile>license.md</PackageLicenseFile>
-        <PackageReadmeFile>readme.md</PackageReadmeFile>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <None Include="license.md" Pack="true" PackagePath="license.md" />
-        <None Include="readme.md" Pack="true" PackagePath="readme.md" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Update="license.md">
-            <Pack>true</Pack>
-            <PackagePath>license.md</PackagePath>
-        </None>
-        <None Update="readme.md">
-            <Pack>true</Pack>
-            <PackagePath>readme.md</PackagePath>
-        </None>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\AppLaunch.Models\AppLaunch.Models.csproj" />
-    </ItemGroup>
-
-
-
- 
-
+<?xml version="1.0"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.SimpleEmail" Version="4.0.0.5"/>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.3.0"/>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0"/>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.1"/>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.1"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.1"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.1"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0"/>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="*"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <PackageId>AppLaunch.Services</PackageId>
+    <Version>1.0.12</Version>
+    <Authors>Applaunch Development Group</Authors>
+    <Description>AppLaunch Services contains the Core Services for use in AppLaunch projects.</Description>
+    <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>
+    <IsPackable>true</IsPackable>
+    <PackageLicenseFile>license.md</PackageLicenseFile>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="license.md" Pack="true" PackagePath="license.md"/>
+    <None Include="readme.md" Pack="true" PackagePath="readme.md"/>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="license.md">
+      <Pack>true</Pack>
+      <PackagePath>license.md</PackagePath>
+    </None>
+    <None Update="readme.md">
+      <Pack>true</Pack>
+      <PackagePath>readme.md</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AppLaunch.Models\AppLaunch.Models.csproj"/>
+  </ItemGroup>
 </Project>

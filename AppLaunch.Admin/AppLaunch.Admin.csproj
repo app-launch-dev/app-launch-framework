@@ -1,53 +1,46 @@
+<?xml version="1.0"?>
 <Project Sdk="Microsoft.NET.Sdk.Razor">
-
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    </PropertyGroup>
-
-    <PropertyGroup>
-        <PackageId>AppLaunch.Admin</PackageId>
-        <Version>1.0.14</Version>
-        <Authors>Applaunch Development Group</Authors>
-        <Description>AppLaunch Admin contains the core admin pages for use in AppLaunch projects.</Description>
-        <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>
-        <IsPackable>true</IsPackable>
-        <PackageLicenseFile>license.md</PackageLicenseFile>
-        <PackageReadmeFile>readme.md</PackageReadmeFile>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <None Include="license.md" Pack="true" PackagePath="license.md" />
-        <None Include="readme.md" Pack="true" PackagePath="readme.md" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Update="license.md">
-            <Pack>true</Pack>
-            <PackagePath>license.md</PackagePath>
-        </None>
-        <None Update="readme.md">
-            <Pack>true</Pack>
-            <PackagePath>readme.md</PackagePath>
-        </None>
-    </ItemGroup>
-
-    <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\AppLaunch.Models\AppLaunch.Models.csproj" />
-      <ProjectReference Include="..\AppLaunch.Services\AppLaunch.Services.csproj" />
-      <ProjectReference Include="..\AppLaunch.Themes\AppLaunch.Themes.csproj" />
-    </ItemGroup>
-
-<!--    <ItemGroup>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>AppLaunch.Admin</PackageId>
+    <Version>1.0.15</Version>
+    <Authors>Applaunch Development Group</Authors>
+    <Description>AppLaunch Admin contains the core admin pages for use in AppLaunch projects.</Description>
+    <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>
+    <IsPackable>true</IsPackable>
+    <PackageLicenseFile>license.md</PackageLicenseFile>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="license.md" Pack="true" PackagePath="license.md"/>
+    <None Include="readme.md" Pack="true" PackagePath="readme.md"/>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="license.md">
+      <Pack>true</Pack>
+      <PackagePath>license.md</PackagePath>
+    </None>
+    <None Update="readme.md">
+      <Pack>true</Pack>
+      <PackagePath>readme.md</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AppLaunch.Models\AppLaunch.Models.csproj"/>
+    <ProjectReference Include="..\AppLaunch.Services\AppLaunch.Services.csproj"/>
+    <ProjectReference Include="..\AppLaunch.Themes\AppLaunch.Themes.csproj"/>
+  </ItemGroup>
+  <!--    <ItemGroup>
         <Content Include="**\*.razor" />
     </ItemGroup>-->
-
 </Project>
