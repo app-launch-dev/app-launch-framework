@@ -1,0 +1,77 @@
+name: Build and Deploy NuGet Packages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'AppLaunch.Services/**'
+      - 'AppLaunch.Admin/**'
+      - 'AppLaunch.Models/**'
+      - 'AppLaunch.Themes/**'
+
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Install XML tools
+        run: sudo apt-get install -y xmlstarlet
+
+      - name: Increment patch version and update .csproj
+        run: |
+          set -euo pipefail
+
+          for project in AppLaunch.Services AppLaunch.Admin AppLaunch.Models AppLaunch.Themes
+          do
+            CSPROJ="$project/$project.csproj"
+            echo "Checking version in $CSPROJ"
+
+            VERSION=$(xmlstarlet sel -t -v "//Version" "$CSPROJ" 2> xmlstarlet-err.log || true)
+
+            if [ -z "$VERSION" ]; then
+              echo "Failed to retrieve version from $CSPROJ"
+              cat xmlstarlet-err.log
+              continue
+            fi
+
+            echo "Before update:"
+            cat "$CSPROJ"
+
+            IFS='.' read -ra PARTS <<< "$VERSION"
+            PATCH=$((PARTS[2]+1))
+            NEW_VERSION="${PARTS[0]}.${PARTS[1]}.$PATCH"
+            echo "Updating $project from $VERSION to $NEW_VERSION"
+
+            xmlstarlet ed --inplace -u "//Version" -v "$NEW_VERSION" "$CSPROJ" \
+              > xmlstarlet-out.log 2> xmlstarlet-err.log || {
+                echo "xmlstarlet failed for $CSPROJ"
+                cat xmlstarlet-err.log
+                exit 1
+              }
+
+            echo "After update:"
+            cat "$CSPROJ"
+          done
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build, Pack, and Push
+        run: |
+          for project in AppLaunch.Services AppLaunch.Admin AppLaunch.Models AppLaunch.Themes
+          do
+            dotnet build $project/$project.csproj -c Release
+            dotnet pack $project/$project.csproj -c Release -o ./nupkgs
+          done
+
+          dotnet nuget push ./nupkgs/*.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json --skip-duplicate
