@@ -10,7 +10,7 @@
 
     <PropertyGroup>
         <PackageId>AppLaunch.Themes</PackageId>
-        <Version>1.0.4</Version>
+        <Version>1.0.5</Version>
         <Authors>Applaunch Development Group</Authors>
         <Description>AppLaunch Themes contains the Core theme for use in AppLaunch projects.</Description>
         <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>
