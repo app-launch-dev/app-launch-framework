@@ -135,12 +135,13 @@ public class PluginManager
     
     public Assembly? GetPluginAssembly(string pluginName)
     {
-        var pluginPath = GetPluginPath(pluginName);
-        if (pluginPath == null) return null;
-
-        var context = new PluginLoadContext(pluginPath);
-        return context.LoadFromAssemblyPath(pluginPath);
+        if (_pluginContexts.TryGetValue(pluginName, out var context))
+        {
+            return context.LoadedAssembly;
+        }
+        return null; // Avoid reloading if not explicitly requested
     }
+
     
     public List<Assembly> GetRunningPluginAssemblies(List<Assembly> existingAssemblies)
     {
@@ -182,28 +183,26 @@ public class PluginLoadContext : AssemblyLoadContext
     private readonly AssemblyDependencyResolver _resolver;
     private bool _unloading = false;
 
-    public PluginLoadContext(string pluginPath) : base(isCollectible: true) 
+    public Assembly? LoadedAssembly { get; private set; }
+
+    public PluginLoadContext(string pluginPath) : base(isCollectible: true)
     {
-        // Enable unloading
         _resolver = new AssemblyDependencyResolver(pluginPath);
+        LoadedAssembly = LoadFromAssemblyPath(pluginPath); // Store it once
     }
 
     protected override Assembly Load(AssemblyName assemblyName)
     {
-        if (_unloading) return null; // Prevent loading while unloading
+        if (_unloading) return null;
         string? assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
         return assemblyPath != null ? LoadFromAssemblyPath(assemblyPath) : null!;
     }
 
     public void UnloadPlugin()
     {
-        _unloading = true;  // Prevent new loads
-        this.Unload();      // Mark for garbage collection
+        _unloading = true;
+        this.Unload();
         GC.Collect();
-        GC.WaitForPendingFinalizers(); // Ensure cleanup
+        GC.WaitForPendingFinalizers();
     }
-    
-   
-    
-
 }
