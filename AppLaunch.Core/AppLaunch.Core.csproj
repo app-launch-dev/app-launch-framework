@@ -32,6 +32,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.UI" />
         <PackageReference Include="Microsoft.AspNetCore.Session" />
+        <PackageReference Include="Microsoft.Data.SqlClient" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" >
