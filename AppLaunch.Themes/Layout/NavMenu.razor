@@ -1,6 +1,10 @@
-﻿@implements IDisposable
+﻿@using AppLaunch.Services
+@implements IDisposable
 
 @inject NavigationManager NavigationManager
+@inject IPluginMenuProvider PluginMenuProvider
+
+
 
 <MudNavMenu>
     <div style="height: 20px;"></div> <!-- Adds vertical space -->
@@ -10,6 +14,10 @@
         </Authorized>
     </AuthorizeView>
    
+    @foreach (var menuComponent in PluginMenuProvider.GetPluginMenus())
+    {
+        <DynamicComponent Type="menuComponent" />
+    }
     
     <AuthorizeView Roles="Admin">
         <Authorized>
