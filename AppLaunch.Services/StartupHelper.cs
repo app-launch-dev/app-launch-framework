@@ -53,5 +53,6 @@ public class StartupHelper
         services.AddScoped<ISettingsService, SettingsService>();
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<IPluginMenuProvider, PluginMenuProvider>();
+        
     }
 }
