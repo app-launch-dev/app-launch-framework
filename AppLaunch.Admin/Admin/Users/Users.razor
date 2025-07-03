@@ -18,6 +18,7 @@
 
 <MudPaper Class="pa-2 mt-4">
     <MudButton @onclick="AddUser" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" >Add User</MudButton>
+    <MudButton @onclick="InviteUser" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.InsertInvitation" Color="Color.Default" >Invite User</MudButton>
 
 </MudPaper>
 
@@ -73,6 +74,11 @@
     private async Task AddUser()
     {
         NavigationManager.NavigateTo("/admin/users/addedituser");
+    }
+    
+    private async Task InviteUser()
+    {
+        NavigationManager.NavigateTo("/admin/users/inviteuser");
     }
 
     private async Task EditUser(string UserId)
