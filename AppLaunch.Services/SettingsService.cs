@@ -37,6 +37,7 @@ public class SettingsService(IDbContextFactory<ApplicationDbContext> contextFact
                 ContentKey = response.ContentKey,
                 AllowSignUp = response.AllowSignUp,
                 LoginLogoUrl = response.LoginLogoUrl,
+                LogoUrl = response.LogoUrl,
                 LoginOverrideCSS = response.LoginOverrideCSS,
                 AwsSesAccessKey = response.AwsSesAccessKey,
                 AwsSesSecretKey = response.AwsSesSecretKey,
@@ -96,6 +97,7 @@ public class SettingsService(IDbContextFactory<ApplicationDbContext> contextFact
             existingSettings.OverrideCSS = model.OverrideCSS;
             existingSettings.ContentKey = model.ContentKey;
             existingSettings.AllowSignUp = model.AllowSignUp;
+            existingSettings.LogoUrl =model.LogoUrl;
             existingSettings.LoginLogoUrl = model.LoginLogoUrl;
             existingSettings.LoginOverrideCSS = model.LoginOverrideCSS;
             existingSettings.AwsSesAccessKey = model.AwsSesAccessKey;

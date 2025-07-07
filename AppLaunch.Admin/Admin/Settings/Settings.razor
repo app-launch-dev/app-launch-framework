@@ -1,4 +1,5 @@
 ﻿@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@using Applaunch.Models.Files
 @using AppLaunch.Models.Settings
 @using Microsoft.AspNetCore.Identity.UI.Services
 @page "/admin/settings/"
@@ -6,6 +7,7 @@
 @inject ISnackbar Snackbar
 @inject IEmailSender EmailSender
 @inject NavigationManager NavigationManager
+@inject IFileService FileService
 
 <MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
     <MudGrid>
@@ -31,9 +33,29 @@
                               @bind-Value="SettingsData.SiteName" Variant="Variant.Outlined"/>
             </MudItem>
             <MudItem xs="12">
+                <MudFileUpload T="IBrowserFile" Accept=".png, .jpg" MaximumFileCount="1" FilesChanged="OnFileSelected">
+                    <ActivatorContent>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.CloudUpload">
+                            Upload Logo (png or jpg)
+                        </MudButton>
+                    </ActivatorContent>
+                </MudFileUpload>
+            </MudItem>
+            
+            @if (!string.IsNullOrEmpty(SettingsData.LogoUrl))
+            {
+                <MudItem xs="12">
+                    <MudImage Height="60" Src="@SettingsData.LogoUrl" Alt="Logo" Class="rounded-lg"/>
+                </MudItem>
+            }
+            
+            <MudItem xs="12">
                 <MudTextField Label="Content Key" Class="mt-3"
                               @bind-Value="SettingsData.ContentKey" Variant="Variant.Outlined"/>
             </MudItem>
+            
         </MudGrid>
     </MudPaper>
     
@@ -179,6 +201,7 @@
 @code {
     SettingsModel? SettingsData { get; set; } 
     string testEmail = "";
+    private IBrowserFile? selectedFile;
     
     protected override async Task OnInitializedAsync()
     {
@@ -199,12 +222,11 @@
         }
     }
     
-    private void OnFileUpload(IBrowserFile file)
+    private void OnFileSelected(IBrowserFile file)
     {
-        // Handle the uploaded file (e.g., save it or process it)
-        Console.WriteLine($"Uploaded file: {file.Name}, Size: {file.Size} bytes");
+        selectedFile = file;
     }
-
+    
 
     private async Task SaveSettings()
     {
@@ -212,8 +234,23 @@
         {
             if (string.IsNullOrEmpty(SettingsData.ContentKey)) throw new Exception("Content Key cannot be empty");
 
+            //upload logo
+            if (selectedFile!=null)
+            {
+                FileSaveDto myFile = new();
+                myFile.Category = "Settings";
+                myFile.FileId = new Guid("5af738c8-90e3-4ea5-a152-d639bcf6d4b1");
+                myFile.FileName = selectedFile.Name;
+                myFile.FileBytes = await GetFileBytesAsync(selectedFile);
+                var fileUploadResult = await FileService.SaveFile(myFile);
+                if (!fileUploadResult.IsSuccess) throw new Exception(fileUploadResult.Message);
+                SettingsData.LogoUrl = fileUploadResult.Data.FileUrl;
+            }
+            
             var saveResult = await SettingsService.SaveSettings(SettingsData);
             if (!saveResult.IsSuccess) throw new Exception(saveResult.Message);
+            
+
 
             await GetSettings();
             Snackbar.Add("Settings Saved", Severity.Success);
@@ -223,6 +260,15 @@
             Snackbar.Add(ex.Message, Severity.Error);
         }
     }
+    
+    private async Task<byte[]> GetFileBytesAsync(IBrowserFile file)
+    {
+        using var stream = file.OpenReadStream(maxAllowedSize: 10_000_000); // Adjust size as needed
+        using var memoryStream = new MemoryStream();
+        await stream.CopyToAsync(memoryStream);
+        return memoryStream.ToArray();
+    }
+
     
     private async Task SendTestEmail()
     {
