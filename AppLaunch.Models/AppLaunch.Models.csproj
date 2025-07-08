@@ -30,4 +30,12 @@
       <PackagePath>readme.md</PackagePath>
     </None>
   </ItemGroup>
+  <Target Name="CopyFrameworkDlls" AfterTargets="Build">
+    <ItemGroup>
+      <FrameworkOutputDlls Include="$(OutputPath)*.dll" />
+    </ItemGroup>
+
+    <Copy SourceFiles=".\bin\debug\net9.0\AppLaunch.Models.dll"
+          DestinationFolder="..\..\app-launch-template\lib\applaunch-framework\" />
+  </Target>
 </Project>
