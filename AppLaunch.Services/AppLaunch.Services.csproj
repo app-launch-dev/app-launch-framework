@@ -5,31 +5,30 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AWSSDK.SimpleEmail" Version="4.0.0.5"/>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.3.0"/>
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0"/>
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.1"/>
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.1"/>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2"/>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.1"/>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
+    <PackageReference Include="AWSSDK.SimpleEmail" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.1"/>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.1">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0"/>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
-    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="*"/>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design"/>
+    <PackageReference Include="Newtonsoft.Json"/>
   </ItemGroup>
   <PropertyGroup>
     <PackageId>AppLaunch.Services</PackageId>
-    <Version>1.0.20</Version>
+    <Version>1.1.0</Version>
     <Authors>Applaunch Development Group</Authors>
     <Description>AppLaunch Services contains the Core Services for use in AppLaunch projects.</Description>
     <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>
@@ -54,4 +53,17 @@
   <ItemGroup>
     <ProjectReference Include="..\AppLaunch.Models\AppLaunch.Models.csproj"/>
   </ItemGroup>
+
+  <!--    Copy files into template project-->
+  <Target Name="CopyFrameworkDllsToTemplate" AfterTargets="Pack">
+    <Copy SourceFiles=".\bin\debug\AppLaunch.Services.1.1.0.nupkg"
+          DestinationFolder="..\..\app-launch-template\packages\" />
+  </Target>
+
+  <!--    Copy files into plugins project-->
+  <Target Name="CopyFrameworkDllsToPlugins" AfterTargets="Pack">
+    <Copy SourceFiles=".\bin\debug\AppLaunch.Services.1.1.0.nupkg"
+          DestinationFolder="..\..\app-launch-plugins\packages\" />
+  </Target>
+  
 </Project>

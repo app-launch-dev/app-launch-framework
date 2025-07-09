@@ -5,10 +5,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>AppLaunch.Models</PackageId>
-    <Version>1.0.15</Version>
+    <Version>1.1.0</Version>
     <Authors>Applaunch Development Group</Authors>
     <Description>AppLaunch Models contains the Core DTO models for AppLaunch projects.</Description>
     <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>
@@ -30,4 +31,16 @@
       <PackagePath>readme.md</PackagePath>
     </None>
   </ItemGroup>
+  <!--    Copy files into template project-->
+  <Target Name="CopyFrameworkDllsToTemplate" AfterTargets="Pack">
+    <Copy SourceFiles=".\bin\debug\AppLaunch.Models.1.1.0.nupkg"
+          DestinationFolder="..\..\app-launch-template\packages\" />
+  </Target>
+
+  <!--    Copy files into plugins project-->
+  <Target Name="CopyFrameworkDllsToPlugins" AfterTargets="Pack">
+  <Copy SourceFiles=".\bin\debug\AppLaunch.Models.1.1.0.nupkg"
+            DestinationFolder="..\..\app-launch-plugins\packages\" />
+  </Target>
+  
 </Project>

@@ -6,10 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>AppLaunch.Themes</PackageId>
-    <Version>1.0.14</Version>
+    <Version>1.1.0</Version>
     <Authors>Applaunch Development Group</Authors>
     <Description>AppLaunch Themes contains the Core theme for use in AppLaunch projects.</Description>
     <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>
@@ -31,11 +32,23 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Extensions.MudBlazor.StaticInput" Version="3.2.0"/>
-    <PackageReference Include="MudBlazor" Version="8.5.1"/>
+    <PackageReference Include="Extensions.MudBlazor.StaticInput" />
+    <PackageReference Include="MudBlazor" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AppLaunch.Models\AppLaunch.Models.csproj"/>
     <ProjectReference Include="..\AppLaunch.Services\AppLaunch.Services.csproj"/>
   </ItemGroup>
+  
+  <!--    Copy files into template project-->
+  <Target Name="CopyFrameworkDllsToTemplate" AfterTargets="Pack">
+      <Copy SourceFiles=".\bin\debug\AppLaunch.Themes.1.1.0.nupkg"
+            DestinationFolder="..\..\app-launch-template\packages\" />
+  </Target>
+
+  <!--    Copy files into plugins project-->
+  <Target Name="CopyFrameworkDllsToPlugins" AfterTargets="Pack">
+    <Copy SourceFiles=".\bin\debug\AppLaunch.Themes.1.1.0.nupkg"
+          DestinationFolder="..\..\app-launch-plugins\packages\" />
+  </Target>
 </Project>
