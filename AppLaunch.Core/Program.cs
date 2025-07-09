@@ -54,17 +54,6 @@ builder.Services.AddScoped<AuthenticationStateProvider, MyIdentityRevalidatingAu
 IdentityRegistrar.Register(builder.Services);
 StartupHelper.Register(builder.Services);
 
-//dynamically register services defined in plugins
-var pluginTypes = AppDomain.CurrentDomain.GetAssemblies()
-    .SelectMany(a => a.GetTypes())
-    .Where(t => typeof(IPlugin).IsAssignableFrom(t) && !t.IsAbstract);
-
-foreach (var pluginType in pluginTypes)
-{
-    var plugin = (IPlugin)Activator.CreateInstance(pluginType)!;
-    plugin.RegisterServices(builder.Services, builder.Configuration);
-}
-
 //Max form size
 builder.Services.Configure<FormOptions>(options =>
 {
@@ -85,7 +74,24 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.VisibleStateDuration = 5000;
 });
 
+// Auto load saved plugins on application startup
+var pluginManager = new PluginManager();
+pluginManager.InitializeDiPlugins(builder.Services);
+
+// Always include admin assembly
+var existingAssemblies = new List<Assembly> { typeof(AppLaunch.Admin._Imports).Assembly };
+var runningPluginAssemblies = pluginManager.GetLoadedAssemblies().ToList();
+
 var app = builder.Build();
+
+// Run plugin migration, etc...
+using var scope = app.Services.CreateScope();
+var plugins = scope.ServiceProvider.GetServices<IPlugin>();
+
+foreach (var plugin in plugins)
+{
+    plugin.LoadPlugin(); 
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -107,13 +113,6 @@ app.UseAntiforgery();
 app.MapControllers();
 app.MapRazorPages();
 
-// Auto load saved plugins on application startup
-var pluginManager = app.Services.GetRequiredService<PluginManager>();
-pluginManager.InitializePlugins();
-
-// Get plugin assemblies for routing
-var existingAssemblies = new List<Assembly> { typeof(AppLaunch.Admin._Imports).Assembly };
-var runningPluginAssemblies = pluginManager.GetRunningPluginAssemblies(existingAssemblies);
 
 // Register Razor components and dynamically add plugin assemblies
 app.MapRazorComponents<App>()

@@ -13,6 +13,10 @@ using NuGet.Packaging;
 public class PluginManager
 {
     private Dictionary<string, PluginLoadContext> _pluginContexts = new();
+    
+    private readonly List<Assembly> _loadedAssemblies = new();
+
+    public IEnumerable<Assembly> GetLoadedAssemblies() => _loadedAssemblies;
 
     public bool IsPluginLoaded(string pluginName) => _pluginContexts.ContainsKey(pluginName);
 
@@ -25,7 +29,7 @@ public class PluginManager
 
         var context = new PluginLoadContext(pluginPath);
         context.LoadFromAssemblyPath(pluginPath);
-        
+        _loadedAssemblies.Add(context.LoadedAssembly!);
         _pluginContexts[pluginName] = context;
         SaveRunningPlugins(); // Persist state
     }

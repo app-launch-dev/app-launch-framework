@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <AssemblyName>$(AssemblyName.Replace(' ', '_'))</AssemblyName>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     </PropertyGroup>
 
@@ -64,7 +64,20 @@
       </Content>
     </ItemGroup>
 
+    <!--    Copy files into template project-->
+    <Target Name="CopyFrameworkFilesToTemplate" AfterTargets="Build">
+        <Copy SourceFiles="..\Directory.Packages.Props"
+              DestinationFolder="..\..\app-launch-template\" SkipUnchangedFiles="true" />
+        <Copy SourceFiles=".\Program.cs"
+              DestinationFolder="..\..\app-launch-template\app-launch-template\applaunch\" SkipUnchangedFiles="true" />
+    </Target>
 
-   
-
+    <!--    Copy files into plugins project-->
+    <Target Name="CopyFrameworkFilesToPlugins" AfterTargets="Build">
+        <Copy SourceFiles="..\Directory.Packages.Props"
+              DestinationFolder="..\..\app-launch-plugins\" SkipUnchangedFiles="true" />
+        <Copy SourceFiles=".\Program.cs"
+              DestinationFolder="..\..\app-launch-plugins\app-launch-template\applaunch\" SkipUnchangedFiles="true" />
+    </Target>
+    
 </Project>
