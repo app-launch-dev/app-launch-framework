@@ -48,13 +48,13 @@
   <!--    Copy files into template project-->
   <Target Name="CopyFrameworkDllsToTemplate" AfterTargets="Pack" Condition="'$(IsFrameworkSource)' == 'true'">
     <Copy SourceFiles=".\bin\debug\AppLaunch.Admin.1.1.0.nupkg"
-          DestinationFolder="..\..\app-launch-template\packages\" />
+          DestinationFolder="..\..\app-launch-template\app-launch-packages\" />
   </Target>
 
   <!--    Copy files into plugins project-->
   <Target Name="CopyFrameworkDllsToPlugins" AfterTargets="Pack" Condition="'$(IsFrameworkSource)' == 'true'">
     <Copy SourceFiles=".\bin\debug\AppLaunch.Admin.1.1.0.nupkg"
-          DestinationFolder="..\..\app-launch-plugins\packages\" /> 
+          DestinationFolder="..\..\app-launch-plugins\app-launch-packages\" /> 
   </Target>
 
 
