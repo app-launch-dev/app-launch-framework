@@ -74,24 +74,8 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.VisibleStateDuration = 5000;
 });
 
-// Auto load saved plugins on application startup
-var pluginManager = new PluginManager();
-pluginManager.InitializeDiPlugins(builder.Services);
-
-// Always include admin assembly
 var existingAssemblies = new List<Assembly> { typeof(AppLaunch.Admin._Imports).Assembly };
-var runningPluginAssemblies = pluginManager.GetLoadedAssemblies().ToList();
-
 var app = builder.Build();
-
-// Run plugin migration, etc...
-using var scope = app.Services.CreateScope();
-var plugins = scope.ServiceProvider.GetServices<IPlugin>();
-
-foreach (var plugin in plugins)
-{
-    plugin.LoadPlugin(); 
-}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -113,11 +97,8 @@ app.UseAntiforgery();
 app.MapControllers();
 app.MapRazorPages();
 
-
-// Register Razor components and dynamically add plugin assemblies
 app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(existingAssemblies.ToArray()) // Always add Admin
-    .AddAdditionalAssemblies(runningPluginAssemblies.ToArray()) // Add dynamically loaded plugins
     .AddInteractiveServerRenderMode();
 
 app.UseAuthorization();

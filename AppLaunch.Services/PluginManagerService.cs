@@ -132,6 +132,36 @@ public class PluginManager
         }
     }
     
+    // public void InitializeDiPlugins(IServiceCollection services)
+    // {
+    //     string path = Path.Combine(Directory.GetCurrentDirectory(), "PluginData");
+    //     if (!Directory.Exists(path))
+    //         Directory.CreateDirectory(path);
+    //
+    //     if (!File.Exists("runningPlugins.json"))
+    //         return;
+    //
+    //     List<string> pluginNames = JsonSerializer.Deserialize<List<string>>(File.ReadAllText("runningPlugins.json"));
+    //     if (pluginNames == null)
+    //         return;
+    //
+    //     foreach (var pluginName in pluginNames)
+    //     {
+    //         LoadPlugin(pluginName); // Presumably loads the DLL into the AppDomain
+    //     }
+    //
+    //     // 🔍 Now that DLLs are loaded, scan and register IPlugin types
+    //     var pluginTypes = AppDomain.CurrentDomain.GetAssemblies()
+    //         .SelectMany(a => a.GetTypes())
+    //         .Where(t => typeof(IPlugin).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface)
+    //         .ToList();
+    //
+    //     foreach (var type in pluginTypes)
+    //     {
+    //         services.AddTransient(typeof(IPlugin), type);
+    //     }
+    // }
+    
     public void InitializeDiPlugins(IServiceCollection services)
     {
         string path = Path.Combine(Directory.GetCurrentDirectory(), "PluginData");
@@ -147,20 +177,23 @@ public class PluginManager
 
         foreach (var pluginName in pluginNames)
         {
-            LoadPlugin(pluginName); // Presumably loads the DLL into the AppDomain
+            LoadPlugin(pluginName); // Loads DLL via PluginLoadContext
         }
 
-        // 🔍 Now that DLLs are loaded, scan and register IPlugin types
-        var pluginTypes = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(a => a.GetTypes())
-            .Where(t => typeof(IPlugin).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface)
-            .ToList();
-
-        foreach (var type in pluginTypes)
+        // 🔍 Directly scan loaded assemblies (not AppDomain) for IPlugin types
+        foreach (var assembly in _loadedAssemblies)
         {
-            services.AddTransient(typeof(IPlugin), type);
+            var pluginTypes = assembly.GetTypes()
+                .Where(t => typeof(IPlugin).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface);
+
+            foreach (var type in pluginTypes)
+            {
+                services.AddTransient(typeof(IPlugin), type);
+                Console.WriteLine($"Registered plugin type: {type.FullName}");
+            }
         }
     }
+
     
     
     

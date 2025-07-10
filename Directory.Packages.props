@@ -1,4 +1,8 @@
 <Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <Import Project="Directory.Plugins.props" Condition="Exists('Directory.Plugins.props')" />
   <ItemGroup>
     <PackageVersion Include="AppLaunch.Admin" Version="1.1.0" />
     <PackageVersion Include="AppLaunch.Models" Version="1.1.0" />

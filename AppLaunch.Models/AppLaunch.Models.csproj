@@ -8,6 +8,9 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <PropertyGroup>
+    <IsFrameworkSource Condition="Exists('..\framework.build.marker')">true</IsFrameworkSource>
+  </PropertyGroup>
+  <PropertyGroup>
     <PackageId>AppLaunch.Models</PackageId>
     <Version>1.1.0</Version>
     <Authors>Applaunch Development Group</Authors>
@@ -32,13 +35,13 @@
     </None>
   </ItemGroup>
   <!--    Copy files into template project-->
-  <Target Name="CopyFrameworkDllsToTemplate" AfterTargets="Pack">
+  <Target Name="CopyFrameworkDllsToTemplate" AfterTargets="Pack" Condition="'$(IsFrameworkSource)' == 'true'">
     <Copy SourceFiles=".\bin\debug\AppLaunch.Models.1.1.0.nupkg"
           DestinationFolder="..\..\app-launch-template\packages\" />
   </Target>
 
   <!--    Copy files into plugins project-->
-  <Target Name="CopyFrameworkDllsToPlugins" AfterTargets="Pack">
+  <Target Name="CopyFrameworkDllsToPlugins" AfterTargets="Pack" Condition="'$(IsFrameworkSource)' == 'true'">
   <Copy SourceFiles=".\bin\debug\AppLaunch.Models.1.1.0.nupkg"
             DestinationFolder="..\..\app-launch-plugins\packages\" />
   </Target>
