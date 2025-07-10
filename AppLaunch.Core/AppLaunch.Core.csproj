@@ -66,7 +66,7 @@
 
     <!--    Copy files into template project-->
     <Target Name="CopyFrameworkFilesToTemplate" AfterTargets="Build">
-        <Copy SourceFiles="..\Directory.Packages.Props"
+        <Copy SourceFiles="..\Directory.Packages.props"
               DestinationFolder="..\..\app-launch-template\" SkipUnchangedFiles="true" />
         <Copy SourceFiles=".\Program.cs"
               DestinationFolder="..\..\app-launch-template\app-launch-template\applaunch\" SkipUnchangedFiles="true" />
@@ -74,7 +74,7 @@
 
     <!--    Copy files into plugins project-->
     <Target Name="CopyFrameworkFilesToPlugins" AfterTargets="Build">
-        <Copy SourceFiles="..\Directory.Packages.Props"
+        <Copy SourceFiles="..\Directory.Packages.props"
               DestinationFolder="..\..\app-launch-plugins\" SkipUnchangedFiles="true" />
         <Copy SourceFiles=".\Program.cs"
               DestinationFolder="..\..\app-launch-plugins\app-launch-template\applaunch\" SkipUnchangedFiles="true" />
