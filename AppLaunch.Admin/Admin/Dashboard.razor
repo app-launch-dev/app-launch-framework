@@ -14,21 +14,59 @@
     <MudGrid>
         <MudItem xs="12">
             <MudText Typo="Typo.h4" Color="Color.Primary">Dashboard</MudText>
-            <MudText Typo="Typo.body2" Color="Color.Secondary">
-                Rapidly develop and deliver line of business applications
-            </MudText>
         </MudItem>
+        
+        @if (InstalledVersion != null)
+        {
+            <MudItem xs="4">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText>Installed Version</MudText>
+                        <MudText Typo="Typo.body2">@InstalledVersion.Sha Released: @InstalledVersion.Date.ToString()</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
         
         @if (LatestVersion != null)
         {
-            <MudItem xs="12">
-                <MudText Typo="Typo.body2" Color="Color.Secondary">
-                   Latest Version: @LatestVersion.Sha Released: @LatestVersion.Date.ToString()
-                </MudText>
-            </MudItem>    
+            <MudItem xs="4">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText>Latest Version</MudText>
+                        <MudText Typo="Typo.body2">@LatestVersion.Sha Released: @LatestVersion.Date.ToString()</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
         }
         
+      
         
+        @if (UnavailableMessageInstalled != "")
+        {
+            <MudItem xs="4">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText>Installed Version</MudText>
+                        <MudText Typo="Typo.body2">@UnavailableMessageInstalled</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
+        
+        @if (UnavailableMessageLatest != "")
+        {
+            <MudItem xs="4">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText>Latest Version</MudText>
+                        <MudText Typo="Typo.body2">@UnavailableMessageLatest</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
+        
+ 
         
         @* @if (!updateInProcess) *@
         @* { *@
@@ -116,7 +154,10 @@
 @code {
     bool showUpdateButton = false;
     bool updateInProcess = false;
-    public CoreUpdateModel? LatestVersion { get; set; }
+    private CoreUpdateModel? LatestVersion { get; set; }
+    private CoreUpdateModel? InstalledVersion { get; set; }
+    private string UnavailableMessageInstalled { get; set; } = "";
+    private string UnavailableMessageLatest { get; set; } = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -126,6 +167,13 @@
 
     private async Task CheckForUpdates()
     {
+        await GetLatestVersion();
+        await GetInstalledVersion();
+    }
+
+
+    private async Task GetLatestVersion()
+    {
         try
         {
             var latestVersionResponse = await UpdateService.GetLatestVersion();
@@ -134,10 +182,25 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add(ex.Message, Severity.Error);
+            UnavailableMessageLatest = "Unable to check for the latest available updates";
         }
-        
     }
+    
+    private async Task GetInstalledVersion()
+    {
+        try
+        {
+            var installedVersionResponse = await UpdateService.GetInstalledVersion();
+            if (!installedVersionResponse.IsSuccess) throw new Exception(installedVersionResponse.Message);
+            InstalledVersion = installedVersionResponse.Data;
+        }
+        catch (Exception ex)
+        {
+            UnavailableMessageInstalled = "Unable to determine the installed version";
+        }
+    }
+    
+    
     
     
 
