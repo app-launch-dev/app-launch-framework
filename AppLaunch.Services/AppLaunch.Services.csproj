@@ -100,7 +100,7 @@
       <PackagesToCopy Include="..\app-launch-packages\AppLaunch.Services.*" />
     </ItemGroup>
     <Copy SourceFiles="@(PackagesToCopy)"
-          DestinationFolder="..\..\app-launch-templates\app-launch-packages\" />
+          DestinationFolder="..\..\app-launch-template\app-launch-packages\" />
   </Target>
 
   <Target Name="CopyPluginPackages" DependsOnTargets="CreateAdminPropsForTemplate" AfterTargets="Pack" Condition="'$(IsFrameworkSource)' == 'true'">
