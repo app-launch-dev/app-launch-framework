@@ -31,7 +31,8 @@
   </ItemGroup>
   <PropertyGroup>
     <PackageId>AppLaunch.Services</PackageId>
-    <Version>1.1.1</Version>
+    <VersionPrefix>1.1.2</VersionPrefix>
+    <VersionSuffix>dev-$([System.DateTime]::UtcNow.ToString("yyyyMMddHHmm"))</VersionSuffix>
     <Authors>Applaunch Development Group</Authors>
     <Description>AppLaunch Services contains the Core Services for use in AppLaunch projects.</Description>
     <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>
@@ -56,16 +57,57 @@
   <ItemGroup>
     <ProjectReference Include="..\AppLaunch.Models\AppLaunch.Models.csproj"/>
   </ItemGroup>
-
-  <!--    Copy files into template project-->
-  <Target Name="CopyFrameworkDllsToTemplate" AfterTargets="Pack" Condition="'$(IsFrameworkSource)' == 'true'">
-    <Copy SourceFiles=".\bin\debug\AppLaunch.Services.1.1.1.nupkg"
-          DestinationFolder="..\..\app-launch-template\app-launch-packages\" />
+  
+  <Target Name="CleanOldPackages" BeforeTargets="Pack">
+    <ItemGroup>
+      <OldPackages Include="..\app-launch-packages\AppLaunch.Services.*.nupkg" />
+    </ItemGroup>
+    <Delete Files="@(OldPackages)" />
   </Target>
 
-  <!--    Copy files into plugins project-->
-  <Target Name="CopyFrameworkDllsToPlugins" AfterTargets="Pack" Condition="'$(IsFrameworkSource)' == 'true'">
-    <Copy SourceFiles=".\bin\debug\AppLaunch.Services.1.1.1.nupkg"
+  <Target Name="CopyFrameworkDllsToTemplate" AfterTargets="Pack" Condition="'$(IsFrameworkSource)' == 'true'">
+    <Copy SourceFiles=".\bin\debug\$(PackageId).$(PackageVersion).nupkg"
+          DestinationFolder="..\app-launch-packages\" />
+  </Target>
+
+  <Target Name="CreateAdminPropsForTemplate" AfterTargets="Pack" Condition="'$(IsFrameworkSource)' == 'true'">
+    <PropertyGroup>
+      <AppLaunchPropsPath>$(MSBuildThisFileDirectory)..\app-launch-packages\AppLaunch.Services.props</AppLaunchPropsPath>
+    </PropertyGroup>
+    <WriteLinesToFile
+            File="$(AppLaunchPropsPath)"
+            Lines="&lt;Project&gt;&#xD;&#xA;  &lt;PropertyGroup&gt;&#xD;&#xA;    &lt;AppLaunchServicesVersion&gt;$(PackageVersion)&lt;/AppLaunchServicesVersion&gt;&#xD;&#xA;  &lt;/PropertyGroup&gt;&#xD;&#xA;&lt;/Project&gt;"
+            Overwrite="true"
+            Encoding="UTF-8" />
+  </Target>
+
+  <Target Name="CleanTemplatePackages" BeforeTargets="Pack">
+    <ItemGroup>
+      <OldPackages Include="..\..\app-launch-template\app-launch-packages\AppLaunch.Services.*" />
+    </ItemGroup>
+    <Delete Files="@(OldPackages)" />
+  </Target>
+
+  <Target Name="CleanPluginPackages" BeforeTargets="Pack">
+    <ItemGroup>
+      <OldPackages Include="..\..\app-launch-plugins\app-launch-packages\AppLaunch.Services.*" />
+    </ItemGroup>
+    <Delete Files="@(OldPackages)" />
+  </Target>
+
+  <Target Name="CopyTemplatePackages" DependsOnTargets="CreateAdminPropsForTemplate" AfterTargets="Pack" Condition="'$(IsFrameworkSource)' == 'true'">
+    <ItemGroup>
+      <PackagesToCopy Include="..\app-launch-packages\AppLaunch.Services.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PackagesToCopy)"
+          DestinationFolder="..\..\app-launch-templates\app-launch-packages\" />
+  </Target>
+
+  <Target Name="CopyPluginPackages" DependsOnTargets="CreateAdminPropsForTemplate" AfterTargets="Pack" Condition="'$(IsFrameworkSource)' == 'true'">
+    <ItemGroup>
+      <PackagesToCopy Include="..\app-launch-packages\AppLaunch.Services.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PackagesToCopy)"
           DestinationFolder="..\..\app-launch-plugins\app-launch-packages\" />
   </Target>
   
