@@ -68,21 +68,21 @@
     <!--    Copy files into template project-->
     <Target Name="CopyFrameworkFilesToTemplate" AfterTargets="Build">
         <Copy SourceFiles="..\Directory.Packages.props"
-              DestinationFolder="..\..\app-launch-template\" SkipUnchangedFiles="true" />
+              DestinationFolder="..\..\app-launch-template\" />
         <Copy SourceFiles=".\Program.cs"
-              DestinationFolder="..\..\app-launch-template\app-launch-template\applaunch\" SkipUnchangedFiles="true" />
+              DestinationFolder="..\..\app-launch-template\app-launch-template\applaunch\" />
         <Copy SourceFiles=".\Components\Routes.razor"
-              DestinationFolder="..\..\app-launch-template\app-launch-template\applaunch\components" SkipUnchangedFiles="true" />
+              DestinationFolder="..\..\app-launch-template\app-launch-template\applaunch\components" />
     </Target>
 
     <!--    Copy files into plugins project-->
     <Target Name="CopyFrameworkFilesToPlugins" AfterTargets="Build">
         <Copy SourceFiles="..\Directory.Packages.props"
-              DestinationFolder="..\..\app-launch-plugins\" SkipUnchangedFiles="true" />
+              DestinationFolder="..\..\app-launch-plugins\" />
         <Copy SourceFiles=".\Program.cs"
-              DestinationFolder="..\..\app-launch-plugins\app-launch-template\applaunch\" SkipUnchangedFiles="true" />
+              DestinationFolder="..\..\app-launch-plugins\app-launch-template\applaunch\" />
         <Copy SourceFiles=".\Components\Routes.razor"
-              DestinationFolder="..\..\app-launch-plugins\app-launch-template\applaunch\components" SkipUnchangedFiles="true" />
+              DestinationFolder="..\..\app-launch-plugins\app-launch-template\applaunch\components" />
     </Target>
     
 </Project>
