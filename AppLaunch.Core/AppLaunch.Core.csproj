@@ -70,6 +70,8 @@
               DestinationFolder="..\..\app-launch-template\" SkipUnchangedFiles="true" />
         <Copy SourceFiles=".\Program.cs"
               DestinationFolder="..\..\app-launch-template\app-launch-template\applaunch\" SkipUnchangedFiles="true" />
+        <Copy SourceFiles=".\Components\Routes.razor"
+              DestinationFolder="..\..\app-launch-template\app-launch-template\applaunch\components" SkipUnchangedFiles="true" />
     </Target>
 
     <!--    Copy files into plugins project-->
@@ -78,6 +80,8 @@
               DestinationFolder="..\..\app-launch-plugins\" SkipUnchangedFiles="true" />
         <Copy SourceFiles=".\Program.cs"
               DestinationFolder="..\..\app-launch-plugins\app-launch-template\applaunch\" SkipUnchangedFiles="true" />
+        <Copy SourceFiles=".\Components\Routes.razor"
+              DestinationFolder="..\..\app-launch-plugins\app-launch-template\applaunch\components" SkipUnchangedFiles="true" />
     </Target>
     
 </Project>

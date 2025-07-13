@@ -4,10 +4,10 @@
   </PropertyGroup>
   <Import Project="Directory.Plugins.props" Condition="Exists('Directory.Plugins.props')" />
   <ItemGroup>
-    <PackageVersion Include="AppLaunch.Admin" Version="1.1.0" />
-    <PackageVersion Include="AppLaunch.Models" Version="1.1.0" />
-    <PackageVersion Include="AppLaunch.Services" Version="1.1.0" />
-    <PackageVersion Include="AppLaunch.Themes" Version="1.1.0" />
+    <PackageVersion Include="AppLaunch.Admin" Version="1.1.1" />
+    <PackageVersion Include="AppLaunch.Models" Version="1.1.1" />
+    <PackageVersion Include="AppLaunch.Services" Version="1.1.1" />
+    <PackageVersion Include="AppLaunch.Themes" Version="1.1.1" />
     <PackageVersion Include="BlazorTemplater" Version="1.5.1" />
     <PackageVersion Include="Extensions.MudBlazor.StaticInput" Version="3.2.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication" Version="2.3.0" />

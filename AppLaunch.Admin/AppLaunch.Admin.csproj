@@ -14,7 +14,7 @@
 
   <PropertyGroup>
     <PackageId>AppLaunch.Admin</PackageId>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <Authors>Applaunch Development Group</Authors>
     <Description>AppLaunch Admin contains the core admin pages for use in AppLaunch projects.</Description>
     <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>
@@ -47,13 +47,13 @@
 
   <!--    Copy files into template project-->
   <Target Name="CopyFrameworkDllsToTemplate" AfterTargets="Pack" Condition="'$(IsFrameworkSource)' == 'true'">
-    <Copy SourceFiles=".\bin\debug\AppLaunch.Admin.1.1.0.nupkg"
+    <Copy SourceFiles=".\bin\debug\AppLaunch.Admin.1.1.1.nupkg"
           DestinationFolder="..\..\app-launch-template\app-launch-packages\" />
   </Target>
 
   <!--    Copy files into plugins project-->
   <Target Name="CopyFrameworkDllsToPlugins" AfterTargets="Pack" Condition="'$(IsFrameworkSource)' == 'true'">
-    <Copy SourceFiles=".\bin\debug\AppLaunch.Admin.1.1.0.nupkg"
+    <Copy SourceFiles=".\bin\debug\AppLaunch.Admin.1.1.1.nupkg"
           DestinationFolder="..\..\app-launch-plugins\app-launch-packages\" /> 
   </Target>
 

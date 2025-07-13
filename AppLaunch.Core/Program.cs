@@ -75,6 +75,10 @@ builder.Services.AddMudServices(config =>
 });
 
 var existingAssemblies = new List<Assembly> { typeof(AppLaunch.Admin._Imports).Assembly };
+var pluginAssemblies = AppDomain.CurrentDomain
+    .GetAssemblies()
+    .Where(a => a.GetName().Name?.ToLower().Contains("plugins") == true)
+    .ToList();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -99,6 +103,7 @@ app.MapRazorPages();
 
 app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(existingAssemblies.ToArray()) // Always add Admin
+    .AddAdditionalAssemblies(pluginAssemblies.ToArray()) // Plugins
     .AddInteractiveServerRenderMode();
 
 app.UseAuthorization();
