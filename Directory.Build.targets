@@ -1,0 +1,29 @@
+<Project>
+  <PropertyGroup>
+    <BuildCountFile>$(MSBuildThisFileDirectory)build.count</BuildCountFile>
+    <BuildVersionProps>$(MSBuildThisFileDirectory)BuildVersion.props</BuildVersionProps>
+  </PropertyGroup>
+
+  <Target Name="InitializeBuildCount"
+          BeforeTargets="BeforeBuild"
+          Condition="'$(BuildingProject)' == 'true' and '$(BuildCountInitialized)' != 'true'">
+
+  <ReadLinesFromFile File="$(BuildCountFile)">
+      <Output TaskParameter="Lines" ItemName="RawCountItem" />
+    </ReadLinesFromFile>
+
+    <PropertyGroup>
+      <RawBuildCount>@(RawCountItem->'%(Identity)')</RawBuildCount>
+      <RawBuildCount Condition="'$(RawBuildCount)' == ''">0</RawBuildCount>
+      <BuildCount>$([MSBuild]::Add($([System.Int32]::Parse($(RawBuildCount))), 1))</BuildCount>
+      <BuildCountInitialized>true</BuildCountInitialized>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(BuildCountFile)" Lines="$(BuildCount)" Overwrite="true" />
+
+    <!-- Write to shared props -->
+    <WriteLinesToFile File="$(BuildVersionProps)"
+                      Lines="&lt;Project&gt;&#xD;&#xA;  &lt;PropertyGroup&gt;&#xD;&#xA;    &lt;BuildCount&gt;$(BuildCount)&lt;/BuildCount&gt;&#xD;&#xA;  &lt;/PropertyGroup&gt;&#xD;&#xA;&lt;/Project&gt;"
+                      Overwrite="true" />
+  </Target>
+</Project>

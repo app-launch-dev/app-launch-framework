@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <Project Sdk="Microsoft.NET.Sdk.Razor">
+  <Import Project="..\BuildVersion.props" Condition="Exists('..\BuildVersion.props')" />
+
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -13,8 +15,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>AppLaunch.Themes</PackageId>
-    <VersionPrefix>1.1.2</VersionPrefix>
-    <VersionSuffix>dev-$([System.DateTime]::UtcNow.ToString("yyyyMMddHHmm"))</VersionSuffix>
+    <VersionPrefix>1.1.3</VersionPrefix>
+    <Version>$(VersionPrefix).$(BuildCount)</Version>
     <Authors>Applaunch Development Group</Authors>
     <Description>AppLaunch Themes contains the Core theme for use in AppLaunch projects.</Description>
     <RepositoryUrl>https://github.com/app-launch-dev/app-launch-framework</RepositoryUrl>
