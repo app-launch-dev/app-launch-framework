@@ -1,0 +1,145 @@
+﻿@inject PluginManager PluginManager
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudText Typo="Typo.h4" Color="Color.Primary">Plugins</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Install plugins for your organization
+            </MudText>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudPaper Class="pa-2 mt-4">
+    <MudButton @onclick="AddPlugin" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.InstallDesktop" Color="Color.Primary" >Install Plugin</MudButton>
+</MudPaper>
+
+<MudGrid Class="mt-2">
+    <MudItem xs="12">
+        <MudTable Items="@AdditionalAssemblies" Hover="true" Dense="true" SortLabel="Sort">
+            <HeaderContent>
+                <MudTh>Plugin Name</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+
+            <RowTemplate>
+                <MudTd>@context</MudTd>
+                <MudTd>
+                    @if (PluginManager.IsPluginLoaded(context))
+                    {
+                        <div style="display: flex; align-items: center;">
+                            <MudIcon Icon="@Icons.Material.Filled.Autorenew" Color="Color.Success" />
+                            <span style="margin-left: 8px;">Running</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="display: flex; align-items: center;">
+                            <MudIcon Icon="@Icons.Material.Filled.StopCircle" Color="Color.Error" />
+                            <span style="margin-left: 8px;">Stopped</span>
+                        </div>
+                    }
+                </MudTd>
+                <MudTd>
+                @if (PluginManager.IsPluginLoaded(context))
+                {
+                    <MudTooltip Text="Stop Plugin">
+                        <MudIconButton Icon="@Icons.Material.Filled.StopCircle"
+                                       Color="Color.Dark"
+                                       OnClick="() => StopPlugin(context)"/>
+                    </MudTooltip>
+                }
+                else
+                {
+                    <MudTooltip Text="Start Plugin">
+                        <MudIconButton Icon="@Icons.Material.Filled.Start"
+                                       Color="Color.Success"
+                                       OnClick="() => StartPlugin(context)"/>
+                    </MudTooltip>
+                }
+                    <MudTooltip Text="Delete Plugin">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       OnClick="() => DeletePlugin(context)"/>
+                    </MudTooltip>
+                </MudTd>
+            </RowTemplate>
+
+            <PagerContent>
+                <MudTablePager/>
+            </PagerContent>
+        </MudTable>
+    </MudItem>
+</MudGrid>
+
+
+@code {
+    List<string> AdditionalAssemblies = new();
+
+    private Dictionary<string, PluginLoadContext> _pluginContexts = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        AdditionalAssemblies = PluginManager.GetAvailablePlugins();
+    }
+
+    private async Task AddPlugin()
+    {
+        NavigationManager.NavigateTo("/admin/plugins/installplugin");
+    }
+    
+    
+    
+    
+    private async Task DeletePlugin(string pluginName)
+    {
+        try
+        {
+            var response=await PluginManager.DeletePlugin(pluginName);
+            if (!response.IsSuccess) throw new Exception(response.Message);
+            Snackbar.Add("Plugin has been deleted", Severity.Info);
+            PluginManager.RestartApplication();
+        }
+        catch (Exception ex ) when (ex is not NavigationException)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+       
+    }
+    
+    private async Task StartPlugin(string pluginName)
+    {
+        try
+        {
+            PluginManager.LoadPlugin(pluginName);
+            Snackbar.Add("Plugin Started", Severity.Success);
+            PluginManager.RestartApplication();
+        }
+        catch (Exception ex ) when (ex is not NavigationException)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+       
+    } 
+    
+    private async Task StopPlugin(string pluginName)
+    {
+        try
+        {
+            PluginManager.StopPlugin(pluginName);
+            Snackbar.Add("Plugin Stopped", Severity.Info);
+            PluginManager.RestartApplication();
+        }
+        catch (Exception ex ) when (ex is not NavigationException)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+       
+    }
+    
+   
+}

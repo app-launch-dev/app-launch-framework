@@ -1,146 +1,322 @@
-﻿@page "/admin/plugins"
-@inject PluginManager PluginManager
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@page "/admin/plugins"
+@using System.Net.Http.Headers
+@using System.Text
+@using AppLaunch.Models.Settings
+@using HtmlAgilityPack
+@using Newtonsoft.Json
+@using Newtonsoft.Json.Linq
+@using NuGet.Versioning
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject ISettingsService SettingsService
+@inject HttpClient Http
 
 <MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
     <MudGrid>
         <MudItem xs="12">
             <MudText Typo="Typo.h4" Color="Color.Primary">Plugins</MudText>
             <MudText Typo="Typo.body2" Color="Color.Secondary">
-                Install plugins for your organization
+                Install and update plugins
             </MudText>
         </MudItem>
     </MudGrid>
 </MudPaper>
 
-<MudPaper Class="pa-2 mt-4">
-    <MudButton @onclick="AddPlugin" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.InstallDesktop" Color="Color.Primary" >Install Plugin</MudButton>
+@if (updateInProcess)
+{
+    <MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
+        <MudGrid>
+            <MudItem xs="12">
+                <p>An update has been requested. Please wait while the update is installed. Your site will go offline during this process. Do not reload this page.</p>
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+}
+
+@if (!updateInProcess)
+{
+    <MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
+    <MudGrid>
+        @if (AvailablePlugins != null)
+        {
+            <MudItem xs="12">
+                <MudSimpleTable Style="overflow-x: auto;">
+                    <thead>
+                    <tr>
+                        <th>Plugin</th>
+                        <th>Latest</th>
+                        <th>Installed</th>
+                        <th>Installed Version</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var pkg in AvailablePlugins)
+                    {
+                        <tr>
+                            <td>@pkg.Name</td>
+                            <td>@pkg.Latest</td>
+                            <td>@pkg.IsInstalled</td>
+                            <td>@pkg.InstalledVersion</td>
+                            <td>
+                                @if (pkg.showInstall)
+                                {
+                                    <MudButton @onclick="@(() => InstallPlugin(pkg))"
+                                               Variant="Variant.Filled"
+                                               StartIcon="@Icons.Material.Filled.Download"
+                                               Color="Color.Success">
+                                        Install
+                                    </MudButton>
+                                }
+                                
+                                @if (pkg.showUpgrade)
+                                {
+                                    <MudChip T="string" Color="Color.Success" Variant="Variant.Filled">Update
+                                        Available
+                                    </MudChip>
+                                }
+                                @if (pkg.showDelete)
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" />
+                                }
+                            </td>
+                        </tr>
+                    }
+                    
+                    @if (AvailablePlugins.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="3">No plugins available.</td>
+                           
+                        </tr> 
+                    }
+                    
+                    </tbody>
+                </MudSimpleTable>
+
+            </MudItem>
+
+        }
+    </MudGrid>
 </MudPaper>
 
-<MudGrid Class="mt-2">
-    <MudItem xs="12">
-        <MudTable Items="@AdditionalAssemblies" Hover="true" Dense="true" SortLabel="Sort">
-            <HeaderContent>
-                <MudTh>Plugin Name</MudTh>
-                <MudTh>Status</MudTh>
-                <MudTh></MudTh>
-            </HeaderContent>
+}
 
-            <RowTemplate>
-                <MudTd>@context</MudTd>
-                <MudTd>
-                    @if (PluginManager.IsPluginLoaded(context))
-                    {
-                        <div style="display: flex; align-items: center;">
-                            <MudIcon Icon="@Icons.Material.Filled.Autorenew" Color="Color.Success" />
-                            <span style="margin-left: 8px;">Running</span>
-                        </div>
-                    }
-                    else
-                    {
-                        <div style="display: flex; align-items: center;">
-                            <MudIcon Icon="@Icons.Material.Filled.StopCircle" Color="Color.Error" />
-                            <span style="margin-left: 8px;">Stopped</span>
-                        </div>
-                    }
-                </MudTd>
-                <MudTd>
-                @if (PluginManager.IsPluginLoaded(context))
-                {
-                    <MudTooltip Text="Stop Plugin">
-                        <MudIconButton Icon="@Icons.Material.Filled.StopCircle"
-                                       Color="Color.Dark"
-                                       OnClick="() => StopPlugin(context)"/>
-                    </MudTooltip>
-                }
-                else
-                {
-                    <MudTooltip Text="Start Plugin">
-                        <MudIconButton Icon="@Icons.Material.Filled.Start"
-                                       Color="Color.Success"
-                                       OnClick="() => StartPlugin(context)"/>
-                    </MudTooltip>
-                }
-                    <MudTooltip Text="Delete Plugin">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Color="Color.Error"
-                                       OnClick="() => DeletePlugin(context)"/>
-                    </MudTooltip>
-                </MudTd>
-            </RowTemplate>
 
-            <PagerContent>
-                <MudTablePager/>
-            </PagerContent>
-        </MudTable>
-    </MudItem>
-</MudGrid>
 
 
 @code {
-    List<string> AdditionalAssemblies = new();
+    private SettingsModel? MySettings { get; set; }
+    private List<PackageInfo> AvailablePlugins { get; set; }
+    bool updateInProcess = false;
+    private const string prefix = "AppLaunch.Plugins.";
+    private const string SearchUrl = "https://api.nuget.org/v3/search?q={0}&prerelease=false&take=50";
+    private readonly HttpClient _client = new();
+    
+    public class PackageInfo
+    {
+        public string Name { get; set; }
+        public string Url { get; set; }
+        public string Latest { get; set; }
+        public bool IsInstalled { get; set; } = false;
+        public string InstalledVersion { get; set; }
+        public bool showDelete = false;
+        public bool showUpgrade = false;
+        public bool showInstall = false;
+        
 
-    private Dictionary<string, PluginLoadContext> _pluginContexts = new();
+    }
+
     
     protected override async Task OnInitializedAsync()
     {
-        AdditionalAssemblies = PluginManager.GetAvailablePlugins();
+        await GetAvailablePlugins();
+        await GetInstalledPlugins();
     }
 
-    private async Task AddPlugin()
-    {
-        NavigationManager.NavigateTo("/admin/plugins/installplugin");
-    }
-    
-    
-    
-    
-    private async Task DeletePlugin(string pluginName)
+    private async Task GetAvailablePlugins()
     {
         try
         {
-            var response=await PluginManager.DeletePlugin(pluginName);
-            if (!response.IsSuccess) throw new Exception(response.Message);
-            Snackbar.Add("Plugin has been deleted", Severity.Info);
-            PluginManager.RestartApplication();
+            AvailablePlugins = await ScrapeOwnerPackagesAsync("app-launch-dev");
+            AvailablePlugins = AvailablePlugins.Where(p => p.Name.StartsWith("AppLaunch.Plugins.")).ToList();
+
         }
-        catch (Exception ex ) when (ex is not NavigationException)
+        catch (Exception ex)
         {
             Snackbar.Add(ex.Message, Severity.Error);
         }
-       
     }
     
-    private async Task StartPlugin(string pluginName)
+
+
+    public async Task TriggerGitHubActionAsync()
     {
         try
         {
-            PluginManager.LoadPlugin(pluginName);
-            Snackbar.Add("Plugin Started", Severity.Success);
-            PluginManager.RestartApplication();
+            bool? runUpdates = await DialogService.ShowMessageBox(
+                "Start Updates",
+                "Once initialized, your site will go offline until the updates have completed. Proceed?",
+                yesText: "Update Now!", cancelText: "Cancel");
+            if (runUpdates != true) throw new Exception("Update Cancelled");
+
+
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AppLaunch", "1.0"));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", $"{MySettings.GitHubToken}");
+
+            var response = await client.PostAsync(
+                $"https://api.github.com/repos/{MySettings.GitHubOwner}/{MySettings.GitHubRepo}/actions/workflows/{MySettings.GitHubWorkflowFile}/dispatches",
+                new StringContent("{\"ref\":\"main\"}", Encoding.UTF8, "application/json"));
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Success feedback
+                Snackbar.Add($"Updates have been requested. Your site will temporarily go offline while updates are in process.", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add($"Unable to initiate updates: {response.ReasonPhrase}", Severity.Error);
+            }
+
+            updateInProcess = true;
         }
-        catch (Exception ex ) when (ex is not NavigationException)
+        catch (Exception ex)
         {
             Snackbar.Add(ex.Message, Severity.Error);
         }
-       
-    } 
-    
-    private async Task StopPlugin(string pluginName)
+    }
+
+    private async Task GetInstalledPlugins()
+    {
+        var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+        foreach (var plugin in AvailablePlugins)
+        {
+            var matchingAssembly = loadedAssemblies.FirstOrDefault(a =>
+                a.GetName().Name?.Equals(plugin.Name, StringComparison.OrdinalIgnoreCase) == true);
+
+            if (matchingAssembly != null)
+            {
+                plugin.IsInstalled = true;
+                plugin.showDelete = true;
+
+                var installedVersion = matchingAssembly.GetName().Version?.ToString() ?? "unknown";
+                plugin.InstalledVersion = installedVersion;
+
+                if (NuGetVersion.TryParse(installedVersion, out var installedVer) &&
+                    NuGetVersion.TryParse(plugin.Latest, out var latestVer))
+                {
+                    if (installedVer < latestVer)
+                    {
+                        plugin.showUpgrade = true;
+                    }
+                }
+            }
+            else
+            {
+                plugin.InstalledVersion = "-";
+                plugin.showInstall = true;
+            }
+        }
+    }
+
+
+
+    private async Task InstallPlugin(PackageInfo plugin)
     {
         try
         {
-            PluginManager.StopPlugin(pluginName);
-            Snackbar.Add("Plugin Stopped", Severity.Info);
-            PluginManager.RestartApplication();
+            updateInProcess = true;
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AppLaunch", "1.0"));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", $"{MySettings.GitHubToken}");
+
+            var payload = new
+            {
+                @ref = "main",
+                inputs = new
+                {
+                    pluginId = plugin.Name,
+                    pluginVersion = plugin.Latest
+                }
+            };
+
+
+            var json = JsonConvert.SerializeObject(payload);
+            var response = await client.PostAsync(
+                $"https://api.github.com/repos/{MySettings.GitHubOwner}/{MySettings.GitHubRepo}/actions/workflows/InstallPlugin.yml/dispatches",
+                new StringContent(json, Encoding.UTF8, "application/json"));
+
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Installation requested for {plugin.Name} v{plugin.Latest}.", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add($"Unable to install plugin: {response.ReasonPhrase}", Severity.Error);
+                updateInProcess = false;
+            }
         }
-        catch (Exception ex ) when (ex is not NavigationException)
+        catch (Exception ex)
         {
             Snackbar.Add(ex.Message, Severity.Error);
+            updateInProcess = false;
         }
-       
+    }
+
+    
+    
+    private async Task<List<PackageInfo>> ScrapeOwnerPackagesAsync(string ownerName)
+    {
+        var url = $"https://www.nuget.org/profiles/{ownerName}";
+        var client = new HttpClient();
+        var html = await client.GetStringAsync(url);
+
+        var doc = new HtmlDocument();
+        doc.LoadHtml(html);
+
+        var packages = new List<PackageInfo>();
+        var nodes = doc.DocumentNode.SelectNodes("//a[@class='package-title']");
+
+        if (nodes != null)
+        {
+            foreach (var node in nodes)
+            {
+                var name = node.InnerText.Trim();
+                var href = node.GetAttributeValue("href", string.Empty);
+                var latestVersion = await GetLatestVersionAsync(name);
+                packages.Add(new PackageInfo
+                {
+                    Name = name,
+                    Url = $"https://www.nuget.org{href}",
+                    Latest = latestVersion
+                });
+            }
+        }
+
+        return packages;
     }
     
-   
+    private async Task<string> GetLatestVersionAsync(string packageId)
+    {
+        var url = $"https://api.nuget.org/v3-flatcontainer/{packageId.ToLowerInvariant()}/index.json";
+
+        try
+        {
+            var json = await _client.GetStringAsync(url);
+            var obj = JObject.Parse(json);
+            var versions = obj["versions"]?.ToObject<List<string>>();
+            return versions?.LastOrDefault() ?? "unknown";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error retrieving version for {packageId}: {ex.Message}");
+            return "error";
+        }
+    }
+
 }

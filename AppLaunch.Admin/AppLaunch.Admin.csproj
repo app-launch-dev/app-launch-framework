@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -25,8 +25,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="license.md" Pack="true" PackagePath="license.md"/>
-    <None Include="readme.md" Pack="true" PackagePath="readme.md"/>
+    <None Include="license.md" Pack="true" PackagePath="license.md" />
+    <None Include="readme.md" Pack="true" PackagePath="readme.md" />
   </ItemGroup>
   <ItemGroup>
     <None Update="license.md">
@@ -39,12 +39,16 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AppLaunch.Models\AppLaunch.Models.csproj"/>
-    <ProjectReference Include="..\AppLaunch.Services\AppLaunch.Services.csproj"/>
-    <ProjectReference Include="..\AppLaunch.Themes\AppLaunch.Themes.csproj"/>
+    <ProjectReference Include="..\AppLaunch.Models\AppLaunch.Models.csproj" />
+    <ProjectReference Include="..\AppLaunch.Services\AppLaunch.Services.csproj" />
+    <ProjectReference Include="..\AppLaunch.Themes\AppLaunch.Themes.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack" />
+    <PackageReference Include="NuGet.Versioning" />
   </ItemGroup>
 
   <Target Name="CleanOldPackages" BeforeTargets="Pack">
@@ -55,19 +59,14 @@
   </Target>
   
   <Target Name="CopyFrameworkDllsToTemplate" AfterTargets="Pack" Condition="'$(IsFrameworkSource)' == 'true'">
-    <Copy SourceFiles=".\bin\debug\$(PackageId).$(PackageVersion).nupkg"
-          DestinationFolder="..\app-launch-packages\" />
+    <Copy SourceFiles=".\bin\debug\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="..\app-launch-packages\" />
   </Target>
 
   <Target Name="CreateAdminPropsForTemplate" AfterTargets="Pack" Condition="'$(IsFrameworkSource)' == 'true'">
     <PropertyGroup>
       <AppLaunchPropsPath>$(MSBuildThisFileDirectory)..\app-launch-packages\AppLaunch.Admin.props</AppLaunchPropsPath>
     </PropertyGroup>
-    <WriteLinesToFile
-            File="$(AppLaunchPropsPath)"
-            Lines="&lt;Project&gt;&#xD;&#xA;  &lt;PropertyGroup&gt;&#xD;&#xA;    &lt;AppLaunchAdminVersion&gt;$(PackageVersion)&lt;/AppLaunchAdminVersion&gt;&#xD;&#xA;  &lt;/PropertyGroup&gt;&#xD;&#xA;&lt;/Project&gt;"
-            Overwrite="true"
-            Encoding="UTF-8" />
+    <WriteLinesToFile File="$(AppLaunchPropsPath)" Lines="&lt;Project&gt;&#xD;&#xA;  &lt;PropertyGroup&gt;&#xD;&#xA;    &lt;AppLaunchAdminVersion&gt;$(PackageVersion)&lt;/AppLaunchAdminVersion&gt;&#xD;&#xA;  &lt;/PropertyGroup&gt;&#xD;&#xA;&lt;/Project&gt;" Overwrite="true" Encoding="UTF-8" />
   </Target>
 
   <Target Name="CleanTemplatePackages" BeforeTargets="Pack">
@@ -88,16 +87,14 @@
     <ItemGroup>
       <PackagesToCopy Include="..\app-launch-packages\AppLaunch.Admin.*" />
     </ItemGroup>
-    <Copy SourceFiles="@(PackagesToCopy)"
-          DestinationFolder="..\..\app-launch-template\app-launch-packages\" />
+    <Copy SourceFiles="@(PackagesToCopy)" DestinationFolder="..\..\app-launch-template\app-launch-packages\" />
   </Target>
 
   <Target Name="CopyPluginPackages" AfterTargets="Pack" DependsOnTargets="CreateAdminPropsForTemplate" Condition="'$(IsFrameworkSource)' == 'true'">
     <ItemGroup>
       <PackagesToCopy Include="..\app-launch-packages\AppLaunch.Admin.*" />
     </ItemGroup>
-    <Copy SourceFiles="@(PackagesToCopy)"
-          DestinationFolder="..\..\app-launch-plugins\app-launch-packages\" />
+    <Copy SourceFiles="@(PackagesToCopy)" DestinationFolder="..\..\app-launch-plugins\app-launch-packages\" />
   </Target>
   
 
