@@ -4,6 +4,7 @@
 @using System.Text
 @using AppLaunch.Models.Settings
 @using HtmlAgilityPack
+@using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor
 @using Newtonsoft.Json
 @using Newtonsoft.Json.Linq
 @using NuGet.Versioning
@@ -82,7 +83,7 @@
                                 }
                                 @if (pkg.showDelete)
                                 {
-                                    <MudButton @onclick="@(() => InstallPlugin(pkg))"
+                                    <MudButton @onclick="@(() => DeletePlugin(pkg))"
                                                Variant="Variant.Filled"
                                                StartIcon="@Icons.Material.Filled.Delete"
                                                Color="Color.Error">
