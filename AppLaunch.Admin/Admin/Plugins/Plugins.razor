@@ -11,7 +11,6 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject ISettingsService SettingsService
-@inject HttpClient Http
 
 <MudPaper Elevation="2" Class="pa-4 mt-2 mb-5">
     <MudGrid>
@@ -67,20 +66,28 @@
                                     <MudButton @onclick="@(() => InstallPlugin(pkg))"
                                                Variant="Variant.Filled"
                                                StartIcon="@Icons.Material.Filled.Download"
-                                               Color="Color.Success">
+                                               Color="Color.Primary">
                                         Install
                                     </MudButton>
                                 }
                                 
                                 @if (pkg.showUpgrade)
                                 {
-                                    <MudChip T="string" Color="Color.Success" Variant="Variant.Filled">Update
-                                        Available
-                                    </MudChip>
+                                    <MudButton @onclick="@(() => UpgradePlugin(pkg))"
+                                               Variant="Variant.Filled"
+                                               StartIcon="@Icons.Material.Filled.Upgrade"
+                                               Color="Color.Success">
+                                        Install
+                                    </MudButton>
                                 }
                                 @if (pkg.showDelete)
                                 {
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" />
+                                    <MudButton @onclick="@(() => InstallPlugin(pkg))"
+                                               Variant="Variant.Filled"
+                                               StartIcon="@Icons.Material.Filled.Delete"
+                                               Color="Color.Error">
+                                        Delete
+                                    </MudButton>
                                 }
                             </td>
                         </tr>
@@ -290,9 +297,9 @@
         try
         {
             updateInProcess = true;
-
-            Http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AppLaunch", "1.0"));
-            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", $"{MySettings.GitHubToken}");
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AppLaunch", "1.0"));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", $"{MySettings.GitHubToken}");
 
             var inputs = new Dictionary<string, string>
             {
@@ -309,8 +316,8 @@
             var json = JsonConvert.SerializeObject(payload);
 
 
-            var response = await Http.PostAsync(
-                $"https://api.github.com/repos/{MySettings.GitHubOwner}/{MySettings.GitHubRepo}/actions/workflows/InstallPlugin.yml/dispatches",
+            var response = await client.PostAsync(
+                $"https://api.github.com/repos/{MySettings.GitHubOwner}/{MySettings.GitHubRepo}/actions/workflows/install-plugin.yml/dispatches",
                 new StringContent(json, Encoding.UTF8, "application/json"));
 
             if (response.IsSuccessStatusCode)
@@ -329,5 +336,94 @@
             updateInProcess = false;
         }
     }
+    
+    public async Task UpgradePlugin(PackageInfo plugin)
+    {
+        try
+        {
+            updateInProcess = true;
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AppLaunch", "1.0"));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", $"{MySettings.GitHubToken}");
+
+            var inputs = new Dictionary<string, string>
+            {
+                { "pluginId", plugin.Name },
+                { "pluginVersion", plugin.Latest }
+            };
+
+            var payload = new Dictionary<string, object>
+            {
+                { "ref", "main" },
+                { "inputs", inputs }
+            };
+
+            var json = JsonConvert.SerializeObject(payload);
+
+            var response = await client.PostAsync(
+                $"https://api.github.com/repos/{MySettings.GitHubOwner}/{MySettings.GitHubRepo}/actions/workflows/upgrade-plugin.yml/dispatches",
+                new StringContent(json, Encoding.UTF8, "application/json"));
+
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Upgrade requested for {plugin.Name} to v{plugin.Latest}.", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add($"Unable to upgrade plugin: {response.ReasonPhrase}", Severity.Error);
+                updateInProcess = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+            updateInProcess = false;
+        }
+    }
+    
+    public async Task DeletePlugin(PackageInfo plugin)
+    {
+        try
+        {
+            updateInProcess = true;
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AppLaunch", "1.0"));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", $"{MySettings.GitHubToken}");
+
+            var inputs = new Dictionary<string, string>
+            {
+                { "pluginId", plugin.Name }
+            };
+
+            var payload = new Dictionary<string, object>
+            {
+                { "ref", "main" },
+                { "inputs", inputs }
+            };
+
+            var json = JsonConvert.SerializeObject(payload);
+
+            var response = await client.PostAsync(
+                $"https://api.github.com/repos/{MySettings.GitHubOwner}/{MySettings.GitHubRepo}/actions/workflows/delete-plugin.yml/dispatches",
+                new StringContent(json, Encoding.UTF8, "application/json"));
+
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Deletion requested for plugin {plugin.Name}.", Severity.Warning);
+            }
+            else
+            {
+                Snackbar.Add($"Unable to delete plugin: {response.ReasonPhrase}", Severity.Error);
+                updateInProcess = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+            updateInProcess = false;
+        }
+    }
+
+
 
 }
