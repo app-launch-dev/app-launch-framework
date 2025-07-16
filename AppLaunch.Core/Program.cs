@@ -11,6 +11,7 @@ using MyIdentityRevalidatingAuthenticationStateProvider =
     AppLaunch.Admin.Account.IdentityRevalidatingAuthenticationStateProvider;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.DependencyModel;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("applaunch.json", optional: true, reloadOnChange: true);
@@ -53,9 +54,9 @@ builder.Services.AddScoped<MyIdentityRedirectManager>(); //todo: may not be used
 builder.Services.AddScoped<AuthenticationStateProvider, MyIdentityRevalidatingAuthenticationStateProvider>();
 
 var existingAssemblies = new List<Assembly> { typeof(AppLaunch.Admin._Imports).Assembly };
-var pluginAssemblies = AppDomain.CurrentDomain
-    .GetAssemblies()
-    .Where(a => a.GetName().Name?.ToLower().Contains("plugins") == true)
+var pluginAssemblies = DependencyContext.Default.RuntimeLibraries
+    .Where(lib => lib.Name.ToLower().Contains("plugins"))
+    .Select(lib => Assembly.Load(new AssemblyName(lib.Name)))
     .ToList();
 
 IdentityRegistrar.Register(builder.Services);
