@@ -51,8 +51,15 @@ builder.Services.AddSingleton<IdentityRegistrar>();
 builder.Services.AddSingleton<StartupHelper>();
 builder.Services.AddScoped<MyIdentityRedirectManager>(); //todo: may not be used
 builder.Services.AddScoped<AuthenticationStateProvider, MyIdentityRevalidatingAuthenticationStateProvider>();
+
+var existingAssemblies = new List<Assembly> { typeof(AppLaunch.Admin._Imports).Assembly };
+var pluginAssemblies = AppDomain.CurrentDomain
+    .GetAssemblies()
+    .Where(a => a.GetName().Name?.ToLower().Contains("plugins") == true)
+    .ToList();
+
 IdentityRegistrar.Register(builder.Services);
-StartupHelper.Register(builder.Services);
+StartupHelper.Register(builder.Services, pluginAssemblies, builder.Configuration);
 
 //Max form size
 builder.Services.Configure<FormOptions>(options =>
@@ -74,11 +81,7 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.VisibleStateDuration = 5000;
 });
 
-var existingAssemblies = new List<Assembly> { typeof(AppLaunch.Admin._Imports).Assembly };
-var pluginAssemblies = AppDomain.CurrentDomain
-    .GetAssemblies()
-    .Where(a => a.GetName().Name?.ToLower().Contains("plugins") == true)
-    .ToList();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
