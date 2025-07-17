@@ -29,6 +29,7 @@ public class StartupHelper
         foreach (var plugin in pluginAssemblies)
         {
             RegisterPluginDbContextFactories(services,plugin,configuration); 
+            RegisterPluginServices(services, plugin, configuration);
         }
        
         
@@ -145,7 +146,7 @@ public class StartupHelper
                         var connectionString = connectionProvider.GetConnectionString();
 
                         options.UseSqlServer(connectionString, sql =>
-                            sql.MigrationsAssembly("AppLaunch.Services"));
+                            sql.MigrationsAssembly(pluginAssembly.GetName().Name));
                     }),
                     ServiceLifetime.Scoped
                 });
@@ -171,5 +172,36 @@ public class StartupHelper
             sql.MigrationsAssembly("AppLaunch.Services"));
     }
 
+    public static void RegisterPluginServices(
+        IServiceCollection services,
+        Assembly pluginAssembly,
+        IConfiguration configuration)
+    {
+        var pluginType = pluginAssembly.GetTypes()
+            .FirstOrDefault(t =>
+                typeof(IPlugin).IsAssignableFrom(t) &&
+                !t.IsAbstract &&
+                t.IsClass &&
+                t.IsPublic);
+
+        if (pluginType == null)
+        {
+            Console.WriteLine($"No IPlugin implementation found in {pluginAssembly.FullName}");
+            return;
+        }
+
+        try
+        {
+            var pluginInstance = (IPlugin?)Activator.CreateInstance(pluginType);
+            pluginInstance?.RegisterServices(services, configuration);
+            Console.WriteLine($"Registered services for plugin: {pluginInstance?.Name}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to register services for plugin {pluginType.FullName}: {ex.Message}");
+        }
+    }
+
+    
 
 }
