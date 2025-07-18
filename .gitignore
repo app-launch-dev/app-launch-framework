@@ -484,3 +484,4 @@ $RECYCLE.BIN/
 # AppLanuch
 applaunch.json
 runningPlugins.json
+Directory.Local.props
