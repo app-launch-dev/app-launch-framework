@@ -54,7 +54,7 @@
       <ProjectReference Include="..\AppLaunch.Services\AppLaunch.Services.csproj" />
       <ProjectReference Include="..\AppLaunch.Themes\AppLaunch.Themes.csproj" />
     </ItemGroup>
-    <Import Project="../../Development.Local.props" Condition="Exists('../../Development.Local.props')" />
+    <Import Project="../../Directory.Local.props" Condition="Exists('../../Directory.Local.props')" />
 
     <ItemGroup>
       <None Remove="Plugins\plugins.txt" />
